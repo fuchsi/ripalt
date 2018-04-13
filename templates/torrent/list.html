@@ -1,0 +1,116 @@
+{% extends "layouts/base_authenticated.html" %}
+{% block content %}
+    <div class="col-md-12 mt-4">
+        <div class="row p-2">
+            <div class="col-12 bg-dark p-2">
+                <form action="/torrents" method="post" name="torrent_search">
+                    <input type="hidden" name="page" value="1">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="search-category">Category</label>
+                            <select id="search-category" class="form-control" name="category">
+                                <option value="">All categories</option>
+                                {% for cat in categories %}
+                                    <option {% if cat.id == category %}selected{% endif %} value="{{cat.id}}">{{cat.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="search-visible">Visibility</label>
+                            <select id="search-visible" class="form-control" name="visible">
+                                <option {% if visible == "all" %}selected{% endif %} value="all">All</option>
+                                <option {% if visible == "visible" %}selected{% endif %} value="visible">Only visible</option>
+                                <option {% if visible == "dead" %}selected{% endif %} value="dead">Only dead</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <input class="form-control" type="text" name="name" placeholder="Torrent name" value="{{name}}">
+                        </div>
+                        <div class="form-group col-md-1">
+                            <button type="submit" class="btn btn-primary" role="button">Search</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row mt-2 p-2">
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Typ</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Added</th>
+                    <th scope="col">Last Action</th>
+                    <th scope="col">Last Seeder</th>
+                    <th scope="col">Files</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Completed</th>
+                    <th scope="col">Seeder</th>
+                    <th scope="col">Leecher</th>
+                    <th scope="col">Uploader</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for torrent in list %}
+                    <tr>
+                        <td scope="row">{{torrent.category_name}}</td>
+                        <td scope="row"><a href="/torrent/{{torrent.id}}">{{torrent.name}}</a></td>
+                        <td scope="row">{{torrent.created_at | format_date}}</td>
+                        <td scope="row">{{torrent.last_action | format_date}}</td>
+                        <td scope="row">{{torrent.last_seeder | format_date}}</td>
+                        <td scope="row">{{torrent.files}}</td>
+                        <td scope="row">{{torrent.size | data_size}}</td>
+                        <td scope="row">{{torrent.completed}}</td>
+                        <td scope="row">{{torrent.seeder}}</td>
+                        <td scope="row">{{torrent.leecher}}</td>
+                        <td scope="row">{{torrent.user_name}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {%if pages > 1 %}
+                <form action="/torrents" method="post" name="torrent_pages">
+                <input type="hidden" name="category" value="{{category}}">
+                <input type="hidden" name="visible" value="{{visible}}">
+                <input type="hidden" name="name" value="{{name}}">
+                <nav aria-label="...">
+
+                    <ul class="pagination">
+                        {% if page == 1 %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <button class="page-link" name="page" value="{{page - 1 }}" tabindex="-1">Previous {{per_page}}</button>
+                            </li>
+                        {% endif %}
+
+                        {% for p in range(start=0, end=pages) %}
+                            {% set real_page = p + 1 %}
+                            {% if real_page == page %}
+                                <li class="page-item disabled"><a class="page-link" href="#">{{real_page}}</a></li>
+                            {% else %}
+                                <button class="page-link" name="page" value="{{real_page}}" tabindex="-1">{{real_page}}</button>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page == pages %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <button class="page-link" name="page" value="{{page + 1 }}" tabindex="-1">Next {{per_page}}</button>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}
+{% block title %}Browse Torrents{% endblock title %}

@@ -1,0 +1,24 @@
+debug = true
+session_name = "ripalt"
+# has no affect yet
+session_strict = true
+session_secret = "d8664b949068b642d5e157a18a4db20925ede9a87595eebc8488830884a745e4"
+domain = "localhost"
+https = false
+bind = "127.0.0.1:8081"
+
+[database]
+url = "postgres://ripalt:ripalt@localhost/ripalt"
+
+[user]
+default_group = "0eb8ac8f-01f4-4bf9-bb0d-e3ac0ecb15f9"
+passcode_length = 16
+
+[email]
+enabled = false
+
+[tracker]
+announce_url = "http://localhost:8081/tracker/announce"
+comment = "Fe₂O₃ powered tracking"
+default_numwant = 50
+interval = 900

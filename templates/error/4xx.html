@@ -1,0 +1,18 @@
+{% extends "layouts/base_public.html" %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-6 offset-3 text-center">
+            <h1>{{status}}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10 offset-1">
+            <h2>URI</h2>
+            <pre class="bg-dark text-light">{{uri}}</pre>
+
+            <h2>Headers</h2>
+            <pre class="bg-dark text-light">{{headers}}</pre>
+        </div>
+    </div>
+{% endblock content %}
+{% block title %}{{status}}{% endblock title %}

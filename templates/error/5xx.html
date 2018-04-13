@@ -1,0 +1,16 @@
+{% extends "layouts/base_public.html" %}
+{% block content %}
+    <div class="text-center">
+        <h1>500 - Internal Server Error</h1>
+        <p><img src="/static/img/6NfmQ.jpg" alt="Something went wrong"></p>
+        <pre class="bg-dark text-danger">{{error}}</pre>
+    </div>
+    <div>
+        <h2>URI</h2>
+        <pre class="bg-dark text-light">{{uri}}</pre>
+
+        <h2>Headers</h2>
+        <pre class="bg-dark text-light">{{headers}}</pre>
+    </div>
+{% endblock content %}
+{% block title %}500 - Internal Server Error{% endblock title %}
