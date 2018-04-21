@@ -21,7 +21,6 @@
 use diesel::prelude::*;
 use diesel;
 use diesel::pg::upsert::on_constraint;
-use diesel::query_builder::AsChangeset;
 use chrono::prelude::*;
 use uuid::Uuid;
 use serde_json;

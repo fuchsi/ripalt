@@ -77,6 +77,7 @@ pub mod state;
 pub mod template;
 pub mod tracker;
 pub mod util;
+mod cleanup;
 
 use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
@@ -113,6 +114,7 @@ fn main() {
     let acl = state::init_acl(&pool);
 
     // Start n parallel db executors
+    let cloned_pool = pool.clone();
     let addr = SyncArbiter::start(num_cpus::get(), move || DbExecutor::new(pool.clone()));
 
     // Create a new Tera object and wrap it in some thread safe boxes
@@ -135,6 +137,12 @@ fn main() {
                 .unwrap(),
         );
     }
+
+    let (cleanup_tx, rx) = mpsc::channel();
+    let cleanup_handle = thread::Builder::new()
+        .name("cleanup".to_string())
+        .spawn(move || cleanup::cleanup(DbExecutor::new(cloned_pool), rx))
+        .unwrap();
 
     let http_bind = &SETTINGS.read().unwrap().bind[..];
 
@@ -163,6 +171,9 @@ fn main() {
             thread.join().unwrap();
         }
     }
+
+    cleanup_tx.send(true).unwrap();
+    cleanup_handle.join().unwrap();
 }
 
 fn require_user() -> RequireUser {
