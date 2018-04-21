@@ -1,4 +1,4 @@
-/*     
+/*
  * ripalt
  * Copyright (C) 2018 Daniel Müller
  *
@@ -21,10 +21,27 @@ use super::*;
 use actix_web::middleware::{csrf, DefaultHeaders, Logger};
 
 pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
+    let settings = SETTINGS.read().unwrap();
+    let listen = format!(
+        "http{}://{}",
+        if settings.https { "s" } else { "" },
+        settings.bind
+    );
+    let domain = format!(
+        "http{}://{}",
+        if settings.https { "s" } else { "" },
+        settings.domain
+    );
+
     App::with_state(State::new(db, acl))
         .middleware(Logger::default())
         .middleware(DefaultHeaders::new().header("X-Version", env!("CARGO_PKG_VERSION")))
-        .middleware(csrf::CsrfFilter::new().allow_xhr())
+        .middleware(
+            csrf::CsrfFilter::new()
+                .allow_xhr()
+                .allowed_origin(&listen)
+                .allowed_origin(&domain),
+        )
         .prefix("/api/v1")
         .default_resource(|r| r.method(Method::GET).h(NormalizePath::default()))
 }

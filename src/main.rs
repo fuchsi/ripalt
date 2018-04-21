@@ -67,6 +67,7 @@ extern crate pretty_assertions;
 
 pub mod api;
 pub mod app;
+mod cleanup;
 pub mod db;
 pub mod error;
 pub mod handlers;
@@ -77,7 +78,6 @@ pub mod state;
 pub mod template;
 pub mod tracker;
 pub mod util;
-mod cleanup;
 
 use std::sync::{mpsc, Arc, RwLock};
 use std::thread;

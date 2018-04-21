@@ -20,10 +20,15 @@
 
 use super::*;
 
-use actix_web::{HttpMessage, HttpRequest, HttpResponse, http::{header, NormalizePath}, Either, FutureResponse};
-use actix_web::AsyncResponder;
 use actix_web::middleware::{csrf, CookieSessionBackend, DefaultHeaders, ErrorHandlers, Logger,
                             SessionStorage};
+use actix_web::AsyncResponder;
+use actix_web::{http::{header, NormalizePath},
+                Either,
+                FutureResponse,
+                HttpMessage,
+                HttpRequest,
+                HttpResponse};
 use uuid::Uuid;
 
 use std::collections::HashMap;
@@ -34,8 +39,8 @@ use template::TemplateContainer;
 use tera::Context;
 
 pub mod index;
-pub mod signup;
 pub mod login;
+pub mod signup;
 pub mod torrent;
 
 type SyncResponse<T> = actix_web::Result<T>;
@@ -47,7 +52,9 @@ fn sync_redirect(loc: &str) -> SyncResponse<HttpResponse> {
 //    Box::new(future::ok(redirect(loc)))
 //}
 fn redirect(loc: &str) -> HttpResponse {
-    HttpResponse::SeeOther().header(header::LOCATION, loc.to_owned()).finish()
+    HttpResponse::SeeOther()
+        .header(header::LOCATION, loc.to_owned())
+        .finish()
 }
 
 pub fn build(
@@ -55,17 +62,28 @@ pub fn build(
     tpl: TemplateContainer,
     acl: Arc<RwLock<Acl>>,
 ) -> App<State> {
+    let settings = SETTINGS.read().unwrap();
     //    let redis = env::var("REDIS").unwrap_or(String::from("127.0.0.1::6379"));
-    let session_secret = util::from_hex(&SETTINGS.read().unwrap().session_secret).unwrap();
-    let session_name = &SETTINGS.read().unwrap().session_name[..];
-    let session_secure = &SETTINGS.read().unwrap().https;
+    let session_secret = util::from_hex(&settings.session_secret).unwrap();
+    let session_name = &settings.session_name[..];
+    let session_secure = &settings.https;
+    let listen = format!(
+        "http{}://{}",
+        if settings.https { "s" } else { "" },
+        settings.bind
+    );
+    let domain = format!(
+        "http{}://{}",
+        if settings.https { "s" } else { "" },
+        settings.domain
+    );
 
     let mut state = State::new(db, acl);
     state.set_template(tpl);
     App::with_state(state)
         .middleware(Logger::default())
         .middleware(DefaultHeaders::new().header("X-Version", env!("CARGO_PKG_VERSION")))
-        .middleware(csrf::CsrfFilter::new().allow_xhr().allowed_origin("http://localhost:8081"))
+        .middleware(csrf::CsrfFilter::new().allow_xhr().allowed_origin(&listen).allowed_origin(&domain))
 //        .middleware(SessionStorage::new(RedisSessionBackend::new(
 //            redis,
 //            &session_secret,
@@ -142,8 +160,7 @@ pub fn server_error(
     resp: HttpResponse,
 ) -> SyncResponse<actix_web::middleware::Response> {
     Ok(actix_web::middleware::Response::Done(render_error(
-        req,
-        resp,
+        req, resp,
     )))
 }
 
