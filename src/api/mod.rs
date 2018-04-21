@@ -25,6 +25,6 @@ pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
         .middleware(Logger::default())
         .middleware(DefaultHeaders::new().header("X-Version", env!("CARGO_PKG_VERSION")))
         .middleware(csrf::CsrfFilter::new().allow_xhr())
-        .prefix("/api")
+        .prefix("/api/v1")
         .default_resource(|r| r.method(Method::GET).h(NormalizePath::default()))
 }
