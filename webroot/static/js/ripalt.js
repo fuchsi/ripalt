@@ -3,7 +3,7 @@ const ds_prefixes = ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
 function data_size(amount) {
     let was_negative = false;
     if (amount < 0) {
-        amount -= amount;
+        amount = -amount;
         was_negative = true;
     }
     let prefix = 0;
