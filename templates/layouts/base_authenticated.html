@@ -58,7 +58,7 @@
     <footer>
         <h1>
             <a class="ripalt brand" href="/">
-                <span class="name">ripalt v0.1.0</span>
+                <span class="name">ripalt v0.2.0</span>
             </a>
         </h1>
     </footer>
@@ -145,7 +145,6 @@
         fetch("/api/v1/user/stats", {credentials: 'same-origin'})
             .then(resp => resp.json())
             .then(data => {
-                console.log(data);
                 $('#navbarDropdownUserMenuLink').text(data.name);
                 $('#navbar-downloads').text(data.downloads);
                 $('#navbar-downloaded').text(data_size(data.downloaded));
@@ -153,6 +152,11 @@
                 $('#navbar-uploaded').text(data_size(data.uploaded));
                 $('#navbar-ratio').text(data.ratio.toFixed(3));
             });
+        $('.custom-file input[type=file]').bind("change", (ev) => {
+            let file = ev.target.value.replace('C:\\fakepath\\', '');
+            let id = ev.target.id;
+            $('label[for=' + id + ']').text(file);
+        });
     });
 </script>
 {% endblock script %}

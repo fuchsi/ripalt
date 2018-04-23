@@ -10,9 +10,9 @@
                 <form action="/torrent/upload" method="post" name="upload" enctype="multipart/form-data">
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="upload_meta_file">Torrent file</label>
+                            <label>Torrent file</label>
                             <div class="custom-file">
-                                <input class="custom-file-input" type="file" name="meta_file" id="upload_meta_file" accept=".torrent,application/x-bittorrent" required>
+                                <input type="file" name="meta_file" id="upload_meta_file" accept=".torrent,application/x-bittorrent" required>
                                 <label class="custom-file-label" for="upload_meta_file">Torrent file</label>
                             </div>
                         </div>
@@ -23,7 +23,7 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="upload_nfo_file">NFO file</label>
+                            <label>NFO file</label>
                             <div class="custom-file">
                                 <input class="custom-file-input" type="file" name="nfo_file" id="upload_nfo_file" accept=".nfo,text/plain">
                                 <label class="custom-file-label" for="upload_nfo_file">NFO file</label>
@@ -52,5 +52,18 @@
             </div>
         </div>
     </div>
+    <script>
+        (() => {
+            window.addEventListener('load', () => {
+                $('#upload_meta_file').bind('change', (ev) => {
+                    let file = ev.target.value.replace('C:\\fakepath\\', '');
+                    if ($('#upload_torrent_name').val() === '') {
+                        file = file.replace('.torrent', '');
+                        $('#upload_torrent_name').val(file);
+                    }
+                });
+            });
+        })();
+    </script>
 {% endblock content %}
 {% block title %}Upload{% endblock title %}

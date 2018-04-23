@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     - New Setting: `jwt_secret`, the secret key for the JWTs.
 - API Endpoint to get the own stats (/api/v1/user/stats)
 
+### Fixed
+- Uploaded torrents without a specific name, now have the `.torrent` extension removed.
+- Custom File Input fields now set the name of the selected file as label.
+
+
 ## [0.1.0]
 
 ### Added

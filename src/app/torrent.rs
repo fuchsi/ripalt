@@ -276,7 +276,8 @@ fn process_upload(entries: &Entries) -> Result<NewTorrent> {
 
             if !has_name {
                 if let Some(ref name) = meta_file.headers.filename {
-                    upload_builder.name(name);
+                    let name = &name[0..(name.len()-8)];
+                    upload_builder.name(&name);
                 }
             }
         }
