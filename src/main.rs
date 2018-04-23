@@ -49,6 +49,7 @@ extern crate bip_bencode;
 extern crate codepage_437;
 extern crate config;
 extern crate data_encoding;
+extern crate jsonwebtoken as jwt;
 extern crate multipart;
 extern crate notify;
 extern crate num_cpus;

@@ -18,10 +18,33 @@
 
 use super::*;
 
-use actix_web::middleware::{csrf, DefaultHeaders, Logger};
+use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized};
+use actix_web::middleware::{csrf,
+                            identity::{IdentityService, RequestIdentity},
+                            CookieSessionBackend,
+                            DefaultHeaders,
+                            Logger,
+                            SessionStorage};
+use actix_web::AsyncResponder;
+use actix_web::{http::{header, NormalizePath},
+                Either,
+                FutureResponse,
+                HttpMessage,
+                HttpRequest,
+                HttpResponse};
+use futures::future::{err as FutErr, ok as FutOk, FutureResult};
+use uuid::Uuid;
+
+use models::User;
+
+pub mod identity;
 
 pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
     let settings = SETTINGS.read().unwrap();
+    let jwt_secret = util::from_hex(&settings.jwt_secret).unwrap();
+    let session_secret = util::from_hex(&settings.session_secret).unwrap();
+    let session_name = &settings.session_name[..];
+    let session_secure = &settings.https;
     let listen = format!(
         "http{}://{}",
         if settings.https { "s" } else { "" },
@@ -42,6 +65,14 @@ pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
                 .allowed_origin(&listen)
                 .allowed_origin(&domain),
         )
+        .middleware(SessionStorage::new(
+            CookieSessionBackend::signed(&session_secret)
+                .name(session_name)
+                .secure(*session_secure),
+        ))
+        .middleware(IdentityService::new(identity::ApiIdentityPolicy::new(
+            &jwt_secret,
+        )))
         .prefix("/api/v1")
         .default_resource(|r| r.method(Method::GET).h(NormalizePath::default()))
 }

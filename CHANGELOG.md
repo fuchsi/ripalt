@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Added
-- Cleanup thread to remove orphaned peers
+- Cleanup thread to remove orphaned peers.
+- Identity Provider for the API, which uses either the Session ID or a JWT.
+    - New Setting: `jwt_secret`, the secret key for the JWTs.
 
 ## [0.1.0]
 

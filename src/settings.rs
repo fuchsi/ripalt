@@ -47,6 +47,7 @@ pub struct Tracker {
 #[derive(Debug, Deserialize)]
 pub struct Settings {
     pub debug: bool,
+    pub jwt_secret: String,
     pub session_name: String,
     pub session_secret: String,
     pub session_strict: bool,

@@ -1,6 +1,6 @@
 [package]
 name = "ripalt"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Daniel Müller <perlfuchsi@gmail.com>"]
 description = "An Anti-Leech Torrent Tracker"
 license = "GPL-3.0-or-later"
@@ -45,6 +45,7 @@ codepage-437 = "0.1.0"
 serde_bencode = "0.2.0"
 data-encoding = "2.1.1"
 url = "1.7.0"
+jsonwebtoken = "4.0.1"
 
 [dev-dependencies]
 pretty_assertions = "0.5.1"
