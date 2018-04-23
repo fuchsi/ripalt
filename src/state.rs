@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+use super::*;
+
 use std::sync::{Arc, RwLock, RwLockReadGuard};
-use actix::prelude::*;
 
 use db::{DbConn, DbExecutor, Pool};
 use models::acl::Acl;

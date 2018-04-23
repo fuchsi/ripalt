@@ -18,11 +18,11 @@
 
 //! User models
 
-use super::*;
 use super::schema::{user_properties, users};
-use util::{self, password, rand};
-use ring::digest;
+use super::*;
 use ipnetwork::IpNetwork;
+use ring::digest;
+use util::{self, password, rand};
 
 /// New users
 pub const STATUS_NEW: i16 = 0;
@@ -173,8 +173,13 @@ impl User {
 
     pub fn save(&self, db: &PgConnection) -> Result<usize> {
         use schema::users::dsl;
-        let query = diesel::update(users::table).set(self).filter(dsl::id.eq(&self.id));
-        trace!("query: {}", diesel::debug_query::<diesel::pg::Pg, _>(&query));
+        let query = diesel::update(users::table)
+            .set(self)
+            .filter(dsl::id.eq(&self.id));
+        trace!(
+            "query: {}",
+            diesel::debug_query::<diesel::pg::Pg, _>(&query)
+        );
         query.execute(db).chain_err(|| "user update failed")
     }
 }
@@ -182,7 +187,11 @@ impl User {
 pub trait HasUser {
     fn user_name(&self, db: &PgConnection) -> Option<String> {
         use schema::users::dsl;
-        users::table.select(users::name).filter(dsl::id.eq(self.user_id())).first(db).ok()
+        users::table
+            .select(users::name)
+            .filter(dsl::id.eq(self.user_id()))
+            .first(db)
+            .ok()
     }
 
     fn user_id(&self) -> &Uuid;
@@ -192,14 +201,17 @@ pub trait MaybeHasUser {
     fn user_name(&self, db: &PgConnection) -> Option<String> {
         use schema::users::dsl;
         match self.user_id() {
-            Some(uid) => users::table.select(users::name).filter(dsl::id.eq(uid)).first(db).ok(),
+            Some(uid) => users::table
+                .select(users::name)
+                .filter(dsl::id.eq(uid))
+                .first(db)
+                .ok(),
             None => None,
         }
     }
 
     fn user_id(&self) -> &Option<Uuid>;
 }
-
 
 #[derive(Queryable, Debug, Associations, Identifiable, Insertable, AsChangeset)]
 #[table_name = "user_properties"]
@@ -249,6 +261,20 @@ impl Property {
 
     pub fn delete(&self, db: &PgConnection) -> Result<usize> {
         use schema::user_properties::dsl;
-        ::diesel::delete(user_properties::table).filter(dsl::id.eq(self.id)).execute(db).chain_err(|| "delete property failed")
+        ::diesel::delete(user_properties::table)
+            .filter(dsl::id.eq(self.id))
+            .execute(db)
+            .chain_err(|| "delete property failed")
     }
+}
+
+#[derive(Debug, Default, Serialize)]
+pub struct UserStatsMsg {
+    pub id: Uuid,
+    pub name: String,
+    pub uploaded: i64,
+    pub downloaded: i64,
+    pub ratio: f64,
+    pub uploads: i64,
+    pub downloads: i64,
 }

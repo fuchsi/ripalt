@@ -20,6 +20,8 @@
 //!
 //! This template system uses [Tera](https://tera.netlify.com/)
 
+use super::*;
+
 use std::collections::HashMap;
 use std::sync::{mpsc, Arc, RwLock};
 use std::time::Duration;
@@ -27,7 +29,6 @@ use std::time::Duration;
 use tera::{self, Tera, Value};
 
 use actix_web::{error, http::StatusCode, HttpRequest, HttpResponse, Responder};
-use chrono::prelude::*;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Serialize;
 

@@ -20,24 +20,20 @@ use super::*;
 
 use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized};
 use actix_web::middleware::{csrf,
-                            identity::{IdentityService, RequestIdentity},
+                            identity::{IdentityService},
                             CookieSessionBackend,
                             DefaultHeaders,
                             Logger,
                             SessionStorage};
-use actix_web::AsyncResponder;
-use actix_web::{http::{header, NormalizePath},
-                Either,
+use actix_web::{Either,
                 FutureResponse,
                 HttpMessage,
                 HttpRequest,
                 HttpResponse};
 use futures::future::{err as FutErr, ok as FutOk, FutureResult};
-use uuid::Uuid;
-
-use models::User;
 
 pub mod identity;
+pub mod user;
 
 pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
     let settings = SETTINGS.read().unwrap();
@@ -74,5 +70,6 @@ pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
             &jwt_secret,
         )))
         .prefix("/api/v1")
+        .resource("/user/stats", |r| r.method(Method::GET).a(user::stats))
         .default_resource(|r| r.method(Method::GET).h(NormalizePath::default()))
 }

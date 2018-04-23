@@ -18,6 +18,7 @@
 
 #![recursion_limit = "1024"]
 #![feature(decl_macro, use_extern_macros, custom_derive)]
+#[allow(unused_imports)]
 
 extern crate actix;
 extern crate actix_redis;
@@ -85,14 +86,19 @@ use std::thread;
 
 use actix::prelude::*;
 use actix_web::middleware::RequestSession;
+use actix_web::middleware::identity::RequestIdentity;
 use actix_web::{fs::StaticFiles,
                 http::{Method, NormalizePath, StatusCode},
                 server::HttpServer,
                 App};
+use actix_web::AsyncResponder;
 //use actix_redis::RedisSessionBackend;
 use dotenv::dotenv;
 use futures::future;
 use futures::prelude::*;
+use uuid::Uuid;
+use chrono::prelude::*;
+use diesel::prelude::*;
 
 use db::{DbConn, DbExecutor};
 use error::*;
@@ -178,9 +184,7 @@ fn main() {
 }
 
 fn require_user() -> RequireUser {
-    RequireUser {
-        user_id: uuid::Uuid::default(),
-    }
+    RequireUser(uuid::Uuid::default())
 }
 
 impl actix_web::pred::Predicate<State> for RequireUser {
@@ -188,7 +192,7 @@ impl actix_web::pred::Predicate<State> for RequireUser {
         match req.session().get::<uuid::Uuid>("user_id") {
             Ok(user_id) => match user_id {
                 Some(user_id) => {
-                    let require_user = RequireUser { user_id };
+                    let require_user = RequireUser(user_id);
                     let user = req.state().db().send(require_user).wait().unwrap();
                     match user {
                         Ok(_) => true,

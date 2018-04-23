@@ -21,12 +21,10 @@ use super::*;
 use std::sync::mpsc;
 use std::thread;
 
-use chrono::prelude::*;
 use chrono::Duration;
-use diesel::prelude::*;
 
 use db::DbExecutor;
-use schema::{peers::{self}};
+use schema::peers;
 
 const CLEANUP_INTERVAL: u64 = 60;
 const SLEEP_PER_LOOP: u64 = 2;

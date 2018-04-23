@@ -19,16 +19,14 @@
 use super::*;
 
 use std::net::{IpAddr};
-use uuid::Uuid;
 use models::{Group, User};
+use diesel::QueryDsl;
 
-pub struct RequireUser {
-    pub user_id: Uuid
-}
+pub struct RequireUser(pub Uuid);
 
 impl RequireUser {
     pub fn new(id: Uuid) -> Self {
-        RequireUser{user_id: id}
+        RequireUser(id)
     }
 }
 
@@ -40,7 +38,7 @@ impl Handler<RequireUser> for DbExecutor {
     type Result = Result<models::User>;
 
     fn handle(&mut self, msg: RequireUser, _ctx: &mut Self::Context) -> <Self as Handler<RequireUser>>::Result {
-        match models::User::find(&msg.user_id, &self.conn()) {
+        match models::User::find(&msg.0, &self.conn()) {
             Some(user) => Ok(user),
             None => bail!("user not found"),
         }
@@ -191,6 +189,49 @@ impl Handler<Confirm> for DbExecutor {
             }
         } else {
             bail!("Confirm Id not found")
+        }
+    }
+}
+
+pub struct UserStats(pub Uuid);
+
+impl Message for UserStats {
+    type Result = Result<models::user::UserStatsMsg>;
+}
+
+impl Handler<UserStats> for DbExecutor {
+    type Result = Result<models::user::UserStatsMsg>;
+
+    fn handle(&mut self, msg: UserStats, _ctx: &mut Self::Context) -> <Self as Handler<UserStats>>::Result {
+        use schema::peers::dsl;
+        let db: &PgConnection = &self.conn();
+        match models::User::find(&msg.0, db) {
+            Some(user) => {
+                let ratio = user.uploaded as f64 / user.downloaded as f64;
+                let uploads = schema::peers::table
+                    .count()
+                    .filter(dsl::user_id.eq(&user.id))
+                    .filter(dsl::seeder.eq(true))
+                    .first(db)
+                    .unwrap();
+                let downloads = schema::peers::table
+                    .count()
+                    .filter(dsl::user_id.eq(&user.id))
+                    .filter(dsl::seeder.eq(false))
+                    .first(db)
+                    .unwrap();
+
+                Ok(models::user::UserStatsMsg{
+                    id: user.id,
+                    name: user.name,
+                    uploaded: user.uploaded,
+                    downloaded: user.downloaded,
+                    ratio,
+                    uploads,
+                    downloads,
+                })
+            },
+            None => bail!("user not found"),
         }
     }
 }

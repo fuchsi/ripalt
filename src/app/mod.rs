@@ -22,14 +22,12 @@ use super::*;
 
 use actix_web::middleware::{csrf, CookieSessionBackend, DefaultHeaders, ErrorHandlers, Logger,
                             SessionStorage};
-use actix_web::AsyncResponder;
-use actix_web::{http::{header, NormalizePath},
+use actix_web::{http::{header},
                 Either,
                 FutureResponse,
                 HttpMessage,
                 HttpRequest,
                 HttpResponse};
-use uuid::Uuid;
 
 use std::collections::HashMap;
 use std::fmt::Write;

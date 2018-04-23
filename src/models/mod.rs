@@ -18,18 +18,17 @@
 
 //! Data models
 
-use diesel::prelude::*;
+use super::*;
+
 use diesel;
 use diesel::pg::upsert::on_constraint;
-use chrono::prelude::*;
-use uuid::Uuid;
 use serde_json;
 
 use DbConn;
 use SETTINGS;
 
-use super::schema;
-use super::error::*;
+use schema;
+use error::*;
 
 /// Convenient wrapper around [DateTime](/chrono/struct.DateTime.html)<[Utc](/chrono/struct.Utc.html)>
 pub type Timestamp = DateTime<Utc>;

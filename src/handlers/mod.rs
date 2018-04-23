@@ -17,8 +17,6 @@
  */
 
 use super::*;
-use uuid::Uuid;
-use diesel::prelude::*;
 
 pub mod user;
 pub mod torrent;

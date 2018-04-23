@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+use super::*;
+
 use std::ops::Deref;
-use diesel::pg::PgConnection;
 use r2d2;
 use r2d2_diesel::ConnectionManager;
-use actix::prelude::*;
 use SETTINGS;
 
 /// An alias to the type for a pool of Diesel Postgres connections.

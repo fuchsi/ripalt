@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+use super::*;
+
 use std::env;
 use config::{ConfigError, Config, File, Environment};
-use uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
 pub struct Database {
@@ -61,7 +62,7 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn new() -> Result<Self, ConfigError> {
+    pub fn new() -> std::result::Result<Self, ConfigError> {
         let mut s = Config::new();
 
         // Start off by merging in the "default" configuration file
