@@ -19,7 +19,6 @@
 #![recursion_limit = "1024"]
 #![feature(decl_macro, use_extern_macros, custom_derive)]
 #[allow(unused_imports)]
-
 extern crate actix;
 extern crate actix_redis;
 extern crate actix_web;
@@ -85,20 +84,20 @@ use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
 
 use actix::prelude::*;
-use actix_web::middleware::RequestSession;
 use actix_web::middleware::identity::RequestIdentity;
+use actix_web::middleware::RequestSession;
+use actix_web::AsyncResponder;
 use actix_web::{fs::StaticFiles,
                 http::{Method, NormalizePath, StatusCode},
                 server::HttpServer,
                 App};
-use actix_web::AsyncResponder;
 //use actix_redis::RedisSessionBackend;
+use chrono::prelude::*;
+use diesel::prelude::*;
 use dotenv::dotenv;
 use futures::future;
 use futures::prelude::*;
 use uuid::Uuid;
-use chrono::prelude::*;
-use diesel::prelude::*;
 
 use db::{DbConn, DbExecutor};
 use error::*;

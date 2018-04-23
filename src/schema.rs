@@ -126,6 +126,21 @@ table! {
 }
 
 table! {
+    transfers (id) {
+        id -> Uuid,
+        user_id -> Uuid,
+        torrent_id -> Uuid,
+        bytes_uploaded -> Int8,
+        bytes_downloaded -> Int8,
+        time_seeded -> Int4,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        completed_at -> Nullable<Timestamptz>,
+    }
+}
+
+
+table! {
     user_properties (id) {
         id -> Uuid,
         user_id -> Uuid,
@@ -133,6 +148,21 @@ table! {
         value -> Jsonb,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
+    }
+}
+
+table! {
+    user_transfer (id) {
+        id -> Uuid,
+        torrent_id -> Uuid,
+        user_id -> Uuid,
+        name -> Varchar,
+        is_seeder -> Bool,
+        size -> Int8,
+        seeder -> Int8,
+        leecher -> Int8,
+        bytes_uploaded -> Int8,
+        bytes_downloaded -> Int8,
     }
 }
 
@@ -160,6 +190,8 @@ joinable!(peers -> torrents (torrent_id));
 joinable!(peers -> users (user_id));
 joinable!(torrents -> categories (category_id));
 joinable!(torrents -> users (user_id));
+joinable!(transfers -> torrents (torrent_id));
+joinable!(transfers -> users (user_id));
 joinable!(user_properties -> users (user_id));
 joinable!(users -> groups (group_id));
 
@@ -173,6 +205,7 @@ allow_tables_to_appear_in_same_query!(
     torrent_meta_files,
     torrent_nfos,
     torrents,
+    transfers,
     user_properties,
     users,
 );

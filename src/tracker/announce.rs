@@ -30,7 +30,7 @@ use std::convert::TryFrom;
 use std::net::{IpAddr};
 use std::str::FromStr;
 
-use models::{self, Torrent, TorrentList, User};
+use models::{self, Torrent, TorrentList, User, torrent::Transfer};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Event {
@@ -208,6 +208,7 @@ impl Handler<AnnounceRequest> for DbExecutor {
     ) -> <Self as Handler<AnnounceRequest>>::Result {
         let add_download: i64;
         let add_upload: i64;
+        let mut add_time_seeded: i32 = 0;
         let mut new_peer = false;
 
         let conn = self.conn();
@@ -219,7 +220,11 @@ impl Handler<AnnounceRequest> for DbExecutor {
             {
                 Some(mut peer) => {
                     add_download = msg.downloaded as i64 - peer.bytes_downloaded;
-                    add_upload = msg.uploaded as i64 - peer.bytes_downloaded;
+                    add_upload = msg.uploaded as i64 - peer.bytes_uploaded;
+                    if peer.seeder {
+                        let duration = Utc::now().signed_duration_since(peer.updated_at);
+                        add_time_seeded = duration.num_seconds() as i32;
+                    }
 
                     peer.bytes_downloaded = msg.downloaded as i64;
                     peer.bytes_uploaded = msg.uploaded as i64;
@@ -264,6 +269,20 @@ impl Handler<AnnounceRequest> for DbExecutor {
                     }
                 }
             };
+        let mut transfer = match Transfer::find_for_announce(&torrent.id, &user.id, &conn) {
+            Some(mut transfer) => {
+                transfer.bytes_uploaded += add_upload;
+                transfer.bytes_downloaded += add_download;
+                transfer.time_seeded += add_time_seeded;
+                transfer.updated_at = Utc::now();
+                transfer
+            },
+            None => Transfer::from(&peer),
+        };
+
+        trace!("add download: {}", add_download);
+        trace!("add upload: {}", add_upload);
+        trace!("add seed time: {}", add_time_seeded);
 
         user.downloaded += add_download;
         user.uploaded += add_upload;
@@ -274,6 +293,7 @@ impl Handler<AnnounceRequest> for DbExecutor {
             Event::Completed => {
                 torrent.completed += 1;
                 torrent.last_seeder = Some(Utc::now());
+                transfer.completed_at = Some(Utc::now());
                 peer.save(&conn)?;
             }
             Event::Stopped => {
@@ -295,6 +315,7 @@ impl Handler<AnnounceRequest> for DbExecutor {
 
         torrent.save(&conn)?;
         user.save(&conn)?;
+        transfer.save(&conn)?;
 
         let want = !peer.seeder;
         let mut peers = models::Peer::peers_for_torrent(&torrent.id, want, msg.numwant as i64, &conn);

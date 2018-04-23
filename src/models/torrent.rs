@@ -109,8 +109,13 @@ impl Torrent {
 
     pub fn save(&self, db: &PgConnection) -> Result<usize> {
         use schema::torrents::dsl;
-        let query = diesel::update(torrents::table).set(self).filter(dsl::id.eq(&self.id));
-        trace!("query: {}", diesel::debug_query::<diesel::pg::Pg, _>(&query));
+        let query = diesel::update(torrents::table)
+            .set(self)
+            .filter(dsl::id.eq(&self.id));
+        trace!(
+            "query: {}",
+            diesel::debug_query::<diesel::pg::Pg, _>(&query)
+        );
         query.execute(db).chain_err(|| "torrent update failed")
     }
 }
@@ -321,7 +326,8 @@ impl TorrentList {
     pub fn peer_count(torrent_id: &Uuid, db: &PgConnection) -> (i64, i64) {
         use schema::torrent_list::dsl;
 
-        schema::torrent_list::table.select((dsl::seeder, dsl::leecher))
+        schema::torrent_list::table
+            .select((dsl::seeder, dsl::leecher))
             .filter(dsl::id.eq(torrent_id))
             .first::<(i64, i64)>(db)
             .unwrap_or_else(|_| (0, 0))
@@ -330,9 +336,72 @@ impl TorrentList {
     pub fn peer_count_scrape(info_hash: &[u8], db: &PgConnection) -> (i64, i64, i32) {
         use schema::torrent_list::dsl;
 
-        schema::torrent_list::table.select((dsl::seeder, dsl::leecher, dsl::completed))
+        schema::torrent_list::table
+            .select((dsl::seeder, dsl::leecher, dsl::completed))
             .filter(dsl::info_hash.eq(info_hash))
             .first::<(i64, i64, i32)>(db)
             .unwrap_or_else(|_| (0, 0, 0))
+    }
+}
+
+#[derive(Debug, Queryable, Identifiable, Serialize, Insertable, AsChangeset, Associations)]
+#[table_name = "transfers"]
+#[belongs_to(Torrent)]
+#[belongs_to(User)]
+pub struct Transfer {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub torrent_id: Uuid,
+    pub bytes_uploaded: i64,
+    pub bytes_downloaded: i64,
+    pub time_seeded: i32,
+    pub created_at: Timestamp,
+    pub updated_at: Timestamp,
+    pub completed_at: Option<Timestamp>,
+}
+
+impl Transfer {
+    pub fn find_for_announce(
+        torrent_id: &Uuid,
+        user_id: &Uuid,
+        db: &PgConnection,
+    ) -> Option<Transfer> {
+        transfers::table
+            .filter(transfers::dsl::torrent_id.eq(torrent_id))
+            .filter(transfers::dsl::user_id.eq(user_id))
+            .first::<Transfer>(db)
+            .ok()
+    }
+    pub fn save(&self, db: &PgConnection) -> Result<usize> {
+        let query = diesel::insert_into(transfers::table)
+            .values(self)
+            .on_conflict(on_constraint("transfers_user_id_torrent_id_key"))
+            .do_update()
+            .set(self);
+        trace!(
+            "query: {}",
+            diesel::debug_query::<diesel::pg::Pg, _>(&query)
+        );
+        query.execute(db).chain_err(|| "transfer update failed")
+    }
+}
+
+impl<'a> From<&'a Peer> for Transfer {
+    fn from(peer: &Peer) -> Self {
+        let completed_at = match peer.seeder {
+            true => Some(Utc::now()),
+            false => None,
+        };
+        Transfer {
+            id: Uuid::new_v4(),
+            user_id: peer.user_id.clone(),
+            torrent_id: peer.torrent_id.clone(),
+            bytes_uploaded: peer.bytes_uploaded,
+            bytes_downloaded: peer.bytes_downloaded,
+            time_seeded: 0,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+            completed_at,
+        }
     }
 }
