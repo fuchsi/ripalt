@@ -16,25 +16,27 @@
         <div class="">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link text-success" href="#">
+                    <a class="nav-link text-danger" href="#">
                         <span class="fas fa-angle-double-down" aria-hidden="true"></span>
-                        0
+                        <span id="navbar-downloads">0</span>
+                        (<span id="navbar-downloaded">0B</span>)
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-danger" href="#">
+                    <a class="nav-link text-success" href="#">
                         <span class="fas fa-angle-double-up" aria-hidden="true"></span>
-                        0
+                        <span id="navbar-uploads">0</span>
+                        (<span id="navbar-uploaded">0B</span>)
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" title="Ratio">
                         <span class="fas fa-balance-scale" aria-hidden="true"></span>
-                        &#x221e;
+                        <span id="navbar-ratio">&#x221e;</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="#" id="navbar-inbox">
                         <span class="fas fa-inbox" aria-hidden="true"></span>
                         0
                     </a>
@@ -42,8 +44,8 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" id="navbarDropdownUserMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Username</a>
                     <div class="dropdown-menu dropdown-menu-right bg-dark" aria-labelledby="navbarDropdownUserMenuLink">
-                        <a class="dropdown-item" href="#">Profile</a>
-                        <a class="dropdown-item" href="#">Settings</a>
+                        <a class="dropdown-item" href="/user/profile">Profile</a>
+                        <a class="dropdown-item" href="/user/settings">Settings</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="/logout">Logout</a>
                     </div>
@@ -137,3 +139,20 @@
     </div>
     <div class="col-md-10 col-sm-12 container pr-0 mb-5">
 {% endblock sidebar %}
+{% block script %}
+<script>
+    $(() => {
+        fetch("/api/v1/user/stats", {credentials: 'same-origin'})
+            .then(resp => resp.json())
+            .then(data => {
+                console.log(data);
+                $('#navbarDropdownUserMenuLink').text(data.name);
+                $('#navbar-downloads').text(data.downloads);
+                $('#navbar-downloaded').text(data_size(data.downloaded));
+                $('#navbar-uploads').text(data.uploads);
+                $('#navbar-uploaded').text(data_size(data.uploaded));
+                $('#navbar-ratio').text(data.ratio.toFixed(3));
+            });
+    });
+</script>
+{% endblock script %}
