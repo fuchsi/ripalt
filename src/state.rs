@@ -55,8 +55,11 @@ impl State {
     }
 
     /// Get the ACL object
-    pub fn acl(&self) -> Arc<RwLock<Acl>> {
+    pub fn acl_arc(&self) -> Arc<RwLock<Acl>> {
         self.acl.clone()
+    }
+    pub fn acl(&self) -> RwLockReadGuard<Acl> {
+        self.acl.read().unwrap()
     }
 
     /// Get the Template object

@@ -116,6 +116,10 @@ pub fn confirm(mut req: HttpRequest<State>) -> Box<Future<Item = HttpResponse, E
                         Ok(_) => {},
                         Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
                     };
+                    match req.session().set("group_id", user.group_id) {
+                        Ok(_) => {},
+                        Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
+                    };
                     fail = false;
                 },
                 Err(e) => {

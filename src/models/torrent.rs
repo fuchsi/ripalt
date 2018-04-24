@@ -276,8 +276,6 @@ pub struct TorrentMsg {
     pub nfo: Option<TorrentNFO>,
     pub files: Vec<TorrentFile>,
     pub peers: Vec<(Peer, String)>,
-    pub may_edit: bool,
-    pub may_delete: bool,
 }
 
 impl TorrentMsg {
@@ -296,7 +294,6 @@ impl TorrentMsg {
                 nfo,
                 files,
                 peers,
-                .. Default::default()
             })
         } else {
             bail!("torrent not found: {}", id)

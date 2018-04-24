@@ -1,22 +1,22 @@
 table! {
     use diesel::sql_types::*;
-    use models::acl::AclPermissionMapping;
+    use models::acl::PermissionMapping;
     acl_group_rules (id) {
         id -> Uuid,
         namespace -> Varchar,
         group_id -> Uuid,
-        permission -> AclPermissionMapping,
+        permission -> PermissionMapping,
     }
 }
 
 table! {
     use diesel::sql_types::*;
-    use models::acl::AclPermissionMapping;
+    use models::acl::PermissionMapping;
     acl_user_rules (id) {
         id -> Uuid,
         namespace -> Varchar,
         user_id -> Uuid,
-        permission -> AclPermissionMapping,
+        permission -> PermissionMapping,
     }
 }
 

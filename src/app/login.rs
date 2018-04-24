@@ -39,7 +39,7 @@ pub fn take_login(
 
     req.state()
         .db()
-        .send(form)
+        .send(form.clone())
         .from_err()
         .and_then(move |r: Result<User>| {
             let mut ctx = HashMap::new();
@@ -52,10 +52,15 @@ pub fn take_login(
                         Ok(_) => {},
                         Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
                     };
+                    match req.session().set("group_id", user.group_id) {
+                        Ok(_) => {},
+                        Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
+                    };
                     fail = false;
                 },
                 Err(e) => {
                     ctx.insert("error", format!("{}", e));
+                    ctx.insert("username", form.username);
                 }
             }
 

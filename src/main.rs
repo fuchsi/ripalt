@@ -49,20 +49,20 @@ extern crate bip_bencode;
 extern crate codepage_437;
 extern crate config;
 extern crate data_encoding;
+extern crate fast_chemail;
 extern crate jsonwebtoken as jwt;
 extern crate multipart;
 extern crate notify;
 extern crate num_cpus;
 extern crate number_prefix;
 extern crate rand;
+extern crate regex;
 extern crate ring;
 extern crate serde_bencode;
 extern crate serde_json;
 extern crate tera;
 extern crate url;
 extern crate walkdir;
-extern crate regex;
-extern crate fast_chemail;
 
 #[cfg(test)]
 #[macro_use]
@@ -104,10 +104,10 @@ use uuid::Uuid;
 use db::{DbConn, DbExecutor};
 use error::*;
 use handlers::user::RequireUser;
+use models::acl::{Acl, Permission, Subject, UserSubject};
 use settings::Settings;
-use state::{State, AclContainer};
+use state::{AclContainer, State};
 use template::Template;
-use models::acl::{Acl, AclPermission};
 
 lazy_static! {
     pub static ref SETTINGS: RwLock<Settings> = RwLock::new(Settings::new().unwrap());
@@ -205,4 +205,17 @@ impl actix_web::pred::Predicate<State> for RequireUser {
             Err(_) => false,
         }
     }
+}
+
+fn session_creds(req: &mut actix_web::HttpRequest<State>) -> Option<(Uuid, Uuid)> {
+    let user_id = match req.session().get::<Uuid>("user_id").unwrap_or(None) {
+        Some(user_id) => user_id,
+        None => return None,
+    };
+    let group_id = match req.session().get::<Uuid>("group_id").unwrap_or(None) {
+        Some(group_id) => group_id,
+        None => return None,
+    };
+
+    Some((user_id, group_id))
 }

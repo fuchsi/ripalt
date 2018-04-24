@@ -18,13 +18,13 @@
 
 //! ACL (Access Control List) Models and functions
 
-use super::*;
 use super::schema::{acl_group_rules, acl_user_rules};
+use super::*;
 use std::collections::HashMap;
 
 /// ACL permissions
 #[derive(DbEnum, Debug, PartialEq, PartialOrd, Clone, Copy)]
-pub enum AclPermission {
+pub enum Permission {
     None,
     Read,
     Write,
@@ -32,16 +32,16 @@ pub enum AclPermission {
     Delete,
 }
 
-trait AclRule {
+trait Rule {
     /// Check if the rule permits the action `perm`
-    fn is_allowed(&self, perm: &AclPermission) -> bool {
+    fn is_allowed(&self, perm: &Permission) -> bool {
         perm <= self.permission()
     }
 
     /// Permit the role the given `perm` right in the namespace
-    fn permit(&mut self, perm: AclPermission);
+    fn permit(&mut self, perm: Permission);
     /// Get the permission
-    fn permission(&self) -> &AclPermission;
+    fn permission(&self) -> &Permission;
     /// Get the namespace
     fn namespace(&self) -> &str;
     /// Get the role
@@ -52,14 +52,14 @@ trait AclRule {
 #[derive(Queryable, Debug, Associations, Identifiable, Insertable, PartialEq)]
 #[table_name = "acl_group_rules"]
 #[belongs_to(Group)]
-pub struct AclGroupRule {
+struct GroupRule {
     id: Uuid,
     namespace: String,
     group_id: Uuid,
-    permission: AclPermission,
+    permission: Permission,
 }
 
-impl AclGroupRule {
+impl GroupRule {
     /// Load the corresponding group rule from the database and check if permits the action `perm`
     ///
     /// `group` - the group to test
@@ -69,13 +69,13 @@ impl AclGroupRule {
     /// `perm` - permission to test
     ///
     /// `db` - a database connection
-    pub fn allowed(group: &Uuid, ns: &str, perm: &AclPermission, db: &PgConnection) -> bool {
+    pub fn allowed(group: &Uuid, ns: &str, perm: &Permission, db: &PgConnection) -> bool {
         use schema::acl_group_rules::dsl::*;
 
         let rule = acl_group_rules
             .filter(namespace.eq(ns))
             .filter(group_id.eq(group))
-            .first::<AclGroupRule>(db);
+            .first::<GroupRule>(db);
 
         match rule {
             Ok(rule) => rule.is_allowed(perm),
@@ -84,12 +84,12 @@ impl AclGroupRule {
     }
 }
 
-impl AclRule for AclGroupRule {
-    fn permit(&mut self, perm: AclPermission) {
+impl Rule for GroupRule {
+    fn permit(&mut self, perm: Permission) {
         self.permission = perm;
     }
 
-    fn permission(&self) -> &AclPermission {
+    fn permission(&self) -> &Permission {
         &self.permission
     }
 
@@ -106,14 +106,14 @@ impl AclRule for AclGroupRule {
 #[derive(Queryable, Debug, Associations, Identifiable, Insertable, PartialEq)]
 #[table_name = "acl_user_rules"]
 #[belongs_to(User)]
-pub struct AclUserRule {
+struct UserRule {
     id: Uuid,
     namespace: String,
     user_id: Uuid,
-    permission: AclPermission,
+    permission: Permission,
 }
 
-impl AclUserRule {
+impl UserRule {
     /// Load the corresponding user rule from the database and check if permits the action `perm`
     ///
     /// `user` - the user to test
@@ -123,13 +123,13 @@ impl AclUserRule {
     /// `perm` - permission to test
     ///
     /// `db` - a database connection
-    pub fn allowed(user: &Uuid, ns: &str, perm: &AclPermission, db: &PgConnection) -> bool {
+    pub fn allowed(user: &Uuid, ns: &str, perm: &Permission, db: &PgConnection) -> bool {
         use schema::acl_user_rules::dsl::*;
 
         let rule = acl_user_rules
             .filter(namespace.eq(ns))
             .filter(user_id.eq(user))
-            .first::<AclUserRule>(db);
+            .first::<UserRule>(db);
 
         match rule {
             Ok(rule) => rule.is_allowed(perm),
@@ -138,12 +138,12 @@ impl AclUserRule {
     }
 }
 
-impl AclRule for AclUserRule {
-    fn permit(&mut self, perm: AclPermission) {
+impl Rule for UserRule {
+    fn permit(&mut self, perm: Permission) {
         self.permission = perm;
     }
 
-    fn permission(&self) -> &AclPermission {
+    fn permission(&self) -> &Permission {
         &self.permission
     }
 
@@ -163,8 +163,9 @@ type RuleHashMap<T> = HashMap<String, HashMap<Uuid, T>>;
 /// contains all user (`AclUserRule`) and group rules (`AclGroupRule`)
 #[derive(Debug, Default)]
 pub struct Acl {
-    group_rules: RuleHashMap<AclGroupRule>,
-    user_rules: RuleHashMap<AclUserRule>,
+    group_rules: RuleHashMap<GroupRule>,
+    user_rules: RuleHashMap<UserRule>,
+    groups: HashMap<Uuid, Uuid>,
 }
 
 impl Acl {
@@ -173,6 +174,7 @@ impl Acl {
         Self {
             group_rules: RuleHashMap::new(),
             user_rules: RuleHashMap::new(),
+            groups: HashMap::new(),
         }
     }
 
@@ -182,27 +184,43 @@ impl Acl {
     ///
     /// This function panics if the underlying database shits the bed.
     pub fn load(&mut self, db: &PgConnection) {
+        self.load_group_acls(db);
+        self.load_user_acls(db);
         self.load_groups(db);
-        self.load_users(db);
     }
 
     fn load_groups(&mut self, db: &PgConnection) {
+        use schema::groups::dsl::*;
+        let group_list = groups
+            .select((id, parent_id))
+            .filter(parent_id.is_not_null())
+            .load::<(Uuid, Option<Uuid>)>(db)
+            .unwrap();
+
+        for (gid, pid) in group_list {
+            if let Some(pid) = pid {
+                self.groups.insert(gid, pid);
+            }
+        }
+    }
+
+    fn load_group_acls(&mut self, db: &PgConnection) {
         use schema::acl_group_rules::dsl::*;
         let rules = acl_group_rules
             .order(namespace)
             .order(group_id)
-            .load::<AclGroupRule>(db)
+            .load::<GroupRule>(db)
             .unwrap();
 
         Acl::load_list(rules, &mut self.group_rules);
     }
 
-    fn load_users(&mut self, db: &PgConnection) {
+    fn load_user_acls(&mut self, db: &PgConnection) {
         use schema::acl_user_rules::dsl::*;
         let rules = acl_user_rules
             .order(namespace)
             .order(user_id)
-            .load::<AclUserRule>(db)
+            .load::<UserRule>(db)
             .unwrap();
 
         Acl::load_list(rules, &mut self.user_rules);
@@ -210,7 +228,7 @@ impl Acl {
 
     fn load_list<T>(rules: Vec<T>, map: &mut RuleHashMap<T>)
     where
-        T: AclRule,
+        T: Rule,
     {
         for rule in rules {
             if let Some(inner) = map.get_mut(rule.namespace()) {
@@ -243,21 +261,15 @@ impl Acl {
     /// `ns` - acl namespace
     ///
     /// `perm` - permission to test
-    ///
-    /// `db` - a database connection
-    pub fn is_allowed(&self, user: &User, ns: &str, perm: &AclPermission, db: &PgConnection) -> bool {
+    pub fn is_allowed(&self, uid: &Uuid, gid: &Uuid, ns: &str, perm: &Permission) -> bool {
         // check if the user has an explicit rule
         if let Some(inner) = self.user_rules.get(ns) {
-            if let Some(rule) = inner.get(&user.id) {
+            if let Some(rule) = inner.get(uid) {
                 return rule.is_allowed(perm);
             }
         }
 
-        if let Some(group) = Group::find(&user.group_id, db) {
-            return self.is_group_allowed(&group, ns, perm, db);
-        }
-
-        false
+        return self.is_group_allowed(gid, ns, perm);
     }
 
     /// Check if the `group` is allowed to do `perm` in namespace `ns`
@@ -265,22 +277,75 @@ impl Acl {
     /// if no explicit rule for the group is found check the parent group(s) recursively until an
     /// explicit rule is found.
     /// If no rule is found the function returns `false`
-    pub fn is_group_allowed(&self, group: &Group, ns: &str, perm: &AclPermission, db: &PgConnection) -> bool {
+    pub fn is_group_allowed(&self, gid: &Uuid, ns: &str, perm: &Permission) -> bool {
         // check if the group has an explicit rule
         if let Some(inner) = self.group_rules.get(ns) {
-            if let Some(rule) = inner.get(&group.id) {
+            if let Some(rule) = inner.get(gid) {
                 return rule.is_allowed(perm);
             }
         }
 
         // check the parent group rules
-        match group.parent_id {
-            Some(ref gid) => match Group::find(gid, db) {
-                Some(group) => self.is_group_allowed(&group, ns, perm, db),
-                None => false,
-            },
+        match self.groups.get(gid) {
+            Some(ref pid) => self.is_group_allowed(pid, ns, perm),
             None => false,
         }
+    }
+}
+
+pub trait Subject<T> {
+    fn may_read(&self, obj: &T) -> bool {
+        self.may(obj, &Permission::Read)
+    }
+    fn may_write(&self, obj: &T) -> bool {
+        self.may(obj, &Permission::Write)
+    }
+    fn may_create(&self, obj: &T) -> bool {
+        self.may(obj, &Permission::Create)
+    }
+    fn may_delete(&self, obj: &T) -> bool {
+        self.may(obj, &Permission::Delete)
+    }
+    fn may(&self, obj: &T, perm: &Permission) -> bool;
+}
+
+pub struct UserSubject<'a> {
+    user_id: &'a Uuid,
+    group_id: &'a Uuid,
+    acl: &'a Acl,
+}
+
+impl<'a> UserSubject<'a> {
+    pub fn new(user_id: &'a Uuid, group_id: &'a Uuid, acl: &'a Acl) -> UserSubject<'a> {
+        UserSubject {
+            user_id,
+            group_id,
+            acl,
+        }
+    }
+}
+
+impl<'a> Subject<Torrent> for UserSubject<'a> {
+    fn may(&self, obj: &Torrent, perm: &Permission) -> bool {
+        if let Some(uid) = obj.user_id {
+            if uid == *self.user_id {
+                return true;
+            }
+        }
+
+        self.acl
+            .is_allowed(self.user_id, self.group_id, "torrent", perm)
+    }
+}
+
+impl<'a> Subject<User> for UserSubject<'a> {
+    fn may(&self, obj: &User, perm: &Permission) -> bool {
+        if obj.id == *self.user_id {
+            return true;
+        }
+
+        self.acl
+            .is_allowed(self.user_id, self.group_id, "user", perm)
     }
 }
 
@@ -290,17 +355,17 @@ mod tests {
 
     #[test]
     fn test_is_allowed() {
-        let rule = AclGroupRule {
+        let rule = GroupRule {
             id: Uuid::new_v4(),
             namespace: String::from("test"),
             group_id: Uuid::new_v4(),
-            permission: AclPermission::Write,
+            permission: Permission::Write,
         };
 
-        assert!(rule.is_allowed(&AclPermission::None));
-        assert!(rule.is_allowed(&AclPermission::Read));
-        assert!(rule.is_allowed(&AclPermission::Write));
-        assert_eq!(rule.is_allowed(&AclPermission::Create), false);
-        assert_eq!(rule.is_allowed(&AclPermission::Delete), false);
+        assert!(rule.is_allowed(&Permission::None));
+        assert!(rule.is_allowed(&Permission::Read));
+        assert!(rule.is_allowed(&Permission::Write));
+        assert_eq!(rule.is_allowed(&Permission::Create), false);
+        assert_eq!(rule.is_allowed(&Permission::Delete), false);
     }
 }

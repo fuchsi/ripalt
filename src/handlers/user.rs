@@ -47,7 +47,7 @@ impl Handler<RequireUser> for DbExecutor {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct LoginForm {
     pub username: String,
     pub password: String,
@@ -298,7 +298,7 @@ impl Handler<UserProfile> for DbExecutor {
                     } else {
                         &user
                     };
-                    if user.id == msg.1 || acl.is_allowed(current_user, "user#connections", &AclPermission::Read, &db) {
+                    if user.id == msg.1 || acl.is_allowed(&current_user.id, &current_user.group_id, "user#connections", &Permission::Read) {
                         UserConnection::find_for_user(&user.id, &db)
                     } else {
                         Vec::new()

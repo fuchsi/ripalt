@@ -376,8 +376,8 @@ impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
             num_seeder,
             num_leecher,
             num_files: tc.files.len(),
-            may_edit: tc.may_edit,
-            may_delete: tc.may_delete,
+            may_edit: false,
+            may_delete: false,
         }
     }
 }
@@ -492,8 +492,8 @@ impl<'a> From<&'a Torrent> for ShowTorrent<'a> {
 }
 
 pub fn torrent(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
-    let user_id = match req.session().get::<Uuid>("user_id").unwrap_or(None) {
-        Some(user_id) => user_id,
+    let (user_id, group_id) = match session_creds(&mut req) {
+        Some((u, g)) => (u, g),
         None => return Either::A(redirect("/login")),
     };
     let id = match req.match_info().query::<String>("id") {
@@ -511,11 +511,17 @@ pub fn torrent(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespon
     let fut_response = req.clone()
         .state()
         .db()
-        .send(LoadTorrent::new(&id, &user_id, req.state().acl()))
+        .send(LoadTorrent::new(&id))
         .from_err()
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
-                let ctx = ShowContext::from(&tc);
+                let mut ctx = ShowContext::from(&tc);
+                {
+                    let acl = req.state().acl();
+                    let subj = UserSubject::new(&user_id, &group_id, &acl);
+                    ctx.may_edit = subj.may_write(&tc.torrent);
+                    ctx.may_delete = subj.may_delete(&tc.torrent);
+                }
                 Template::render(&req.state().template(), "torrent/show.html", &ctx)
                     .map(|t| t.into())
             }
