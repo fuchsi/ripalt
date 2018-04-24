@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Uploaded torrents without a specific name, now have the `.torrent` extension removed.
 - Custom File Input fields now set the name of the selected file as label.
 - Fixed wrong accounting for uploaded data, due to a typo.
+- Downloaded torrents now have the `.torrent` suffix appended.
 
 ## [0.1.0]
 

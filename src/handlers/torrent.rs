@@ -281,8 +281,9 @@ impl Handler<LoadTorrentMeta> for DbExecutor {
         let torrent = models::torrent::Torrent::find(&msg.id, &conn).ok_or("torrent not found")?;
         let meta_file = models::torrent::TorrentMetaFile::find(&msg.id, &conn).ok_or("meta file not found")?;
         let passcode = models::User::find(&msg.uid, &conn).ok_or("user not found")?.passcode;
+        let name = format!("{}.torrent", torrent.name);
 
-        Ok((torrent.name, meta_file.data, passcode))
+        Ok((name, meta_file.data, passcode))
     }
 }
 
