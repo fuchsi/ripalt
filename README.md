@@ -13,6 +13,8 @@ Nothing special yet. Plain old Torrent tracking.
 - Rust nightly (2018-04-18)
 - PostgreSQL
 
+In order to modify the Stylesheet you need [scss](https://sass-lang.com).
+
 ## Installation
 
 ### Get the source and compile it
@@ -21,6 +23,7 @@ Clone the repositry
 ```bash
 git clone https://github.com/fuchsi/ripalt.git
 cd ripalt
+git submodule update --init
 ```
 Build ripalt
 ```bash
