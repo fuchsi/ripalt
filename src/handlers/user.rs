@@ -298,7 +298,7 @@ impl Handler<UserProfile> for DbExecutor {
                     } else {
                         &user
                     };
-                    if user.id == msg.0 || acl.is_allowed(current_user, "user#connections", &AclPermission::Read, &db) {
+                    if user.id == msg.1 || acl.is_allowed(current_user, "user#connections", &AclPermission::Read, &db) {
                         UserConnection::find_for_user(&user.id, &db)
                     } else {
                         Vec::new()
