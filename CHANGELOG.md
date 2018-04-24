@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - User Stats accounting now collects the time seeded
+- Usernames may now only contain letters, numbers, _ and -. And they must begin with a letter and have to be at least 4 characters long.
+- Passwords must now be at least 8 characters long.
 
 ### Fixed
 - Uploaded torrents without a specific name, now have the `.torrent` extension removed.

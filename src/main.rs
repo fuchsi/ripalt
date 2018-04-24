@@ -61,6 +61,8 @@ extern crate serde_json;
 extern crate tera;
 extern crate url;
 extern crate walkdir;
+extern crate regex;
+extern crate fast_chemail;
 
 #[cfg(test)]
 #[macro_use]

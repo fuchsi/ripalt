@@ -13,6 +13,9 @@
                     <label for="form_username" class="col-sm-2 col-form-label">Username:</label>
                     <div class="col-sm-10">
                         <input type="text" name="username" id="form_username" class="form-control" placeholder="Username" value="{{ username }}" required>
+                        <small id="form_username-help-block" class="form-text text-muted">
+                            Your username may only contain letters, numbers, _ and -. It must begin with a letter and has to be at least 4 characters long.
+                        </small>
                         <div class="invalid-feedback">
                            Please choose a Username.
                         </div>
@@ -31,6 +34,9 @@
                     <label for="form_password" class="col-sm-2 col-form-label">Password:</label>
                     <div class="col-sm-5">
                         <input type="password" name="password" id="form_password" class="form-control" placeholder="Password" required>
+                        <small id="form_password-help-block" class="form-text text-muted">
+                            Your password must be at least 8 characters long.
+                        </small>
                         <div class="invalid-feedback">
                             Please choose a password.
                         </div>

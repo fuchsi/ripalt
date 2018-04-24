@@ -21,6 +21,8 @@ use super::*;
 use std::net::{IpAddr};
 use models::{Group, User, user::{UserProfileMsg, UserTransfer, CompletedTorrent, UserConnection, UserUpload}};
 use diesel::QueryDsl;
+use regex::Regex;
+use fast_chemail;
 
 pub struct RequireUser(pub Uuid);
 
@@ -102,9 +104,34 @@ impl SignupForm {
         }
     }
 
+    fn username_valid(&self) -> bool {
+        if self.username.len() < 4 {
+            return false;
+        }
+        let re = Regex::new(r"^[a-zA-Z][a-zA-Z0-9_\-]+$").unwrap();
+        re.is_match(&self.username)
+    }
+
+    fn email_valid(&self) -> bool {
+        fast_chemail::is_valid_email(&self.email)
+    }
+
+    fn password_valid(&self) -> bool {
+        self.password.len() >= 8
+    }
+
     pub fn is_valid(&self, conn: &DbConn) -> Result<()> {
+        if !self.username_valid() {
+            bail!("username is invalid");
+        }
+        if !self.email_valid() {
+            bail!("email address is invalid")
+        }
         if !self.passwords_match() {
             bail!("passwords do not match");
+        }
+        if !self.password_valid() {
+            bail!("password is invalid");
         }
         if !self.username_unique(conn) {
             bail!("username is already taken");
