@@ -27,7 +27,7 @@ error_chain! {
     foreign_links {
         Io(::std::io::Error);
         Fmt(::std::fmt::Error);
-        Bencode(::bip_bencode::BencodeParseError);
+        Utf8(::std::string::FromUtf8Error);
         SerdeBencode(::serde_bencode::Error);
         ParseInt(::std::num::ParseIntError);
         ParseBool(::std::str::ParseBoolError);

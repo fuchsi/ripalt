@@ -19,7 +19,6 @@
 //! Torrent and Torrent file related functions
 
 use super::super::error::*;
-use bip_bencode::{BDecodeOpt, BRefAccess, BencodeRef};
 use ring::digest;
 use serde_bencode::{self, value::Value};
 
@@ -39,69 +38,81 @@ use serde_bencode::{self, value::Value};
 /// }
 /// ```
 pub fn info_hash(data: &[u8]) -> Result<Vec<u8>> {
-    let bencode = BencodeRef::decode(data, BDecodeOpt::default())?;
-    let info = bencode
-        .dict()
-        .ok_or("meta file is no dict")?
-        .lookup(b"info")
-        .ok_or("info not found")?
-        .buffer();
-
-    println!("{}", String::from_utf8_lossy(info));
-    let digest = digest::digest(&digest::SHA1, info);
-    Ok(digest.as_ref().to_vec())
+    let bencode = serde_bencode::from_bytes(data)?;
+    if let Value::Dict(root) = bencode {
+        if let Some(info) = root.get("info".as_bytes()) {
+            let info = serde_bencode::to_bytes(info)?;
+            let digest = digest::digest(&digest::SHA1, &info);
+            Ok(digest.as_ref().to_vec())
+        } else {
+            bail!("info dict not found");
+        }
+    } else {
+        bail!("meta file is no dict");
+    }
 }
 
 /// Get all files for a torrent meta file
 pub fn files(data: &[u8]) -> Result<Vec<(String, i64)>> {
     use ::std::fmt::Write;
-    let bencode = BencodeRef::decode(data, BDecodeOpt::default())?;
-    let info = bencode
-        .dict()
-        .ok_or("meta file is no dict")?
-        .lookup(b"info")
-        .ok_or("info not found")?
-        .dict()
-        .ok_or("info is no dict")?;
+    let bencode = serde_bencode::from_bytes(data)?;
+    let root = if let Value::Dict(root) = bencode {
+        root
+    } else {
+        bail!("meta file is no dict");
+    };
+    let info = if let Some(Value::Dict(info)) = root.get("info".as_bytes()) {
+        info
+    } else {
+        bail!("info dict not found");
+    };
 
-    match info.lookup(b"files") {
+    match info.get("files".as_bytes()) {
         // multiple file mode
-        Some(f) => {
-            let f = f.list().ok_or("files is not a list")?;
+        Some(Value::List(f)) => {
             let mut files: Vec<(String, i64)> = Vec::new();
             let mut iter =  f.into_iter();
 
             for entry in iter {
-                let file = entry.dict().ok_or("file entry is not a dict")?;
-                let size = file.lookup(b"length")
-                    .ok_or("length not found in file dict")?
-                    .int()
-                    .ok_or("length is not an int")?;
-                let name = file.lookup(b"path")
-                    .ok_or("path not found in file dict")?
-                    .list()
-                    .ok_or("path is not a list")?
-                    .into_iter()
-                    .map(|e| e.str().unwrap_or("").to_owned())
-                    .fold(String::new(), |mut acc, x| {write!(&mut acc, "/{}", x).unwrap(); acc});
+                let file = match entry {
+                    Value::Dict(entry) => entry,
+                    _ => bail!("file entry is not a dict"),
+                };
+                let size = match file.get("length".as_bytes()).ok_or("length not found in file dict")? {
+                    Value::Int(s) => s,
+                    _ => bail!("length is not an int"),
+                };
+                let name = match file.get("path".as_bytes()).ok_or("path not found in file dict")? {
+                    Value::List(path) => {
+                        let mut name = String::new();
+                        for part in path {
+                            if let Value::Bytes(p) = part {
+                                write!(&mut name, "/{}", String::from_utf8(p.to_vec())?)?;
+                            }
+                        }
+                        name
+                    }
+                    _ => bail!("path is not a list"),
+                };
 
-                files.push(((&name[1..]).to_owned(), size));
+                files.push(((&name[1..]).to_owned(), *size));
             }
             Ok(files)
         }
         // single file mode
         None => {
-            let size = info.lookup(b"length")
-                .ok_or("length not found in info dict")?
-                .int()
-                .ok_or("length is not an int")?;
-            let name = info.lookup(b"name")
-                .ok_or("name not found in info dict")?
-                .str()
-                .ok_or("name is not a str")?;
+            let size = match info.get("length".as_bytes()).ok_or("length not found in file dict")? {
+                Value::Int(s) => s,
+                _ => bail!("length is not an int"),
+            };
+            let name = match info.get("name".as_bytes()).ok_or("name not found in file dict")? {
+                Value::Bytes(n) => String::from_utf8(n.to_vec())?,
+                _ => bail!("name is not a str"),
+            };
 
-            Ok(vec![(name.to_owned(), size)])
+            Ok(vec![(name, *size)])
         }
+        _ => bail!("files is not a list")
     }
 }
 

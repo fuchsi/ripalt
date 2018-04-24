@@ -229,14 +229,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bip_bencode"
-version = "0.4.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "error-chain 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "bitflags"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1565,7 +1557,6 @@ dependencies = [
  "actix-redis 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "actix-web 0.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "argon2rs 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "bip_bencode 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "codepage-437 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2368,7 +2359,6 @@ dependencies = [
 "checksum base64 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "96434f987501f0ed4eb336a411e0631ecd1afa11574fe148587adc4ff96143c9"
 "checksum base64 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "229d032f1a99302697f10b27167ae6d03d49d032e6a8e2550e8d3fc13356d2b4"
 "checksum bigdecimal 0.0.11 (registry+https://github.com/rust-lang/crates.io-index)" = "d1e12b0aed2aaf0aabcb915ade1cb2f7938d8a4bcd2ad7ec6f1b5a0c38ea236c"
-"checksum bip_bencode 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "6048cc5d9680544a5098a290d2845df7dae292c97687b9896b70365bad0ea416"
 "checksum bitflags 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8dead7461c1127cf637931a1e50934eb6eee8bff2f74433ac7909e9afcee04a3"
 "checksum bitflags 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
 "checksum bitflags 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "4efd02e230a02e18f92fc2735f44597385ed02ad8f831e7c1c1156ee5e1ab3a5"

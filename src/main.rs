@@ -45,7 +45,6 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate argon2rs;
-extern crate bip_bencode;
 extern crate codepage_437;
 extern crate config;
 extern crate data_encoding;

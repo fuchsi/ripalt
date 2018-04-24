@@ -39,7 +39,6 @@ notify = "4.0.3"
 futures = "~0.1.21"
 multipart = { version = "0.14.2", default-features = false, features = [ "server", "mock" ] }
 bytes = "0.4.6"
-bip_bencode = "0.4.4"
 number_prefix = "0.2.8"
 codepage-437 = "0.1.0"
 serde_bencode = "0.2.0"
