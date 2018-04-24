@@ -15,22 +15,23 @@
         </div>
         <div class="">
             <ul class="navbar-nav">
+                {% set navbar_link = "/user/profile/" %}
                 <li class="nav-item">
-                    <a class="nav-link text-danger" href="#">
+                    <a class="nav-link text-danger" href="{{navbar_link}}#profile-peers">
                         <span class="fas fa-angle-double-down" aria-hidden="true"></span>
                         <span id="navbar-downloads">0</span>
                         (<span id="navbar-downloaded">0B</span>)
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-success" href="#">
+                    <a class="nav-link text-success" href="{{navbar_link}}#profile-peers">
                         <span class="fas fa-angle-double-up" aria-hidden="true"></span>
                         <span id="navbar-uploads">0</span>
                         (<span id="navbar-uploaded">0B</span>)
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" title="Ratio">
+                    <a class="nav-link" href="{{navbar_link}}" title="Ratio">
                         <span class="fas fa-balance-scale" aria-hidden="true"></span>
                         <span id="navbar-ratio">&#x221e;</span>
                     </a>
