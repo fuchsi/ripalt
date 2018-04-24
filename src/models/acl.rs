@@ -181,7 +181,7 @@ impl Acl {
     /// # Panics
     ///
     /// This function panics if the underlying database shits the bed.
-    pub fn load(&mut self, db: &DbConn) {
+    pub fn load(&mut self, db: &PgConnection) {
         self.load_groups(db);
         self.load_users(db);
     }
@@ -230,7 +230,7 @@ impl Acl {
     /// # Panics
     ///
     /// This function panics if the underlying database shits the bed.
-    pub fn reload(&mut self, db: &DbConn) {
+    pub fn reload(&mut self, db: &PgConnection) {
         self.group_rules.clear();
         self.user_rules.clear();
         self.load(db);
@@ -245,7 +245,7 @@ impl Acl {
     /// `perm` - permission to test
     ///
     /// `db` - a database connection
-    pub fn is_allowed(&self, user: &User, ns: &str, perm: &AclPermission, db: &DbConn) -> bool {
+    pub fn is_allowed(&self, user: &User, ns: &str, perm: &AclPermission, db: &PgConnection) -> bool {
         // check if the user has an explicit rule
         if let Some(inner) = self.user_rules.get(ns) {
             if let Some(rule) = inner.get(&user.id) {
@@ -265,7 +265,7 @@ impl Acl {
     /// if no explicit rule for the group is found check the parent group(s) recursively until an
     /// explicit rule is found.
     /// If no rule is found the function returns `false`
-    pub fn is_group_allowed(&self, group: &Group, ns: &str, perm: &AclPermission, db: &DbConn) -> bool {
+    pub fn is_group_allowed(&self, group: &Group, ns: &str, perm: &AclPermission, db: &PgConnection) -> bool {
         // check if the group has an explicit rule
         if let Some(inner) = self.group_rules.get(ns) {
             if let Some(rule) = inner.get(&group.id) {

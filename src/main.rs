@@ -102,10 +102,10 @@ use uuid::Uuid;
 use db::{DbConn, DbExecutor};
 use error::*;
 use handlers::user::RequireUser;
-use models::acl::Acl;
 use settings::Settings;
-use state::State;
+use state::{State, AclContainer};
 use template::Template;
+use models::acl::{Acl, AclPermission};
 
 lazy_static! {
     pub static ref SETTINGS: RwLock<Settings> = RwLock::new(Settings::new().unwrap());

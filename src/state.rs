@@ -25,6 +25,8 @@ use models::acl::Acl;
 use template::TemplateContainer;
 use template::TemplateSystem;
 
+pub type AclContainer = Arc<RwLock<Acl>>;
+
 /// State represents the shared state for the application
 pub struct State {
     db: Addr<Syn, DbExecutor>,
@@ -53,8 +55,8 @@ impl State {
     }
 
     /// Get the ACL object
-    pub fn acl(&self) -> RwLockReadGuard<Acl> {
-        self.acl.read().unwrap()
+    pub fn acl(&self) -> Arc<RwLock<Acl>> {
+        self.acl.clone()
     }
 
     /// Get the Template object

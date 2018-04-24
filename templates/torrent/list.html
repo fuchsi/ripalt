@@ -65,7 +65,7 @@
                         <td scope="row">{{torrent.completed}}</td>
                         <td scope="row">{{torrent.seeder}}</td>
                         <td scope="row">{{torrent.leecher}}</td>
-                        <td scope="row">{{torrent.user_name}}</td>
+                        <td scope="row"><a href="/user/{{torrent.user_id}}">{{torrent.user_name}}</a></td>
                     </tr>
                 {% endfor %}
                 </tbody>

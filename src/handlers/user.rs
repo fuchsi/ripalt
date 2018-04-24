@@ -19,7 +19,7 @@
 use super::*;
 
 use std::net::{IpAddr};
-use models::{Group, User};
+use models::{Group, User, user::{UserProfileMsg, UserTransfer, CompletedTorrent, UserConnection, UserUpload}};
 use diesel::QueryDsl;
 
 pub struct RequireUser(pub Uuid);
@@ -229,6 +229,63 @@ impl Handler<UserStats> for DbExecutor {
                     ratio,
                     uploads,
                     downloads,
+                })
+            },
+            None => bail!("user not found"),
+        }
+    }
+}
+
+pub struct UserProfile(pub Uuid, pub Uuid, pub AclContainer);
+
+impl Message for UserProfile {
+    type Result = Result<models::user::UserProfileMsg>;
+}
+
+impl Handler<UserProfile> for DbExecutor {
+    type Result = Result<models::user::UserProfileMsg>;
+
+    fn handle(&mut self, msg: UserProfile, _ctx: &mut Self::Context) -> <Self as Handler<UserProfile>>::Result {
+        let db: &PgConnection = &self.conn();
+        match models::User::find(&msg.0, db) {
+            Some(user) => {
+                let acl = msg.2.read().unwrap();
+
+                let mut transfers = UserTransfer::find_for_user(&user.id, &db);
+                let mut active_uploads: Vec<UserTransfer> = Vec::new();
+                let mut active_downloads: Vec<UserTransfer> = Vec::new();
+                for transfer in transfers {
+                    if transfer.is_seeder {
+                        active_uploads.push(transfer);
+                    } else {
+                        active_downloads.push(transfer);
+                    }
+                }
+                let completed = CompletedTorrent::find_for_user(&user.id, &db);
+                let connections =
+                {
+                    let _current_user;
+                    let current_user = if msg.0 != msg.1 {
+                        _current_user = models::User::find(&msg.1, db).unwrap();
+                        &_current_user
+                    } else {
+                        &user
+                    };
+                    if user.id == msg.0 || acl.is_allowed(current_user, "user#connections", &AclPermission::Read, &db) {
+                        UserConnection::find_for_user(&user.id, &db)
+                    } else {
+                        Vec::new()
+                    }
+                };
+                let uploads = UserUpload::find_for_user(&user.id, &db);
+
+                Ok(UserProfileMsg{
+                    user,
+                    active_uploads,
+                    active_downloads,
+                    completed,
+                    connections,
+                    uploads,
                 })
             },
             None => bail!("user not found"),

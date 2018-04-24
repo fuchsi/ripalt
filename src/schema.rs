@@ -30,6 +30,23 @@ table! {
 }
 
 table! {
+    completed_torrents (id) {
+        id -> Uuid,
+        user_id -> Uuid,
+        torrent_id -> Uuid,
+        bytes_downloaded -> Int8,
+        bytes_uploaded -> Int8,
+        time_seeded -> Int4,
+        completed_at -> Timestamptz,
+        name -> Varchar,
+        size -> Int8,
+        is_seeder -> Bool,
+        seeder -> Int8,
+        leecher -> Int8,
+    }
+}
+
+table! {
     groups (id) {
         id -> Uuid,
         name -> Varchar,
@@ -163,6 +180,8 @@ table! {
         leecher -> Int8,
         bytes_uploaded -> Int8,
         bytes_downloaded -> Int8,
+        total_uploaded -> Int8,
+        total_downloaded -> Int8,
     }
 }
 
@@ -192,6 +211,8 @@ joinable!(torrents -> categories (category_id));
 joinable!(torrents -> users (user_id));
 joinable!(transfers -> torrents (torrent_id));
 joinable!(transfers -> users (user_id));
+joinable!(user_transfer -> users (user_id));
+joinable!(user_transfer -> torrents (torrent_id));
 joinable!(user_properties -> users (user_id));
 joinable!(users -> groups (group_id));
 
@@ -206,6 +227,7 @@ allow_tables_to_appear_in_same_query!(
     torrent_nfos,
     torrents,
     transfers,
+    user_transfer,
     user_properties,
     users,
 );

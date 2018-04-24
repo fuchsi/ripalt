@@ -18,10 +18,11 @@
 
 //! User models
 
-use super::schema::{user_properties, users};
+use super::schema::*;
 use super::*;
 use ipnetwork::IpNetwork;
 use ring::digest;
+use serde::{Serialize, Serializer, ser::SerializeStruct};
 use util::{self, password, rand};
 
 /// New users
@@ -184,6 +185,27 @@ impl User {
     }
 }
 
+impl Serialize for User {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+        where
+            S: Serializer
+    {
+        let mut root = serializer.serialize_struct("user", 11)?;
+        root.serialize_field("id", &self.id)?;
+        root.serialize_field("name", &self.name)?;
+        root.serialize_field("email", &self.email)?;
+        root.serialize_field("status", &self.status)?;
+        root.serialize_field("created_at", &self.created_at)?;
+        root.serialize_field("updated_at", &self.updated_at)?;
+        root.serialize_field("passcode", &util::to_hex(&self.passcode))?;
+        root.serialize_field("uploaded", &self.uploaded)?;
+        root.serialize_field("downloaded", &self.downloaded)?;
+        root.serialize_field("group_id", &self.group_id)?;
+        root.serialize_field("ip_address", &self.ip_address.map(|ip| ip.to_string()))?;
+        root.end()
+    }
+}
+
 pub trait HasUser {
     fn user_name(&self, db: &PgConnection) -> Option<String> {
         use schema::users::dsl;
@@ -277,4 +299,124 @@ pub struct UserStatsMsg {
     pub ratio: f64,
     pub uploads: i64,
     pub downloads: i64,
+}
+
+#[derive(Debug, Default, Serialize)]
+pub struct UserProfileMsg {
+    pub user: User,
+    pub active_uploads: Vec<UserTransfer>,
+    pub active_downloads: Vec<UserTransfer>,
+    pub uploads: Vec<UserUpload>,
+    pub completed: Vec<CompletedTorrent>,
+    pub connections: Vec<UserConnection>,
+}
+
+#[derive(Debug, Serialize, Queryable, Identifiable)]
+#[table_name = "user_transfer"]
+pub struct UserTransfer {
+    pub id: Uuid,
+    pub torrent_id: Uuid,
+    pub user_id: Uuid,
+    pub name: String,
+    pub is_seeder: bool,
+    pub size: i64,
+    pub seeder: i64,
+    pub leecher: i64,
+    pub bytes_uploaded: i64,
+    pub bytes_downloaded: i64,
+    pub total_uploaded: i64,
+    pub total_downloaded: i64,
+}
+
+impl UserTransfer {
+    pub fn find_for_user(user_id: &Uuid, db: &PgConnection) -> Vec<UserTransfer> {
+        user_transfer::table.filter(user_transfer::dsl::user_id.eq(user_id))
+            .order_by(user_transfer::dsl::name.asc())
+            .load::<UserTransfer>(db)
+            .unwrap()
+    }
+}
+
+#[derive(Debug, Serialize, Queryable, Identifiable)]
+#[table_name = "completed_torrents"]
+pub struct CompletedTorrent {
+    id: Uuid,
+    user_id: Uuid,
+    torrent_id: Uuid,
+    bytes_uploaded: i64,
+    bytes_downloaded: i64,
+    time_seeded: i32,
+    completed_at: Timestamp,
+    name: String,
+    size: i64,
+    is_seeder: bool,
+    seeder: i64,
+    leecher: i64,
+}
+
+impl CompletedTorrent {
+    pub fn find_for_user(user_id: &Uuid, db: &PgConnection) -> Vec<CompletedTorrent> {
+        completed_torrents::table.filter(completed_torrents::dsl::user_id.eq(user_id))
+            .order_by(completed_torrents::dsl::name.asc())
+            .load::<CompletedTorrent>(db)
+            .unwrap()
+    }
+}
+
+#[derive(Debug, Queryable)]
+pub struct UserConnection {
+    id: Uuid,
+    user_agent: String,
+    ip_address: IpNetwork,
+    port: i32,
+}
+
+impl UserConnection {
+    pub fn find_for_user(id: &Uuid, db: &PgConnection) -> Vec<UserConnection> {
+        use schema::peers::dsl as p;
+        peers::table
+            .select((p::id, p::user_agent, p::ip_address, p::port))
+            .filter(p::user_id.eq(id))
+            .order_by(p::ip_address.asc())
+            .load::<UserConnection>(db)
+            .unwrap()
+    }
+}
+
+impl Serialize for UserConnection {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+        where
+            S: Serializer
+    {
+        let mut root = serializer.serialize_struct("user", 11)?;
+        root.serialize_field("id", &self.id)?;
+        root.serialize_field("user_agent", &self.user_agent)?;
+        root.serialize_field("ip_address", &self.ip_address.to_string())?;
+        root.serialize_field("port", &self.port)?;
+        root.end()
+    }
+}
+
+#[derive(Debug, Serialize, Queryable)]
+pub struct UserUpload {
+    id: Uuid,
+    user_id: Option<Uuid>,
+    name: String,
+    size: i64,
+    seeder: i64,
+    leecher: i64,
+    created_at: Timestamp,
+}
+
+impl UserUpload {
+    pub fn find_for_user(user_id: &Uuid, db: &PgConnection) -> Vec<UserUpload> {
+        use schema::torrent_list::dsl as tl;
+        torrent_list::table
+            .select((tl::id, tl::user_id, tl::name, tl::size, tl::seeder, tl::leecher, tl::created_at))
+            .distinct()
+            .filter(tl::user_id.eq(user_id))
+            .order_by(tl::created_at.desc())
+            .load::<UserUpload>(db)
+            .unwrap()
+    }
 }

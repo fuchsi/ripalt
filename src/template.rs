@@ -25,6 +25,7 @@ use super::*;
 use std::collections::HashMap;
 use std::sync::{mpsc, Arc, RwLock};
 use std::time::Duration;
+use std::fmt::Write;
 
 use tera::{self, Tera, Value};
 
@@ -50,6 +51,7 @@ pub fn init_tera() -> TemplateContainer {
 
     tera.register_filter("data_size", data_size);
     tera.register_filter("format_date", format_date);
+    tera.register_filter("duration", duration);
 
     Arc::new(RwLock::new(tera))
 }
@@ -196,4 +198,39 @@ fn format_date(value: Value, _: HashMap<String, Value>) -> tera::Result<Value> {
     };
 
     Ok(Value::String(date.format(FORMAT_STRING).to_string()))
+}
+
+fn duration(value: Value, _: HashMap<String, Value>) -> tera::Result<Value> {
+    match value {
+        Value::Number(number) => {
+            let mut seconds = number.as_f64().unwrap_or_else(|| 0f64);
+            let duration = {
+                let mut dur_str = String::new();
+                let days = seconds / 86400f64;
+
+                if days >= 1f64 {
+                    write!(&mut dur_str, "{:.0}d ", days).map_err(|e| format!("{}",e ))?;
+                    seconds = seconds % 86400f64;
+                }
+                let hours = seconds / 3600f64;
+                if hours >= 1f64 {
+                    write!(&mut dur_str, "{:02.0}:", hours).map_err(|e| format!("{}",e ))?;
+                    seconds = seconds % 3600f64;
+                }
+                let minutes = seconds / 60f64;
+                if minutes >= 1f64 || hours >= 1f64{
+                    write!(&mut dur_str, "{:02.0}:", minutes).map_err(|e| format!("{}",e ))?;
+                }
+                seconds = seconds % 60f64;
+                if seconds >= 1f64 || hours >= 1f64 || minutes >= 1f64 {
+                    write!(&mut dur_str, "{:02.0}", seconds).map_err(|e| format!("{}",e ))?;
+                }
+
+                dur_str.trim_right().trim_right_matches(':').to_owned()
+            };
+            Ok(Value::String(format!("{}", duration)))
+        },
+        Value::Null => Ok(Value::String(format!("0s"))),
+        _ => Ok(Value::String(format!("0s"))),
+    }
 }

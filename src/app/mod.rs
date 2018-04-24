@@ -40,6 +40,7 @@ pub mod index;
 pub mod login;
 pub mod signup;
 pub mod torrent;
+pub mod user;
 
 type SyncResponse<T> = actix_web::Result<T>;
 
@@ -117,7 +118,7 @@ pub fn build(
         })
         .resource("/logout", |r| {
             r.name("login#logout");
-            r.method(Method::GET).f(app::login::logout)
+            r.method(Method::GET).filter(require_user()).f(app::login::logout)
         })
         .resource("/torrents", |r| {
             r.name("torrent#list");
@@ -136,6 +137,14 @@ pub fn build(
         .resource("/torrent/{id}", |r| {
             r.name("torrent#read");
             r.method(Method::GET).filter(require_user()).f(app::torrent::torrent);
+        })
+        .resource("/user/profile", |r| {
+            r.name("user#profile");
+            r.method(Method::GET).filter(require_user()).f(app::user::profile);
+        })
+        .resource("/user/{id}", |r| {
+            r.name("user#profile");
+            r.method(Method::GET).filter(require_user()).f(app::user::view);
         })
         .default_resource(|r| r.f(app::not_found))
 }

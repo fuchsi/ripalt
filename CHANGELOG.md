@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Identity Provider for the API, which uses either the Session ID or a JWT.
     - New Setting: `jwt_secret`, the secret key for the JWTs.
 - API Endpoint to get the own stats (/api/v1/user/stats)
+- User Profiles
 
 ### Changed
 - User Stats accounting now collects the time seeded

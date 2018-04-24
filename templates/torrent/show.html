@@ -118,7 +118,7 @@
                                     {% if num_seeder %}
                                     {% for peer in seeder %}
                                         <tr>
-                                            <td scope="row">{{peer.user_name}}</td>
+                                            <td scope="row"><a href="/user/{{peer.user_id}}">{{peer.user_name}}</a></td>
                                             <td scope="row">{{peer.bytes_uploaded | data_size}}</td>
                                             <td scope="row">{{peer.bytes_downloaded | data_size}}</td>
                                             <td scope="row">{{peer.ratio}}</td>
@@ -154,7 +154,7 @@
                                     {% if num_leecher %}
                                         {% for peer in leecher %}
                                             <tr>
-                                                <td scope="row">{{peer.user_name}}</td>
+                                                <td scope="row"><a href="/user/{{peer.user_id}}">{{peer.user_name}}</a></td>
                                                 <td scope="row">{{peer.bytes_uploaded | data_size}}</td>
                                                 <td scope="row">{{peer.bytes_downloaded | data_size}}</td>
                                                 <td scope="row">{{peer.ratio}}</td>
