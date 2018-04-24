@@ -171,12 +171,12 @@ body > .main {
   margin-top: 1rem;
 }
 
-//.card.bg-dark .card-header-tabs .nav-tabs .nav-link.active {
-//
-//}
-
 pre.nfo {
   color: $white;
   background-color: $black;
   font-family: "Lucida ConsoleP", "Terminal", monospace;
+  line-height: 1.0em;
+  font-size: 8pt;
+  min-width: 600px;
+  width: 600px;
 }
