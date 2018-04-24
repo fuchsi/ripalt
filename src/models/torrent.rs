@@ -269,16 +269,18 @@ impl<'a> NewTorrentNFO<'a> {
 }
 
 #[derive(Debug, Default)]
-pub struct TorrentContainer {
+pub struct TorrentMsg {
     pub torrent: Torrent,
     pub torrent_user_name: Option<String>,
     pub category: Category,
     pub nfo: Option<TorrentNFO>,
     pub files: Vec<TorrentFile>,
     pub peers: Vec<(Peer, String)>,
+    pub may_edit: bool,
+    pub may_delete: bool,
 }
 
-impl TorrentContainer {
+impl TorrentMsg {
     pub fn find(id: &Uuid, db: &PgConnection) -> Result<Self> {
         if let Some(torrent) = Torrent::find(id, db) {
             let nfo = TorrentNFO::find_for_torrent(id, db);
@@ -287,13 +289,14 @@ impl TorrentContainer {
             let torrent_user_name = torrent.user_name(db);
             let category = Category::find(&torrent.category_id, db).ok_or("category not found")?;
 
-            Ok(TorrentContainer {
+            Ok(TorrentMsg {
                 torrent,
                 torrent_user_name,
                 category,
                 nfo,
                 files,
                 peers,
+                .. Default::default()
             })
         } else {
             bail!("torrent not found: {}", id)

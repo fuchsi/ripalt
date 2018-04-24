@@ -24,7 +24,6 @@ use diesel;
 use diesel::pg::upsert::on_constraint;
 use serde_json;
 
-use DbConn;
 use SETTINGS;
 
 use schema;
@@ -37,7 +36,7 @@ pub type Bytes = Vec<u8>;
 
 pub use self::group::Group;
 pub use self::user::{User, Property};
-pub use self::torrent::{Torrent, TorrentContainer, TorrentMetaFile, TorrentList};
+pub use self::torrent::{Torrent, TorrentMsg, TorrentMetaFile, TorrentList};
 pub use self::category::Category;
 pub use self::peer::Peer;
 pub use self::user::{HasUser, MaybeHasUser};

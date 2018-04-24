@@ -54,6 +54,14 @@
                                 <div class="row mt-2 border-bottom">
                                     <p class="col-sm-2">Category</p>
                                     <p class="col-sm-10">{{category.name}}</p>
+                                    <p class="col-sm-2">Uploader</p>
+                                    <p class="col-sm-10">
+                                        {% if torrent.user_id %}
+                                            <a href="/user/{{torrent.user_id}}">{{torrent_user_name}}</a>
+                                        {% else %}
+                                            *deleted
+                                        {% endif %}
+                                    </p>
                                     <p class="col-sm-2">Added</p>
                                     <p class="col-sm-10">{{torrent.created_at}}</p>
                                     <p class="col-sm-2">Hits</p>
@@ -178,8 +186,14 @@
                         </div>
                         <div class="btn-group btn-group-sm mt-2" role="group" aria-label="...">
                             <a class="btn btn-primary" href="/torrent/download/{{torrent.id}}">Download</a>
-                            <button type="button" class="btn btn-secondary">Thanks</button>
-                            <button type="button" class="btn btn-danger">Report</button>
+                            <button id="torrent-thank" type="button" class="btn btn-secondary">Thanks</button>
+                            <button id="torrent-report" type="button" class="btn btn-warning">Report</button>
+                            {% if may_edit %}
+                                <a class="btn btn-secondary" href="/torrent/edit/{{torrent.id}}">Edit</a>
+                            {% endif %}
+                            {% if may_delete %}
+                                <a class="btn btn-danger" href="/torrent/delete/{{torrent.id}}">Delete</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

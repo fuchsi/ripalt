@@ -25,7 +25,7 @@ use multipart::server::{save::SavedData, Entries, Multipart, SaveResult};
 use std::io::{Cursor, Read};
 
 use handlers::torrent::*;
-use models::{torrent::TorrentFile, Category, Torrent, TorrentContainer, TorrentList};
+use models::{torrent::TorrentFile, Category, Torrent, TorrentMsg, TorrentList};
 
 #[derive(Debug, Serialize)]
 struct ListContext {
@@ -333,10 +333,12 @@ struct ShowContext<'a> {
     num_seeder: usize,
     num_leecher: usize,
     num_files: usize,
+    may_edit: bool,
+    may_delete: bool,
 }
 
-impl<'a> From<&'a TorrentContainer> for ShowContext<'a> {
-    fn from(tc: &'a TorrentContainer) -> Self {
+impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
+    fn from(tc: &'a TorrentMsg) -> Self {
         let mut seeder = Vec::new();
         let mut leecher = Vec::new();
         for (peer, user) in &tc.peers {
@@ -374,6 +376,8 @@ impl<'a> From<&'a TorrentContainer> for ShowContext<'a> {
             num_seeder,
             num_leecher,
             num_files: tc.files.len(),
+            may_edit: tc.may_edit,
+            may_delete: tc.may_delete,
         }
     }
 }
@@ -487,7 +491,11 @@ impl<'a> From<&'a Torrent> for ShowTorrent<'a> {
     }
 }
 
-pub fn torrent(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
+pub fn torrent(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
+    let user_id = match req.session().get::<Uuid>("user_id").unwrap_or(None) {
+        Some(user_id) => user_id,
+        None => return Either::A(redirect("/login")),
+    };
     let id = match req.match_info().query::<String>("id") {
         Ok(id) => match Uuid::parse_str(&id[..]) {
             Ok(id) => id,
@@ -499,12 +507,13 @@ pub fn torrent(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<H
         },
         Err(_) => return Either::A(not_found(req).unwrap()),
     };
+
     let fut_response = req.clone()
         .state()
         .db()
-        .send(LoadTorrent { id: id.clone() })
+        .send(LoadTorrent::new(&id, &user_id, req.state().acl()))
         .from_err()
-        .and_then(move |result: Result<TorrentContainer>| match result {
+        .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
                 let ctx = ShowContext::from(&tc);
                 Template::render(&req.state().template(), "torrent/show.html", &ctx)

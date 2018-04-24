@@ -18,6 +18,8 @@
 
 use super::*;
 
+use models::User;
+
 #[derive(Debug)]
 pub struct NewTorrent {
     pub name: String,
@@ -216,19 +218,48 @@ pub struct NewFile {
 }
 
 pub struct LoadTorrent {
-    pub id: Uuid
+    id: Uuid,
+    user_id: Uuid,
+    acl: AclContainer
+}
+
+impl LoadTorrent {
+    pub fn new(id: &Uuid, user_id: &Uuid, acl: AclContainer) -> LoadTorrent {
+        LoadTorrent{
+            id: id.clone(),
+            user_id: user_id.clone(),
+            acl,
+        }
+    }
 }
 
 impl Message for LoadTorrent {
-    type Result = Result<models::torrent::TorrentContainer>;
+    type Result = Result<models::torrent::TorrentMsg>;
 }
 
 impl Handler<LoadTorrent> for DbExecutor {
-    type Result = Result<models::torrent::TorrentContainer>;
+    type Result = Result<models::torrent::TorrentMsg>;
 
     fn handle(&mut self, msg: LoadTorrent, _: &mut Self::Context) -> <Self as Handler<LoadTorrent>>::Result {
         let conn = self.conn();
-        models::torrent::TorrentContainer::find(&msg.id, &conn)
+        let mut torrent = models::torrent::TorrentMsg::find(&msg.id, &conn);
+        match &mut torrent {
+            Ok(ref mut torrent) => {
+                if torrent.torrent.user_id == Some(msg.user_id) {
+                    torrent.may_edit = true;
+                    torrent.may_delete = true;
+                } else {
+                    let acl = msg.acl.read().unwrap();
+                    if let Some(user) = User::find(&msg.user_id, &conn) {
+                        torrent.may_edit = acl.is_allowed(&user, "torrent", &AclPermission::Write, &conn);
+                        torrent.may_edit = acl.is_allowed(&user, "torrent", &AclPermission::Delete, &conn);
+                    }
+                }
+            },
+            _ => {},
+        }
+
+        torrent
     }
 }
 
