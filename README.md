@@ -15,6 +15,11 @@ Nothing special yet. Plain old Torrent tracking.
 
 In order to modify the Stylesheet you need [scss](https://sass-lang.com).
 
+### Browser Requirements
+
+- Any Browser which supports ES6.
+    - That means no Internet Explorer.
+
 ## Installation
 
 ### Get the source and compile it
@@ -37,7 +42,7 @@ cargo build --release
 Create a `.env` file in the ripalt directory.
 ```
 RUST_LOG="actix=warn,actix_web=info,ripalt=info"
-DATABASE_URL="postgres://ripalt:ripalt@localhost/ripalt"
+DATABASE_URL="postgres://user:password@localhost/database"
 ```
 The file should at least contain the `DATABASE_URL`.
 
@@ -49,9 +54,14 @@ cargo install diesel_cli --no-default-features --features "postgres"
 diesel migration run
 ```
 
-**Note:** At the current state there is no initialization for the tracker data, such as
-- User Groups
-- Categories,
+Initialize the categories and groups:
+```bash
+psql user database -f doc/sql/categories.sql
+psql user database -f doc/sql/groups.sql
+```
+Substitute `user` and `database` for your chosen settings.
+
+**Note:** At the current state there is no initialization for additional tracker data, such as
 - ACL
 - Default User(s)
 
