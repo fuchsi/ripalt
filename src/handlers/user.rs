@@ -24,22 +24,22 @@ use diesel::QueryDsl;
 use regex::Regex;
 use fast_chemail;
 
-pub struct RequireUser(pub Uuid);
+pub struct RequireUserMsg(pub Uuid);
 
-impl RequireUser {
+impl RequireUserMsg {
     pub fn new(id: Uuid) -> Self {
-        RequireUser(id)
+        RequireUserMsg(id)
     }
 }
 
-impl Message for RequireUser {
+impl Message for RequireUserMsg {
     type Result = Result<models::User>;
 }
 
-impl Handler<RequireUser> for DbExecutor {
+impl Handler<RequireUserMsg> for DbExecutor {
     type Result = Result<models::User>;
 
-    fn handle(&mut self, msg: RequireUser, _ctx: &mut Self::Context) -> <Self as Handler<RequireUser>>::Result {
+    fn handle(&mut self, msg: RequireUserMsg, _ctx: &mut Self::Context) -> <Self as Handler<RequireUserMsg>>::Result {
         match models::User::find(&msg.0, &self.conn()) {
             Some(user) => Ok(user),
             None => bail!("user not found"),
@@ -183,20 +183,20 @@ impl Handler<SignupForm> for DbExecutor {
     }
 }
 
-#[derive(Deserialize, Clone, Debug)]
-pub struct Confirm {
+#[derive(Clone, Debug)]
+pub struct ConfirmMsg {
     pub id: String,
     pub ip_address: IpAddr,
 }
 
-impl Message for Confirm {
+impl Message for ConfirmMsg {
     type Result = Result<User>;
 }
 
-impl Handler<Confirm> for DbExecutor {
+impl Handler<ConfirmMsg> for DbExecutor {
     type Result = Result<User>;
 
-    fn handle(&mut self, msg: Confirm,  _: &mut Self::Context) -> <Self as Handler<Confirm>>::Result {
+    fn handle(&mut self, msg: ConfirmMsg, _: &mut Self::Context) -> <Self as Handler<ConfirmMsg>>::Result {
         let conn = self.conn();
 
         if let Some(property) = models::Property::get_from_name_value("confirm_id", msg.id, &conn) {
@@ -220,16 +220,16 @@ impl Handler<Confirm> for DbExecutor {
     }
 }
 
-pub struct UserStats(pub Uuid);
+pub struct LoadUserStatsMsg(pub Uuid);
 
-impl Message for UserStats {
+impl Message for LoadUserStatsMsg {
     type Result = Result<models::user::UserStatsMsg>;
 }
 
-impl Handler<UserStats> for DbExecutor {
+impl Handler<LoadUserStatsMsg> for DbExecutor {
     type Result = Result<models::user::UserStatsMsg>;
 
-    fn handle(&mut self, msg: UserStats, _ctx: &mut Self::Context) -> <Self as Handler<UserStats>>::Result {
+    fn handle(&mut self, msg: LoadUserStatsMsg, _ctx: &mut Self::Context) -> <Self as Handler<LoadUserStatsMsg>>::Result {
         use schema::peers::dsl;
         let db: &PgConnection = &self.conn();
         match models::User::find(&msg.0, db) {
@@ -263,16 +263,16 @@ impl Handler<UserStats> for DbExecutor {
     }
 }
 
-pub struct UserProfile(pub Uuid, pub Uuid, pub AclContainer);
+pub struct LoadUserProfileMsg(pub Uuid, pub Uuid, pub AclContainer);
 
-impl Message for UserProfile {
+impl Message for LoadUserProfileMsg {
     type Result = Result<models::user::UserProfileMsg>;
 }
 
-impl Handler<UserProfile> for DbExecutor {
+impl Handler<LoadUserProfileMsg> for DbExecutor {
     type Result = Result<models::user::UserProfileMsg>;
 
-    fn handle(&mut self, msg: UserProfile, _ctx: &mut Self::Context) -> <Self as Handler<UserProfile>>::Result {
+    fn handle(&mut self, msg: LoadUserProfileMsg, _ctx: &mut Self::Context) -> <Self as Handler<LoadUserProfileMsg>>::Result {
         let db: &PgConnection = &self.conn();
         match models::User::find(&msg.0, db) {
             Some(user) => {

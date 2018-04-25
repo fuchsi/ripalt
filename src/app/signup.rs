@@ -17,7 +17,7 @@
  */
 
 use super::*;
-use handlers::user::{Confirm, SignupForm};
+use handlers::user::{ConfirmMsg, SignupForm};
 
 pub fn signup(req: HttpRequest<State>) -> SyncResponse<Template> {
     let mut ctx = Context::new();
@@ -95,7 +95,7 @@ pub fn confirm(mut req: HttpRequest<State>) -> Box<Future<Item = HttpResponse, E
         Some(sock_addr) => sock_addr.ip(),
         None => return Box::new(future::err(actix_web::error::ErrorInternalServerError("failed to get peer address")))
     };
-    let confirm = Confirm{
+    let confirm = ConfirmMsg {
         id,
         ip_address,
     };

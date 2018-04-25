@@ -391,14 +391,11 @@ impl Transfer {
 
 impl<'a> From<&'a Peer> for Transfer {
     fn from(peer: &Peer) -> Self {
-        let completed_at = match peer.seeder {
-            true => Some(Utc::now()),
-            false => None,
-        };
+        let completed_at = if peer.seeder { Some(Utc::now()) } else { None };
         Transfer {
             id: Uuid::new_v4(),
-            user_id: peer.user_id.clone(),
-            torrent_id: peer.torrent_id.clone(),
+            user_id: peer.user_id,
+            torrent_id: peer.torrent_id,
             bytes_uploaded: peer.bytes_uploaded,
             bytes_downloaded: peer.bytes_downloaded,
             time_seeded: 0,

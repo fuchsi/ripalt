@@ -207,13 +207,13 @@ impl Serialize for User {
 }
 
 pub trait HasUser {
-    fn user_name(&self, db: &PgConnection) -> Option<String> {
+    fn user_name(&self, db: &PgConnection) -> String {
         use schema::users::dsl;
         users::table
             .select(users::name)
             .filter(dsl::id.eq(self.user_id()))
             .first(db)
-            .ok()
+            .unwrap_or_else(|_| String::new())
     }
 
     fn user_id(&self) -> &Uuid;

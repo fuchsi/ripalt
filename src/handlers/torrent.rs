@@ -19,7 +19,7 @@
 use super::*;
 
 #[derive(Debug)]
-pub struct NewTorrent {
+pub struct NewTorrentMsg {
     pub name: String,
     pub description: String,
     pub meta_file: Vec<u8>,
@@ -32,7 +32,7 @@ pub struct NewTorrent {
     pub files: Vec<NewFile>,
 }
 
-impl NewTorrent {
+impl NewTorrentMsg {
     fn insert_meta(&self, id: &Uuid, conn: &DbConn) -> Result<usize> {
         let meta = models::torrent::NewTorrentMetaFile{
             id,
@@ -70,18 +70,18 @@ impl NewTorrent {
     }
 }
 
-impl Message for NewTorrent {
+impl Message for NewTorrentMsg {
     type Result = Result<models::Torrent>;
 }
 
-impl Handler<NewTorrent> for DbExecutor {
+impl Handler<NewTorrentMsg> for DbExecutor {
     type Result = Result<models::Torrent>;
 
     fn handle(
         &mut self,
-        msg: NewTorrent,
+        msg: NewTorrentMsg,
         _: &mut Self::Context,
-    ) -> <Self as Handler<NewTorrent>>::Result {
+    ) -> <Self as Handler<NewTorrentMsg>>::Result {
         let conn = self.conn();
 
         let _category = match models::category::Category::find(&msg.category, &conn) {
@@ -106,8 +106,6 @@ impl Handler<NewTorrent> for DbExecutor {
         Ok(torrent)
     }
 }
-
-
 
 #[derive(Debug, Default)]
 pub struct NewTorrentBuilder {
@@ -162,7 +160,7 @@ impl NewTorrentBuilder {
         self
     }
 
-    pub fn finish(self) -> Result<NewTorrent> {
+    pub fn finish(self) -> Result<NewTorrentMsg> {
         let info_hash = util::torrent::info_hash(&self.meta_file)?;
         let files: Vec<NewFile> = util::torrent::files(&self.meta_file)?
             .into_iter()
@@ -170,7 +168,7 @@ impl NewTorrentBuilder {
             .collect();
         let size = files.iter().fold(0i64, |acc, ref x| acc + x.size);
 
-        Ok(NewTorrent {
+        Ok(NewTorrentMsg {
             name: self.name,
             description: self.description,
             category: self.category,
@@ -184,20 +182,20 @@ impl NewTorrentBuilder {
     }
 }
 
-pub struct Categories {}
+pub struct LoadCategoriesMsg {}
 
-impl Message for Categories {
+impl Message for LoadCategoriesMsg {
     type Result = Result<Vec<models::Category>>;
 }
 
-impl Handler<Categories> for DbExecutor {
+impl Handler<LoadCategoriesMsg> for DbExecutor {
     type Result = Result<Vec<models::Category>>;
 
     fn handle(
         &mut self,
-        _msg: Categories,
+        _msg: LoadCategoriesMsg,
         _: &mut Self::Context,
-    ) -> <Self as Handler<Categories>>::Result {
+    ) -> <Self as Handler<LoadCategoriesMsg>>::Result {
         use schema::categories::dsl;
         let conn = self.conn();
         let db: &PgConnection = &conn;
@@ -215,28 +213,28 @@ pub struct NewFile {
     size: i64,
 }
 
-pub struct LoadTorrent {
+pub struct LoadTorrentMsg {
     id: Uuid,
     user_id: Uuid,
 }
 
-impl LoadTorrent {
-    pub fn new(id: &Uuid, user_id: &Uuid) -> LoadTorrent {
-        LoadTorrent{
-            id: id.clone(),
-            user_id: user_id.clone(),
+impl LoadTorrentMsg {
+    pub fn new(id: &Uuid, user_id: &Uuid) -> LoadTorrentMsg {
+        LoadTorrentMsg {
+            id: *id,
+            user_id: *user_id,
         }
     }
 }
 
-impl Message for LoadTorrent {
+impl Message for LoadTorrentMsg {
     type Result = Result<models::torrent::TorrentMsg>;
 }
 
-impl Handler<LoadTorrent> for DbExecutor {
+impl Handler<LoadTorrentMsg> for DbExecutor {
     type Result = Result<models::torrent::TorrentMsg>;
 
-    fn handle(&mut self, msg: LoadTorrent, _: &mut Self::Context) -> <Self as Handler<LoadTorrent>>::Result {
+    fn handle(&mut self, msg: LoadTorrentMsg, _: &mut Self::Context) -> <Self as Handler<LoadTorrentMsg>>::Result {
         let conn = self.conn();
         let torrent = models::torrent::TorrentMsg::find(&msg.id, &conn);
         torrent.map(|mut t| {
@@ -247,19 +245,19 @@ impl Handler<LoadTorrent> for DbExecutor {
 }
 
 
-pub struct LoadTorrentMeta {
+pub struct LoadTorrentMetaMsg {
     pub id: Uuid,
     pub uid: Uuid,
 }
 
-impl Message for LoadTorrentMeta {
+impl Message for LoadTorrentMetaMsg {
     type Result = Result<(String, Vec<u8>, Vec<u8>)>;
 }
 
-impl Handler<LoadTorrentMeta> for DbExecutor {
+impl Handler<LoadTorrentMetaMsg> for DbExecutor {
     type Result = Result<(String, Vec<u8>, Vec<u8>)>;
 
-    fn handle(&mut self, msg: LoadTorrentMeta, _: &mut Self::Context) -> <Self as Handler<LoadTorrentMeta>>::Result {
+    fn handle(&mut self, msg: LoadTorrentMetaMsg, _: &mut Self::Context) -> <Self as Handler<LoadTorrentMetaMsg>>::Result {
         let conn = self.conn();
         let torrent = models::torrent::Torrent::find(&msg.id, &conn).ok_or("torrent not found")?;
         let meta_file = models::torrent::TorrentMetaFile::find(&msg.id, &conn).ok_or("meta file not found")?;
@@ -270,18 +268,18 @@ impl Handler<LoadTorrentMeta> for DbExecutor {
     }
 }
 
-pub struct LoadTorrentNfo {
+pub struct LoadTorrentNfoMsg {
     pub id: Uuid,
 }
 
-impl Message for LoadTorrentNfo {
+impl Message for LoadTorrentNfoMsg {
     type Result = Result<(String, Vec<u8>)>;
 }
 
-impl Handler<LoadTorrentNfo> for DbExecutor {
+impl Handler<LoadTorrentNfoMsg> for DbExecutor {
     type Result = Result<(String, Vec<u8>)>;
 
-    fn handle(&mut self, msg: LoadTorrentNfo, _: &mut Self::Context) -> <Self as Handler<LoadTorrentNfo>>::Result {
+    fn handle(&mut self, msg: LoadTorrentNfoMsg, _: &mut Self::Context) -> <Self as Handler<LoadTorrentNfoMsg>>::Result {
         let conn = self.conn();
         let torrent = models::torrent::Torrent::find(&msg.id, &conn).ok_or("torrent not found")?;
         let nfo_file = models::torrent::TorrentNFO::find_for_torrent(&msg.id, &conn).ok_or("nfo file not found")?;
@@ -317,7 +315,7 @@ impl ToString for Visible {
 }
 
 #[derive(Default, Debug)]
-pub struct LoadTorrentList {
+pub struct LoadTorrentListMsg {
     pub name: Option<String>,
     pub category: Option<Uuid>,
     pub user_id: Option<Uuid>,
@@ -327,12 +325,12 @@ pub struct LoadTorrentList {
     pub current_user_id: Uuid,
 }
 
-impl LoadTorrentList {
+impl LoadTorrentListMsg {
     pub fn new(user_id: &Uuid) -> Self {
-        LoadTorrentList {
+        LoadTorrentListMsg {
             page: 1,
             per_page: 25,
-            current_user_id: user_id.clone(),
+            current_user_id: *user_id,
             ..Default::default()
         }
     }
@@ -401,7 +399,7 @@ impl LoadTorrentList {
             .offset((self.page - 1) * self.per_page)
             .load::<models::TorrentList>(db);
 
-        (list.unwrap_or(Vec::new()), count)
+        (list.unwrap_or_default(), count)
     }
 
     fn user_per_page(&self, db: &PgConnection) -> i64 {
@@ -419,18 +417,18 @@ impl LoadTorrentList {
 pub struct TorrentListMsg {
     pub torrents: Vec<models::TorrentList>,
     pub count: i64,
-    pub request: LoadTorrentList,
+    pub request: LoadTorrentListMsg,
     pub timezone: i32,
 }
 
-impl Message for LoadTorrentList {
+impl Message for LoadTorrentListMsg {
     type Result = Result<TorrentListMsg>;
 }
 
-impl Handler<LoadTorrentList> for DbExecutor {
+impl Handler<LoadTorrentListMsg> for DbExecutor {
     type Result = Result<TorrentListMsg>;
 
-    fn handle(&mut self, mut msg: LoadTorrentList, _: &mut Self::Context) -> <Self as Handler<LoadTorrentList>>::Result {
+    fn handle(&mut self, mut msg: LoadTorrentListMsg, _: &mut Self::Context) -> <Self as Handler<LoadTorrentListMsg>>::Result {
         let db = self.conn();
         let (list, count) = msg.query(&db);
         let timezone = util::user::user_timezone(&msg.current_user_id, &db);

@@ -1,4 +1,4 @@
-/*     
+/*
  * ripalt
  * Copyright (C) 2018 Daniel Müller
  *
@@ -29,12 +29,14 @@ use schema::peers;
 const CLEANUP_INTERVAL: u64 = 60;
 const SLEEP_PER_LOOP: u64 = 2;
 
-pub fn cleanup(dbe: DbExecutor, rx: mpsc::Receiver<bool>) {
+pub fn cleanup(dbe: DbExecutor, rx: &mpsc::Receiver<bool>) {
     info!("started cleanup thread");
 
     loop {
         // delete stale peers older than 60 minutes
-        let date = Utc::now().checked_sub_signed(Duration::minutes(60)).unwrap();
+        let date = Utc::now()
+            .checked_sub_signed(Duration::minutes(60))
+            .unwrap();
         let db: &PgConnection = &dbe.conn();
         let res = diesel::delete(peers::table)
             .filter(peers::dsl::updated_at.lt(date))

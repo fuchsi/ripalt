@@ -18,20 +18,6 @@
 
 use super::*;
 
-use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized};
-use actix_web::middleware::{csrf,
-                            identity::{IdentityService},
-                            CookieSessionBackend,
-                            DefaultHeaders,
-                            Logger,
-                            SessionStorage};
-use actix_web::{Either,
-                FutureResponse,
-                HttpMessage,
-                HttpRequest,
-                HttpResponse};
-use futures::future::{err as FutErr, ok as FutOk, FutureResult};
-
 pub mod identity;
 pub mod user;
 
@@ -58,8 +44,8 @@ pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
         .middleware(
             csrf::CsrfFilter::new()
                 .allow_xhr()
-                .allowed_origin(&listen)
-                .allowed_origin(&domain),
+                .allowed_origin(listen)
+                .allowed_origin(domain),
         )
         .middleware(SessionStorage::new(
             CookieSessionBackend::signed(&session_secret)

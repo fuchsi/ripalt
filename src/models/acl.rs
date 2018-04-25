@@ -269,7 +269,7 @@ impl Acl {
             }
         }
 
-        return self.is_group_allowed(gid, ns, perm);
+        self.is_group_allowed(gid, ns, perm)
     }
 
     /// Check if the `group` is allowed to do `perm` in namespace `ns`

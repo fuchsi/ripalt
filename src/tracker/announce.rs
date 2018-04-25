@@ -118,7 +118,7 @@ impl<S> TryFrom<HttpRequest<S>> for AnnounceRequest {
             .get("peer_id")
             .ok_or_else(|| "peer_id not in query")?
             .as_bytes();
-        let peer_id = percent_decode(peer_id).if_any().unwrap_or(peer_id.to_vec());
+        let peer_id = percent_decode(peer_id).if_any().unwrap_or_else(|| peer_id.to_vec());
 
         let port = q.get("port")
             .ok_or_else(|| "port not in query")?
@@ -145,12 +145,12 @@ impl<S> TryFrom<HttpRequest<S>> for AnnounceRequest {
         let key = query_parts.get("peer_id").map(|key| {
             percent_decode(key.as_bytes())
                 .if_any()
-                .unwrap_or(key.as_bytes().to_vec())
+                .unwrap_or_else(|| key.as_bytes().to_vec())
         });
         let tracker_id = query_parts.get("trackerid").map(|tracker_id| {
             percent_decode(tracker_id.as_bytes())
                 .if_any()
-                .unwrap_or(tracker_id.as_bytes().to_vec())
+                .unwrap_or_else(|| tracker_id.as_bytes().to_vec())
         });
         let ip_address = req.peer_addr().ok_or_else(|| "could not get ip addr")?.ip();
         let passcode = req.match_info()
@@ -245,10 +245,10 @@ impl Handler<AnnounceRequest> for DbExecutor {
 
                     models::Peer {
                         id: Uuid::new_v4(),
-                        torrent_id: torrent.id.clone(),
-                        user_id: user.id.clone(),
-                        ip_address: IpNetwork::from(msg.ip_address.clone()),
-                        port: msg.port as i32,
+                        torrent_id: torrent.id,
+                        user_id: user.id,
+                        ip_address: IpNetwork::from(msg.ip_address),
+                        port: i32::from(msg.port),
                         bytes_uploaded: 0,
                         bytes_downloaded: 0,
                         bytes_left: msg.left as i64,
@@ -256,7 +256,7 @@ impl Handler<AnnounceRequest> for DbExecutor {
                         peer_id: msg.peer_id.to_vec(),
                         user_agent: msg.user_agent.to_owned(),
                         crypto_enabled: msg.support_crypto || msg.require_crypto,
-                        crypto_port: msg.crypto_port.map(|v| v as i32),
+                        crypto_port: msg.crypto_port.map(i32::from),
                         offset_downloaded: 0,
                         offset_uploaded: 0,
                         created_at: Utc::now(),
@@ -318,10 +318,10 @@ impl Handler<AnnounceRequest> for DbExecutor {
         transfer.save(&conn)?;
 
         let want = !peer.seeder;
-        let mut peers = models::Peer::peers_for_torrent(&torrent.id, want, msg.numwant as i64, &conn);
+        let mut peers = models::Peer::peers_for_torrent(&torrent.id, want, i64::from(msg.numwant), &conn);
         let rest = msg.numwant - peers.len() as u16;
         if rest > 0 {
-            let mut peers2 = models::Peer::peers_for_torrent(&torrent.id, !want, rest as i64, &conn);
+            let mut peers2 = models::Peer::peers_for_torrent(&torrent.id, !want, i64::from(rest), &conn);
             peers.append(&mut peers2);
         }
         // if the client does not support crypto, set the crypto flag for all peers to false,
@@ -359,7 +359,7 @@ pub struct AnnounceResponse {
 
 impl AnnounceResponse {
     pub fn peers(&mut self) -> Vec<models::Peer> {
-        self.peers.take().unwrap_or_else(|| Vec::new())
+        self.peers.take().unwrap_or_else(Vec::new)
     }
 
     pub fn tracker_id(&mut self) -> Option<Vec<u8>> {

@@ -18,10 +18,6 @@
 
 use super::*;
 
-use actix_web::middleware::DefaultHeaders;
-use actix_web::middleware::Logger;
-use actix_web::{AsyncResponder, Either, FutureResponse, HttpRequest, HttpResponse, Responder};
-
 use serde::{ser::SerializeMap, Serialize, Serializer};
 use serde_bencode;
 
@@ -218,9 +214,9 @@ impl Serialize for AnnounceData {
             for peer in &self.peers {
                 if self.crypto_flags && peer.sock_addr.is_ipv4() {
                     if peer.crypto {
-                        crypto_flags.push('1' as u8);
+                        crypto_flags.push(b'1');
                     } else {
-                        crypto_flags.push('0' as u8);
+                        crypto_flags.push(b'0');
                     }
                 }
                 peers.push(peer);
@@ -230,9 +226,9 @@ impl Serialize for AnnounceData {
             if self.crypto_flags {
                 for peer in &self.peers {
                     if peer.crypto {
-                        crypto_flags.push('1' as u8);
+                        crypto_flags.push(b'1');
                     } else {
-                        crypto_flags.push('0' as u8);
+                        crypto_flags.push(b'0');
                     }
                 }
             }

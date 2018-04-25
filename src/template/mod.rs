@@ -22,21 +22,18 @@
 
 use super::*;
 
-use std::collections::HashMap;
 use std::sync::{mpsc, Arc, RwLock};
 use std::time::Duration;
-use std::fmt::Write;
 
-use tera::{self, Tera, Value};
+use tera::Tera;
 
-use actix_web::{error, http::StatusCode, HttpRequest, HttpResponse, Responder};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Serialize;
 
-use util;
-
 pub type TemplateContainer = Arc<RwLock<Tera>>;
 pub type TemplateSystem = Tera;
+
+mod helper;
 
 /// Initialize the Tera template system
 pub fn init_tera() -> TemplateContainer {
@@ -49,9 +46,9 @@ pub fn init_tera() -> TemplateContainer {
         }
     };
 
-    tera.register_filter("data_size", data_size);
-    tera.register_filter("format_date", format_date);
-    tera.register_filter("duration", duration);
+    tera.register_filter("data_size", helper::data_size);
+    tera.register_filter("format_date", helper::format_date);
+    tera.register_filter("duration", helper::duration);
 
     Arc::new(RwLock::new(tera))
 }
@@ -67,7 +64,7 @@ pub fn init_tera() -> TemplateContainer {
 /// # Panics
 /// This function panics if the `Watcher` can not be created, can not watch the template directory
 /// or if it fails to acquire a Write-Lock on the `tera` object.
-pub fn template_file_watcher(tpl: TemplateContainer, main_rx: mpsc::Receiver<bool>) {
+pub fn template_file_watcher(tpl: TemplateContainer, main_rx: &mpsc::Receiver<bool>) {
     info!("started template watcher");
     // Create a channel to receive the events.
     let (tx, rx) = mpsc::channel();
@@ -129,13 +126,13 @@ impl Template {
         tpl: &TemplateSystem,
         name: &str,
         ctx: T,
-    ) -> ::std::result::Result<Self, error::Error>
+    ) -> ::std::result::Result<Self, actix_web::Error>
     where
         T: Serialize,
     {
         let s = tpl.render(name, &ctx).map_err(|e| {
             error!("{:#?}", e);
-            error::ErrorInternalServerError(format!("{}", e))
+            ErrorInternalServerError(format!("{}", e))
         })?;
 
         let mut tpl = Template::default();
@@ -164,83 +161,12 @@ impl Into<HttpResponse> for Template {
 
 impl Responder for Template {
     type Item = HttpResponse;
-    type Error = ::actix_web::Error;
+    type Error = actix_web::Error;
 
     fn respond_to(
         self,
         _req: HttpRequest<()>,
-    ) -> ::actix_web::Result<HttpResponse, ::actix_web::Error> {
+    ) -> actix_web::Result<HttpResponse, actix_web::Error> {
         Ok(self.into())
-    }
-}
-
-fn data_size(value: Value, _: HashMap<String, Value>) -> tera::Result<Value> {
-    match value {
-        Value::Number(number) => {
-            let bytes = number.as_f64().unwrap_or_else(|| 0f64);
-            Ok(Value::String(util::data_size(bytes)))
-        }
-        Value::Null => Ok(Value::String(util::data_size(0))),
-        _ => Err("not a number".into()),
-    }
-}
-
-fn format_date(value: Value, args: HashMap<String, Value>) -> tera::Result<Value> {
-    static FORMAT_STRING: &'static str = "%d.%m.%Y %H:%M:%S";
-    let date = match value {
-        Value::String(s) => {
-            match DateTime::parse_from_rfc3339(&s[..]).map_err(|e| format!("not a date string: {}", e)) {
-                Ok(date) => date.with_timezone(&Utc),
-                Err(_) => return Ok(Value::String(s)),
-            }
-        }
-        Value::Null => {
-            return Ok(Value::String(String::from("---")));
-        }
-        _ => return Err("not a date time string".into()),
-    };
-
-    if let Some(Value::Number(timezone)) = args.get("timezone") {
-        if let Some(timezone) = timezone.as_i64() {
-            let local = date.with_timezone(&FixedOffset::east(timezone as i32 * 3600));
-            return Ok(Value::String(local.format(FORMAT_STRING).to_string()));
-        }
-    }
-
-    Ok(Value::String(date.format(FORMAT_STRING).to_string()))
-}
-
-fn duration(value: Value, _: HashMap<String, Value>) -> tera::Result<Value> {
-    match value {
-        Value::Number(number) => {
-            let mut seconds = number.as_f64().unwrap_or_else(|| 0f64);
-            let duration = {
-                let mut dur_str = String::new();
-                let days = seconds / 86400f64;
-
-                if days >= 1f64 {
-                    write!(&mut dur_str, "{:.0}d ", days).map_err(|e| format!("{}",e ))?;
-                    seconds = seconds % 86400f64;
-                }
-                let hours = seconds / 3600f64;
-                if hours >= 1f64 {
-                    write!(&mut dur_str, "{:02.0}:", hours).map_err(|e| format!("{}",e ))?;
-                    seconds = seconds % 3600f64;
-                }
-                let minutes = seconds / 60f64;
-                if minutes >= 1f64 || hours >= 1f64{
-                    write!(&mut dur_str, "{:02.0}:", minutes).map_err(|e| format!("{}",e ))?;
-                }
-                seconds = seconds % 60f64;
-                if seconds >= 1f64 || hours >= 1f64 || minutes >= 1f64 {
-                    write!(&mut dur_str, "{:02.0}", seconds).map_err(|e| format!("{}",e ))?;
-                }
-
-                dur_str.trim_right().trim_right_matches(':').to_owned()
-            };
-            Ok(Value::String(format!("{}", duration)))
-        },
-        Value::Null => Ok(Value::String(format!("0s"))),
-        _ => Ok(Value::String(format!("0s"))),
     }
 }

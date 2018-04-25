@@ -67,7 +67,7 @@ impl Peer {
             .unwrap_or_else(|_| vec![])
             .into_iter()
             .map(|peer: Peer| {
-                let user_name = peer.user_name(db).unwrap_or(String::new());
+                let user_name = peer.user_name(db);
                 (peer, user_name)
             })
             .collect()

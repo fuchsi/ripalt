@@ -17,17 +17,17 @@
  */
 
 use super::*;
-use handlers::user::UserStats;
+use handlers::user::LoadUserStatsMsg;
 use models::user::UserStatsMsg;
 
 pub fn stats(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     if let Some(identity) = req.identity() {
-        let user_id = match Uuid::parse_str(identity).map_err(|e| ErrorInternalServerError(e)) {
+        let user_id = match Uuid::parse_str(identity).map_err(ErrorInternalServerError) {
             Ok(user_id) => user_id,
             Err(e) => return Box::new(FutErr(e)),
         };
 
-        req.state().db().send(UserStats(user_id))
+        req.state().db().send(LoadUserStatsMsg(user_id))
             .from_err()
             .and_then(|result: Result<UserStatsMsg>| {
                 match result {

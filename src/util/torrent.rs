@@ -40,7 +40,7 @@ use serde_bencode::{self, value::Value};
 pub fn info_hash(data: &[u8]) -> Result<Vec<u8>> {
     let bencode = serde_bencode::from_bytes(data)?;
     if let Value::Dict(root) = bencode {
-        if let Some(info) = root.get("info".as_bytes()) {
+        if let Some(info) = root.get(&b"info".to_vec()) {
             let info = serde_bencode::to_bytes(info)?;
             let digest = digest::digest(&digest::SHA1, &info);
             Ok(digest.as_ref().to_vec())
@@ -61,13 +61,13 @@ pub fn files(data: &[u8]) -> Result<Vec<(String, i64)>> {
     } else {
         bail!("meta file is no dict");
     };
-    let info = if let Some(Value::Dict(info)) = root.get("info".as_bytes()) {
+    let info = if let Some(Value::Dict(info)) = root.get(&b"info".to_vec()) {
         info
     } else {
         bail!("info dict not found");
     };
 
-    match info.get("files".as_bytes()) {
+    match info.get(&b"files".to_vec()) {
         // multiple file mode
         Some(Value::List(f)) => {
             let mut files: Vec<(String, i64)> = Vec::new();
@@ -78,11 +78,11 @@ pub fn files(data: &[u8]) -> Result<Vec<(String, i64)>> {
                     Value::Dict(entry) => entry,
                     _ => bail!("file entry is not a dict"),
                 };
-                let size = match file.get("length".as_bytes()).ok_or("length not found in file dict")? {
+                let size = match file.get(&b"length".to_vec()).ok_or("length not found in file dict")? {
                     Value::Int(s) => s,
                     _ => bail!("length is not an int"),
                 };
-                let name = match file.get("path".as_bytes()).ok_or("path not found in file dict")? {
+                let name = match file.get(&b"path".to_vec()).ok_or("path not found in file dict")? {
                     Value::List(path) => {
                         let mut name = String::new();
                         for part in path {
@@ -101,11 +101,11 @@ pub fn files(data: &[u8]) -> Result<Vec<(String, i64)>> {
         }
         // single file mode
         None => {
-            let size = match info.get("length".as_bytes()).ok_or("length not found in file dict")? {
+            let size = match info.get(&b"length".to_vec()).ok_or("length not found in file dict")? {
                 Value::Int(s) => s,
                 _ => bail!("length is not an int"),
             };
-            let name = match info.get("name".as_bytes()).ok_or("name not found in file dict")? {
+            let name = match info.get(&b"name".to_vec()).ok_or("name not found in file dict")? {
                 Value::Bytes(n) => String::from_utf8(n.to_vec())?,
                 _ => bail!("name is not a str"),
             };

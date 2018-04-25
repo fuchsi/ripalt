@@ -1,4 +1,4 @@
-/*     
+/*
  * ripalt
  * Copyright (C) 2018 Daniel Müller
  *
@@ -26,24 +26,23 @@ use serde_json;
 
 use SETTINGS;
 
-use schema;
 use error::*;
+use schema;
 
 /// Convenient wrapper around [DateTime](/chrono/struct.DateTime.html)<[Utc](/chrono/struct.Utc.html)>
 pub type Timestamp = DateTime<Utc>;
 /// Convenient wrapper around `Vec<u8>`
 pub type Bytes = Vec<u8>;
 
-pub use self::group::Group;
-pub use self::user::{User, Property};
-pub use self::torrent::{Torrent, TorrentMsg, TorrentMetaFile, TorrentList};
 pub use self::category::Category;
+pub use self::group::Group;
 pub use self::peer::Peer;
-pub use self::user::{HasUser, MaybeHasUser};
+pub use self::torrent::{Torrent, TorrentList, TorrentMetaFile, TorrentMsg};
+pub use self::user::{HasUser, MaybeHasUser, Property, User};
 
-pub mod user;
-pub mod group;
-pub mod torrent;
-pub mod peer;
-pub mod category;
 pub mod acl;
+pub mod category;
+pub mod group;
+pub mod peer;
+pub mod torrent;
+pub mod user;

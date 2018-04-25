@@ -20,15 +20,6 @@
 
 use super::*;
 
-use actix_web::middleware::{csrf, CookieSessionBackend, DefaultHeaders, ErrorHandlers, Logger,
-                            SessionStorage};
-use actix_web::{http::{header},
-                Either,
-                FutureResponse,
-                HttpMessage,
-                HttpRequest,
-                HttpResponse};
-
 use std::collections::HashMap;
 use std::fmt::Write;
 
@@ -82,14 +73,21 @@ pub fn build(
     App::with_state(state)
         .middleware(Logger::default())
         .middleware(DefaultHeaders::new().header("X-Version", env!("CARGO_PKG_VERSION")))
-        .middleware(csrf::CsrfFilter::new().allow_xhr().allowed_origin(&listen).allowed_origin(&domain))
+        .middleware(
+            csrf::CsrfFilter::new()
+                .allow_xhr()
+                .allowed_origin(listen)
+                .allowed_origin(domain),
+        )
 //        .middleware(SessionStorage::new(RedisSessionBackend::new(
 //            redis,
 //            &session_secret,
 //        ).cookie_name(session_name)))
         .middleware(SessionStorage::new(
             CookieSessionBackend::signed(&session_secret)
-                .name(session_name).secure(*session_secure)))
+                .name(session_name)
+                .secure(*session_secure),
+        ))
         .middleware(
             ErrorHandlers::new().handler(StatusCode::INTERNAL_SERVER_ERROR, app::server_error),
         )

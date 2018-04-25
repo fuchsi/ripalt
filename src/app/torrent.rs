@@ -70,7 +70,7 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     // page size is overwritten in the handler with the user defined value
     let page_size = SETTINGS.read().unwrap().user.default_torrents_per_page;
     let page = 1i64;
-    let mut torrent_list = LoadTorrentList::new(&user_id);
+    let mut torrent_list = LoadTorrentListMsg::new(&user_id);
     torrent_list.page(page as i64, page_size as i64);
 
     let fut_form;
@@ -151,7 +151,7 @@ pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespons
     let fut_prepare = req.clone()
         .body()
         .from_err()
-        .and_then(move |body| -> Result<NewTorrent> {
+        .and_then(move |body| -> Result<NewTorrentMsg> {
             let content_type = cloned.headers()[header::CONTENT_TYPE].to_str().unwrap();
             let mpr = MultipartRequest::new(content_type, body);
             let mut multipart = Multipart::from_request(mpr).unwrap();
@@ -208,7 +208,7 @@ pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespons
     Either::B(fut_response.responder())
 }
 
-fn process_upload(entries: &Entries) -> Result<NewTorrent> {
+fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
     let mut upload_builder = NewTorrentBuilder::new();
     let mut key = String::from("torrent_name");
     let mut has_name = false;
@@ -508,7 +508,7 @@ pub fn torrent(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespon
     let fut_response = req.clone()
         .state()
         .db()
-        .send(LoadTorrent::new(&id, &user_id))
+        .send(LoadTorrentMsg::new(&id, &user_id))
         .from_err()
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
@@ -562,8 +562,8 @@ pub fn download(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespo
     let fut_response = req.clone()
         .state()
         .db()
-        .send(LoadTorrentMeta {
-            id: id.clone(),
+        .send(LoadTorrentMetaMsg {
+            id,
             uid,
         })
         .from_err()
@@ -609,8 +609,8 @@ pub fn nfo(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpR
     let fut_response = req.clone()
         .state()
         .db()
-        .send(LoadTorrentNfo{
-            id: id.clone(),
+        .send(LoadTorrentNfoMsg {
+            id,
         })
         .from_err()
         .and_then(
@@ -635,7 +635,7 @@ pub fn nfo(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpR
 }
 
 fn categories(s: &State) -> Vec<models::Category> {
-    if let Ok(categories) = s.db().send(Categories {}).wait() {
+    if let Ok(categories) = s.db().send(LoadCategoriesMsg {}).wait() {
         categories.unwrap_or_else(|_| vec![])
     } else {
         vec![]

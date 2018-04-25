@@ -18,7 +18,10 @@
 
 #![recursion_limit = "1024"]
 #![feature(decl_macro, use_extern_macros, custom_derive)]
-#[allow(unused_imports)]
+// allow pass by value, since most request handlers don't consume HttpRequest
+// allow unused import, because of false positives when importing traits
+#![cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value, unused_imports))]
+
 extern crate actix;
 extern crate actix_redis;
 extern crate actix_web;
@@ -85,24 +88,33 @@ use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
 
 use actix::prelude::*;
-use actix_web::middleware::identity::RequestIdentity;
-use actix_web::middleware::RequestSession;
-use actix_web::AsyncResponder;
+use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized};
+use actix_web::middleware::identity::{IdentityService, RequestIdentity};
+use actix_web::middleware::{csrf, CookieSessionBackend, DefaultHeaders, ErrorHandlers, Logger,
+                            RequestSession, SessionStorage};
 use actix_web::{fs::StaticFiles,
-                http::{Method, NormalizePath, StatusCode},
+                http::{header, Method, NormalizePath, StatusCode},
                 server::HttpServer,
-                App};
+                App,
+                AsyncResponder,
+                Either,
+                FutureResponse,
+                HttpMessage,
+                HttpRequest,
+                HttpResponse,
+                Responder};
 //use actix_redis::RedisSessionBackend;
 use chrono::prelude::*;
 use diesel::prelude::*;
 use dotenv::dotenv;
 use futures::future;
+use futures::future::{err as FutErr, ok as FutOk, FutureResult};
 use futures::prelude::*;
 use uuid::Uuid;
 
 use db::{DbConn, DbExecutor};
 use error::*;
-use handlers::user::RequireUser;
+use handlers::user::RequireUserMsg;
 use models::acl::{Acl, Permission, Subject, UserSubject};
 use settings::Settings;
 use state::{AclContainer, State};
@@ -139,7 +151,7 @@ fn main() {
             thread::Builder::new()
                 .name("template watcher".to_string())
                 .spawn(move || {
-                    template::template_file_watcher(tpl, rx);
+                    template::template_file_watcher(tpl, &rx);
                 })
                 .unwrap(),
         );
@@ -148,7 +160,7 @@ fn main() {
     let (cleanup_tx, rx) = mpsc::channel();
     let cleanup_handle = thread::Builder::new()
         .name("cleanup".to_string())
-        .spawn(move || cleanup::cleanup(DbExecutor::new(cloned_pool), rx))
+        .spawn(move || cleanup::cleanup(DbExecutor::new(cloned_pool), &rx))
         .unwrap();
 
     let http_bind = &SETTINGS.read().unwrap().bind[..];
@@ -183,16 +195,16 @@ fn main() {
     cleanup_handle.join().unwrap();
 }
 
-fn require_user() -> RequireUser {
-    RequireUser(uuid::Uuid::default())
+fn require_user() -> RequireUserMsg {
+    RequireUserMsg(uuid::Uuid::default())
 }
 
-impl actix_web::pred::Predicate<State> for RequireUser {
+impl actix_web::pred::Predicate<State> for RequireUserMsg {
     fn check(&self, req: &mut actix_web::HttpRequest<State>) -> bool {
         match req.session().get::<uuid::Uuid>("user_id") {
             Ok(user_id) => match user_id {
                 Some(user_id) => {
-                    let require_user = RequireUser(user_id);
+                    let require_user = RequireUserMsg(user_id);
                     let user = req.state().db().send(require_user).wait().unwrap();
                     match user {
                         Ok(_) => true,
