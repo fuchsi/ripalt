@@ -594,6 +594,46 @@ pub fn download(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespo
     Either::B(fut_response.responder())
 }
 
+pub fn nfo(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
+    let id = match req.match_info().query::<String>("id") {
+        Ok(id) => match Uuid::parse_str(&id[..]) {
+            Ok(id) => id,
+            Err(e) => {
+                return Either::A(
+                    actix_web::error::ErrorInternalServerError(format!("{}", e)).into(),
+                )
+            }
+        },
+        Err(_) => return Either::A(not_found(req).unwrap()),
+    };
+    let fut_response = req.clone()
+        .state()
+        .db()
+        .send(LoadTorrentNfo{
+            id: id.clone(),
+        })
+        .from_err()
+        .and_then(
+            move |result: Result<(String, Vec<u8>)>| match result {
+                Ok((name, nfo_file)) => {
+                    Ok(HttpResponse::build(StatusCode::OK)
+                        .header(header::CONTENT_TYPE, "text/plain")
+                        .header(
+                            header::CONTENT_DISPOSITION,
+                            format!("attachment; filename=\"{}\"", name),
+                        )
+                        .body(nfo_file))
+                }
+                Err(e) => {
+                    info!("nfo '{}' not found: {}", id, e);
+                    not_found(req)
+                }
+            },
+        );
+
+    Either::B(fut_response.responder())
+}
+
 fn categories(s: &State) -> Vec<models::Category> {
     if let Ok(categories) = s.db().send(Categories {}).wait() {
         categories.unwrap_or_else(|_| vec![])

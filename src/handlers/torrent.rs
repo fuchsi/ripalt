@@ -270,6 +270,28 @@ impl Handler<LoadTorrentMeta> for DbExecutor {
     }
 }
 
+pub struct LoadTorrentNfo {
+    pub id: Uuid,
+}
+
+impl Message for LoadTorrentNfo {
+    type Result = Result<(String, Vec<u8>)>;
+}
+
+impl Handler<LoadTorrentNfo> for DbExecutor {
+    type Result = Result<(String, Vec<u8>)>;
+
+    fn handle(&mut self, msg: LoadTorrentNfo, _: &mut Self::Context) -> <Self as Handler<LoadTorrentNfo>>::Result {
+        let conn = self.conn();
+        let torrent = models::torrent::Torrent::find(&msg.id, &conn).ok_or("torrent not found")?;
+        let nfo_file = models::torrent::TorrentNFO::find_for_torrent(&msg.id, &conn).ok_or("nfo file not found")?;
+        let name = format!("{}.nfo", torrent.name);
+
+        Ok((name, nfo_file.data))
+    }
+}
+
+
 
 #[derive(Debug)]
 pub enum Visible {

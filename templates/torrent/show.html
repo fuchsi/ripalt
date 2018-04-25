@@ -79,7 +79,7 @@
                             <div class="tab-pane fade" id="torrent-nfo" role="tabpanel" aria-labelledby="nfo-tab">
                                 {% if nfo %}
                                 <div class="btn-group btn-group-sm mt-2 mb-2" role="group" aria-label="...">
-                                    <button type="button" class="btn btn-primary">Download NFO</button>
+                                    <a href="/torrent/nfo/{{torrent.id}}" type="button" class="btn btn-primary">Download NFO</a>
                                     <button type="button" class="btn btn-secondary">Change View</button>
                                 </div>
                                 <pre class="nfo p-2">{{nfo}}</pre>

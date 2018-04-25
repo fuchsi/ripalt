@@ -134,6 +134,10 @@ pub fn build(
             r.name("torrent#download");
             r.method(Method::GET).filter(require_user()).f(app::torrent::download);
         })
+        .resource("/torrent/nfo/{id}", |r| {
+            r.name("torrent#nfo");
+            r.method(Method::GET).filter(require_user()).f(app::torrent::nfo);
+        })
         .resource("/torrent/{id}", |r| {
             r.name("torrent#read");
             r.method(Method::GET).filter(require_user()).f(app::torrent::torrent);
