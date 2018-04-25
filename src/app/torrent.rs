@@ -67,7 +67,8 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         None => return async_redirect("/login"),
     };
 
-    let page_size = 100i64; // todo: get this from the user properties
+    // page size is overwritten in the handler with the user defined value
+    let page_size = SETTINGS.read().unwrap().user.default_torrents_per_page;
     let page = 1i64;
     let mut torrent_list = LoadTorrentList::new(&user_id);
     torrent_list.page(page as i64, page_size as i64);
@@ -89,10 +90,8 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
 
                     Ok(torrent_list)
                 }
-                Err(e) => {
-                    trace!("error: {:#?}", e);
-                    Ok(torrent_list)
-                }
+                // return the "default" torrent_list, if the form could not be parsed (ie is not present/not a post request)
+                Err(_) => Ok(torrent_list),
             });
     }
 
@@ -122,7 +121,6 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             category: msg.request.category,
             timezone: msg.timezone,
         };
-        trace!("ctx: {:#?}", ctx);
         let reg = &req.state().template();
         Template::render(&reg, "torrent/list.html", &ctx).map(|t| t.into())
     });

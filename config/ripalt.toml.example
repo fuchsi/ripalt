@@ -15,6 +15,7 @@ url = "postgres://ripalt:ripalt@localhost/ripalt"
 default_group = "0eb8ac8f-01f4-4bf9-bb0d-e3ac0ecb15f9"
 passcode_length = 16
 default_timezone = 2
+default_torrents_per_page = 100
 
 [email]
 enabled = false

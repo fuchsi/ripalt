@@ -341,7 +341,7 @@ impl LoadTorrentList {
         self
     }
 
-    pub fn query(&self, db: &PgConnection) -> (Vec<models::TorrentList>, i64) {
+    pub fn query(&mut self, db: &PgConnection) -> (Vec<models::TorrentList>, i64) {
         use schema::torrent_list::dsl;
         let mut query = dsl::torrent_list.into_boxed();
         let mut query2 = dsl::torrent_list.into_boxed();
@@ -370,7 +370,8 @@ impl LoadTorrentList {
             Visible::All => {}
         }
 
-        debug!("query: {}", diesel::debug_query::<diesel::pg::Pg, _>(&query));
+        // overwrite "per page" with user defined number, if set
+        self.per_page = self.user_per_page(db);
 
         let count = query2.count().get_result(db).unwrap();
         let list = query
@@ -379,6 +380,16 @@ impl LoadTorrentList {
             .load::<models::TorrentList>(db);
 
         (list.unwrap_or(Vec::new()), count)
+    }
+
+    fn user_per_page(&self, db: &PgConnection) -> i64 {
+        if let Some(prop) = models::user::Property::find(&self.current_user_id, "torrents_per_page", db) {
+            if let Some(number) = prop.value.as_i64() {
+                return number;
+            }
+        }
+
+        self.per_page
     }
 }
 
@@ -397,7 +408,7 @@ impl Message for LoadTorrentList {
 impl Handler<LoadTorrentList> for DbExecutor {
     type Result = Result<TorrentListMsg>;
 
-    fn handle(&mut self, msg: LoadTorrentList, _: &mut Self::Context) -> <Self as Handler<LoadTorrentList>>::Result {
+    fn handle(&mut self, mut msg: LoadTorrentList, _: &mut Self::Context) -> <Self as Handler<LoadTorrentList>>::Result {
         let db = self.conn();
         let (list, count) = msg.query(&db);
         let timezone = util::user::user_timezone(&msg.current_user_id, &db);

@@ -31,6 +31,7 @@ pub struct User {
     pub default_group: Uuid,
     pub passcode_length: usize,
     pub default_timezone: i32,
+    pub default_torrents_per_page: i64,
 }
 
 #[derive(Debug, Deserialize)]
