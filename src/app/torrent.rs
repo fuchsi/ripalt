@@ -18,11 +18,9 @@
 
 use super::*;
 
-use bytes::Bytes;
 use codepage_437::{BorrowFromCp437, CP437_CONTROL};
 use futures::Future;
-use multipart::server::{save::SavedData, Entries, Multipart, SaveResult};
-use std::io::{Cursor, Read};
+use std::io::Read;
 
 use handlers::torrent::*;
 use models::{torrent::TorrentFile, Category, Torrent, TorrentMsg, TorrentList};
@@ -166,7 +164,7 @@ pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespons
         });
 
     let fut_process = fut_prepare
-        .map_err(|error| actix_web::error::ErrorInternalServerError(format!("{}", error)))
+        .map_err(|error| ErrorInternalServerError(error.to_string()))
         .and_then(move |mut torrent| {
             torrent.user = user_id;
             Ok(torrent)
@@ -178,7 +176,7 @@ pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespons
             .state()
             .db()
             .send(torrent)
-            .map_err(|error| actix_web::error::ErrorInternalServerError(format!("{}", error)))
+            .map_err(|error| ErrorInternalServerError(error))
     });
 
     let cloned = req.clone();
@@ -292,40 +290,6 @@ fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
     upload_builder.finish()
 }
 
-#[derive(Debug, Clone)]
-struct MultipartRequest {
-    body: Bytes,
-    boundary: String,
-}
-
-impl MultipartRequest {
-    pub fn new(content_type: &str, body: Bytes) -> Self {
-        debug!("content-type: {}", content_type);
-        let boundary: String = match content_type.rfind("boundary=") {
-            // todo: check for trailing stuff
-            Some(index) => {
-                let index = index + 9; // add length of 'boundary='
-                String::from(&content_type[index..])
-            }
-            None => String::from("--"),
-        };
-        debug!("boundary: {}", boundary);
-        MultipartRequest { body, boundary }
-    }
-}
-
-impl multipart::server::HttpRequest for MultipartRequest {
-    type Body = Cursor<Bytes>;
-
-    fn multipart_boundary(&self) -> Option<&str> {
-        Some(&self.boundary[..])
-    }
-
-    fn body(self) -> <Self as multipart::server::HttpRequest>::Body {
-        Cursor::new(self.body)
-    }
-}
-
 #[derive(Debug, Serialize)]
 struct ShowContext<'a> {
     torrent: ShowTorrent<'a>,
@@ -385,6 +349,23 @@ impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
             may_edit: false,
             may_delete: false,
             timezone: tc.timezone,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct EditContext<'a> {
+    torrent: ShowTorrent<'a>,
+    may_delete: bool,
+    categories: Vec<Category>,
+}
+
+impl<'a> From<&'a TorrentMsg> for EditContext<'a> {
+    fn from(tc: &'a TorrentMsg) -> Self {
+        EditContext {
+            torrent: ShowTorrent::from(&tc.torrent),
+            may_delete: false,
+            categories: Vec::new(),
         }
     }
 }
@@ -488,24 +469,20 @@ impl<'a> From<&'a Torrent> for ShowTorrent<'a> {
     }
 }
 
-pub fn torrent(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
+pub fn torrent(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     let (user_id, group_id) = match session_creds(&mut req) {
         Some((u, g)) => (u, g),
-        None => return Either::A(redirect("/login")),
+        None => return async_redirect("/login"),
     };
     let id = match req.match_info().query::<String>("id") {
         Ok(id) => match Uuid::parse_str(&id[..]) {
             Ok(id) => id,
-            Err(e) => {
-                return Either::A(
-                    actix_web::error::ErrorInternalServerError(format!("{}", e)).into(),
-                )
-            }
+            Err(e) => return Box::new(FutErr(ErrorInternalServerError(e))),
         },
-        Err(_) => return Either::A(not_found(req).unwrap()),
+        Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
     };
 
-    let fut_response = req.clone()
+    req.clone()
         .state()
         .db()
         .send(LoadTorrentMsg::new(&id, &user_id))
@@ -524,21 +501,175 @@ pub fn torrent(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespon
             }
             Err(e) => {
                 info!("torrent '{}' not found: {}", id, e);
-                not_found(req)
+                Err(ErrorNotFound(e.to_string()))
+            }
+        })
+        .responder()
+}
+
+pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
+    let (user_id, group_id) = match session_creds(&mut req) {
+        Some((u, g)) => (u, g),
+        None => return async_redirect("/login"),
+    };
+    let id = match req.match_info().query::<String>("id") {
+        Ok(id) => match Uuid::parse_str(&id[..]) {
+            Ok(id) => id,
+            Err(e) => return Box::new(FutErr(ErrorInternalServerError(e))),
+        },
+        Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
+    };
+
+    req.clone()
+        .state()
+        .db()
+        .send(LoadTorrentMsg::new(&id, &user_id))
+        .from_err()
+        .and_then(move |result: Result<TorrentMsg>| match result {
+            Ok(tc) => {
+                let mut ctx = EditContext::from(&tc);
+                ctx.categories = categories(&req.state());
+                let may_edit =
+                {
+                    let acl = req.state().acl();
+                    let subj = UserSubject::new(&user_id, &group_id, &acl);
+                    ctx.may_delete = subj.may_delete(&tc.torrent);
+                    subj.may_write(&tc.torrent)
+                };
+
+                if may_edit {
+                    Template::render(&req.state().template(), "torrent/edit.html", &ctx)
+                        .map(|t| t.into())
+                } else {
+                    let mut ctx = Context::new();
+                    ctx.insert("id", &id);
+                    Template::render(&req.state().template(), "torrent/edit_denied.html", &ctx)
+                        .map(|t| t.into())
+                }
+            }
+            Err(e) => {
+                info!("torrent '{}' not found: {}", id, e);
+                Err(ErrorNotFound(e.to_string()))
+            }
+        })
+        .responder()
+}
+
+pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
+    let (user_id, group_id) = match session_creds(&mut req) {
+        Some((u, g)) => (u, g),
+        None => return async_redirect("/login"),
+    };
+    let id = match req.match_info().query::<String>("id") {
+        Ok(id) => match Uuid::parse_str(&id[..]) {
+            Ok(id) => id,
+            Err(e) => return Box::new(FutErr(ErrorInternalServerError(e))),
+        },
+        Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
+    };
+
+    let acl = req.state().acl_arc();
+    let cloned = req.clone();
+    let fut_prepare = req.clone()
+        .body()
+        .from_err()
+        .and_then(move |body| -> Result<UpdateTorrentMsg> {
+            let content_type = cloned.headers()[header::CONTENT_TYPE].to_str().unwrap();
+            let mpr = MultipartRequest::new(content_type, body);
+            let mut multipart = Multipart::from_request(mpr).unwrap();
+            // Fetching all data and processing it.
+            // save().temp() reads the request fully, parsing all fields and saving all files
+            // in a new temporary directory under the OS temporary directory.
+            match multipart.save().temp() {
+                SaveResult::Full(entries) => process_update(&entries),
+                SaveResult::Partial(_, reason) => Err(format!("partial read: {:?}", reason).into()),
+                SaveResult::Error(error) => Err(format!("io error: {}", error).into()),
             }
         });
 
-    Either::B(fut_response.responder())
+    let fut_process = fut_prepare
+        .map_err(|error| ErrorInternalServerError(error.to_string()))
+        .and_then(move |mut torrent| {
+            torrent.id = id;
+            torrent.user_id = user_id;
+            torrent.group_id = group_id;
+            torrent.acl = acl;
+            Ok(torrent)
+        });
+    let cloned = req.clone();
+    let fut_result = fut_process.and_then(move |torrent| {
+        cloned
+            .state()
+            .db()
+            .send(torrent)
+            .map_err(|error| ErrorInternalServerError(error))
+    });
+
+    let cloned = req.clone();
+    fut_result
+        .from_err()
+        .and_then(move |result| {
+            let mut ctx = Context::new();
+            ctx.insert("id", &id);
+
+            match result {
+                Ok(_) => {
+                    Template::render(&cloned.state().template(), "torrent/edit_ok.html", &ctx).map(|t| t.into())
+                },
+                Err(e) => {
+                    ctx.insert("error", &e.to_string());
+                    Template::render(&cloned.state().template(), "torrent/edit_failed.html", &ctx).map(|t| t.into())
+                }
+            }
+        })
+        .responder()
 }
 
-pub fn edit(req: HttpRequest<State>) -> SyncResponse<Template> {
-    let ctx = Context::new();
-    Template::render(&req.state().template(), "torrent/edit.html", &ctx)
-}
+fn process_update(entries: &Entries) -> Result<UpdateTorrentMsg> {
+    let mut key = "torrent_name".to_string();
+    let mut msg = UpdateTorrentMsg::default();
 
-pub fn update(req: HttpRequest<State>) -> SyncResponse<Template> {
-    let ctx = Context::new();
-    Template::render(&req.state().template(), "torrent/edit.html", &ctx)
+    let name = &entries.fields[&key][0];
+    if let SavedData::Text(ref name) = name.data {
+        if !name.is_empty() {
+            msg.name = name.clone();
+        }
+    }
+
+    key = "description".to_string();
+    let desc = &entries.fields[&key][0];
+    if let SavedData::Text(ref desc) = desc.data {
+        msg.description = desc.clone();
+    }
+
+    key = "category".to_string();
+    let category = &entries.fields[&key][0];
+    if let SavedData::Text(ref category) = category.data {
+        msg.category = Uuid::parse_str(category)?;
+    }
+    key = "nfo_file".to_string();
+    let nfo = &entries.fields[&key][0];
+    match nfo.headers.content_type {
+        Some(ref c) if c.type_() == "text" => match nfo.data {
+            SavedData::Bytes(ref b) => {
+                msg.nfo_file = Some(b.clone());
+            }
+            SavedData::Text(ref s) => {
+                msg.nfo_file = Some(s.as_bytes().to_vec());
+            }
+            SavedData::File(ref path, size) => {
+                let mut file = std::fs::File::open(path).unwrap();
+                let mut buf: Vec<u8> = Vec::with_capacity(size as usize);
+                let res = file.read_to_end(&mut buf);
+                trace!("nfo from file({:?} {}B): {:?}", path, size, buf);
+                trace!("read result: {:?}", res);
+                msg.nfo_file = Some(buf);
+            }
+        },
+        _ => {},
+    }
+
+    Ok(msg)
 }
 
 pub fn delete(req: HttpRequest<State>) -> SyncResponse<Template> {
@@ -550,13 +681,9 @@ pub fn download(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespo
     let id = match req.match_info().query::<String>("id") {
         Ok(id) => match Uuid::parse_str(&id[..]) {
             Ok(id) => id,
-            Err(e) => {
-                return Either::A(
-                    actix_web::error::ErrorInternalServerError(format!("{}", e)).into(),
-                )
-            }
+            Err(e) => return Either::A(ErrorInternalServerError(format!("{}", e)).into()),
         },
-        Err(_) => return Either::A(not_found(req).unwrap()),
+        Err(e) => return Either::A(ErrorNotFound(e).into()),
     };
     let uid = req.session().get::<uuid::Uuid>("user_id").unwrap().unwrap();
     let fut_response = req.clone()
@@ -586,7 +713,7 @@ pub fn download(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespo
                 }
                 Err(e) => {
                     info!("torrent '{}' not found: {}", id, e);
-                    not_found(req)
+                    Err(ErrorNotFound(e.to_string()))
                 }
             },
         );
@@ -598,13 +725,9 @@ pub fn nfo(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpR
     let id = match req.match_info().query::<String>("id") {
         Ok(id) => match Uuid::parse_str(&id[..]) {
             Ok(id) => id,
-            Err(e) => {
-                return Either::A(
-                    actix_web::error::ErrorInternalServerError(format!("{}", e)).into(),
-                )
-            }
+            Err(e) => return Either::A(ErrorInternalServerError(format!("{}", e)).into()),
         },
-        Err(_) => return Either::A(not_found(req).unwrap()),
+        Err(e) => return Either::A(ErrorNotFound(e).into()),
     };
     let fut_response = req.clone()
         .state()
@@ -626,7 +749,7 @@ pub fn nfo(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpR
                 }
                 Err(e) => {
                     info!("nfo '{}' not found: {}", id, e);
-                    not_found(req)
+                    Err(ErrorNotFound(e.to_string()))
                 }
             },
         );

@@ -33,6 +33,7 @@ error_chain! {
         ParseBool(::std::str::ParseBoolError);
         ActixWebToStr(::actix_web::http::header::ToStrError);
         DataEncodingDecode(::data_encoding::DecodeError);
+        ParseUuid(::uuid::ParseError);
     }
 
     errors {

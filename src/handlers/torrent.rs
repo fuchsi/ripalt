@@ -108,6 +108,86 @@ impl Handler<NewTorrentMsg> for DbExecutor {
 }
 
 #[derive(Debug, Default)]
+pub struct UpdateTorrentMsg {
+    pub id: Uuid,
+    pub name: String,
+    pub description: String,
+    pub nfo_file: Option<Vec<u8>>,
+    pub category: Uuid,
+    pub user_id: Uuid,
+    pub group_id: Uuid,
+    pub acl: AclContainer,
+}
+
+impl UpdateTorrentMsg {
+    fn replace_nfo(&self, conn: &DbConn) -> Result<usize> {
+        let nfo_file = match self.nfo_file {
+            Some(ref nfo_file) => nfo_file,
+            None => bail!("no new nfo uploaded"),
+        };
+
+        use schema::torrent_nfos::dsl as n;
+        let db: &PgConnection = conn;
+        let res = diesel::delete(schema::torrent_nfos::table)
+            .filter(n::torrent_id.eq(&self.id))
+            .execute(db);
+
+        match res {
+            Ok(_) => {
+                let nfo_id = Uuid::new_v4();
+                let nfo = models::torrent::NewTorrentNFO{
+                    id: &nfo_id,
+                    torrent_id: &self.id,
+                    data: nfo_file,
+                };
+
+                nfo.create(&conn)
+            }
+            Err(e) => Err(format!("failed to create new nfo: {}", e).into()),
+        }
+    }
+}
+
+impl Message for UpdateTorrentMsg {
+    type Result = Result<usize>;
+}
+
+impl Handler<UpdateTorrentMsg> for DbExecutor {
+    type Result = Result<usize>;
+
+    fn handle(
+        &mut self,
+        msg: UpdateTorrentMsg,
+        _: &mut Self::Context,
+    ) -> <Self as Handler<UpdateTorrentMsg>>::Result {
+        let conn = self.conn();
+        let torrent = models::Torrent::find(&msg.id, &conn).ok_or_else(|| "torrent not found")?;
+        let acl = msg.acl.read().unwrap();
+        let subj = UserSubject::new(&msg.user_id, &msg.group_id, &acl);
+        if !subj.may_write(&torrent) {
+            bail!("user is not allowed");
+        }
+
+        let _category = match models::category::Category::find(&msg.category, &conn) {
+            Some(c) => c,
+            None => bail!("category not found"),
+        };
+
+        let torrent = models::torrent::UpdateTorrent{
+            name: &msg.name,
+            category_id: &msg.category,
+            description: &msg.description,
+        };
+
+        if msg.nfo_file.is_some() {
+            msg.replace_nfo(&conn)?;
+        }
+
+        torrent.update(&msg.id, &conn)
+    }
+}
+
+#[derive(Debug, Default)]
 pub struct NewTorrentBuilder {
     name: String,
     description: String,

@@ -36,7 +36,7 @@ pub fn profile(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespon
                     .map(|t| t.into()),
                 Err(e) => {
                     info!("user '{}' not found: {}", user_id, e);
-                    not_found(req)
+                    Err(ErrorNotFound(e.to_string()))
                 }
             }
         });
@@ -68,7 +68,7 @@ pub fn view(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<
                 },
                 Err(e) => {
                     info!("user '{}' not found: {}", user_id, e);
-                    not_found(req)
+                    Err(ErrorNotFound(e.to_string()))
                 }
             }
         });

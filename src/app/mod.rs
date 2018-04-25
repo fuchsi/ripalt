@@ -24,8 +24,12 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 use models::User;
+
 use template::TemplateContainer;
 use tera::Context;
+use bytes::Bytes;
+use multipart::server::{save::SavedData, Entries, Multipart, SaveResult};
+use std::io::Cursor;
 
 pub mod index;
 pub mod login;
@@ -89,7 +93,8 @@ pub fn build(
                 .secure(*session_secure),
         ))
         .middleware(
-            ErrorHandlers::new().handler(StatusCode::INTERNAL_SERVER_ERROR, app::server_error),
+            ErrorHandlers::new().handler(StatusCode::INTERNAL_SERVER_ERROR, app::server_error)
+                .handler(StatusCode::NOT_FOUND, app::server_error),
         )
         .handler("/static", StaticFiles::new("webroot/static/"))
         .resource("/", |r| {
@@ -128,6 +133,12 @@ pub fn build(
             r.name("torrent#upload");
             r.method(Method::POST).filter(require_user()).f(app::torrent::create);
         })
+        .resource("/torrent/edit/{id}", |r| {
+            r.name("torrent#edit");
+            r.method(Method::GET).filter(require_user()).a(app::torrent::edit);
+            r.name("torrent#update");
+            r.method(Method::POST).filter(require_user()).a(app::torrent::update);
+        })
         .resource("/torrent/download/{id}", |r| {
             r.name("torrent#download");
             r.method(Method::GET).filter(require_user()).f(app::torrent::download);
@@ -151,17 +162,17 @@ pub fn build(
         .default_resource(|r| r.f(app::not_found))
 }
 
-pub fn not_found(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
+pub fn not_found(req: HttpRequest<State>) -> HttpResponse {
     use actix_web::dev::Handler;
 
     let mut h = NormalizePath::default();
     let resp = h.handle(req.clone());
-
-    if resp.status().is_server_error() || resp.status().is_client_error() {
-        Ok(render_error(&req, resp))
-    } else {
-        Ok(resp)
-    }
+    resp
+//    if resp.status().is_server_error() || resp.status().is_client_error() {
+//        Ok(render_error(&req, resp))
+//    } else {
+//        Ok(resp)
+//    }
 }
 
 pub fn server_error(
@@ -206,4 +217,38 @@ fn render_error(req: &HttpRequest<State>, resp: HttpResponse) -> HttpResponse {
     }
 
     new_resp
+}
+
+#[derive(Debug, Clone)]
+struct MultipartRequest {
+    body: Bytes,
+    boundary: String,
+}
+
+impl MultipartRequest {
+    pub fn new(content_type: &str, body: Bytes) -> Self {
+        debug!("content-type: {}", content_type);
+        let boundary: String = match content_type.rfind("boundary=") {
+            // todo: check for trailing stuff
+            Some(index) => {
+                let index = index + 9; // add length of 'boundary='
+                String::from(&content_type[index..])
+            }
+            None => String::from("--"),
+        };
+        debug!("boundary: {}", boundary);
+        MultipartRequest { body, boundary }
+    }
+}
+
+impl multipart::server::HttpRequest for MultipartRequest {
+    type Body = Cursor<Bytes>;
+
+    fn multipart_boundary(&self) -> Option<&str> {
+        Some(&self.boundary[..])
+    }
+
+    fn body(self) -> <Self as multipart::server::HttpRequest>::Body {
+        Cursor::new(self.body)
+    }
 }

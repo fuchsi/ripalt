@@ -67,11 +67,14 @@
 {% block sidebar %}
     <div class="col-md-2 col-xs-1 pl-0 pr-0 mt-0 pt-2" id="sidebar">
         <div class="list-group pt-2 pb-2" id="quicksearch">
-            <form class="form-inline">
+            <form class="form-inline" action="/torrents" method="post">
+                <input type="hidden" name="category" value="">
+                <input type="hidden" name="visible" value="visible">
+                <input type="hidden" name="page" value="1">
                 <div class="input-group ml-4">
-                    <input type="text" class="form-control" placeholder="Search for..." aria-label="Search for...">
+                    <input name="name" type="text" class="form-control" placeholder="Search for..." aria-label="Search for...">
                     <div class="input-group-append">
-                        <button class="btn btn-outline-secondary text-light" type="button">Rust!</button>
+                        <button class="btn btn-outline-secondary text-light" type="submit">Go!</button>
                     </div>
                 </div>
             </form>

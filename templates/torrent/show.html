@@ -69,11 +69,15 @@
                                     <p class="col-sm-2">Completed</p>
                                     <p class="col-sm-10">{{torrent.completed}}</p>
                                 </div>
-                                <div class="row mt-2">
+                                <div class="row mt-2 border-bottom">
                                     <p class="col-sm-2">Files</p>
                                     <p class="col-sm-10">{{num_files}}</p>
                                     <p class="col-sm-2">Size</p>
                                     <p class="col-sm-10">{{torrent.size | data_size}}</p>
+                                </div>
+                                <div class="row mt-2">
+                                    <p class="col-sm-2">Description</p>
+                                    <p class="col-sm-10">{{torrent.description}}</p>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="torrent-nfo" role="tabpanel" aria-labelledby="nfo-tab">

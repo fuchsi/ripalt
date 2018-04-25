@@ -156,6 +156,25 @@ impl<'a> NewTorrent<'a> {
     }
 }
 
+#[derive(AsChangeset)]
+#[table_name = "torrents"]
+pub struct UpdateTorrent<'a> {
+    pub name: &'a str,
+    pub category_id: &'a Uuid,
+    pub description: &'a str,
+}
+
+impl<'a> UpdateTorrent<'a> {
+    pub fn update(&self, id: &Uuid, db: &PgConnection) -> Result<usize> {
+        use schema::torrents::dsl as t;
+        diesel::update(schema::torrents::table)
+            .set(self)
+            .filter(t::id.eq(id))
+            .execute(db)
+            .map_err(|e| format!("failed to update torrent: {}", e).into())
+    }
+}
+
 #[derive(Debug, Queryable, Insertable, AsChangeset, Identifiable)]
 #[table_name = "torrent_meta_files"]
 pub struct TorrentMetaFile {
