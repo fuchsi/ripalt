@@ -21,6 +21,7 @@
 pub mod rand;
 pub mod password;
 pub mod torrent;
+pub mod user;
 
 use data_encoding::HEXLOWER;
 use number_prefix::{binary_prefix, Prefixed, Standalone, PrefixNames};

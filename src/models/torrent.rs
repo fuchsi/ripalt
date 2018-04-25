@@ -276,6 +276,7 @@ pub struct TorrentMsg {
     pub nfo: Option<TorrentNFO>,
     pub files: Vec<TorrentFile>,
     pub peers: Vec<(Peer, String)>,
+    pub timezone: i32,
 }
 
 impl TorrentMsg {
@@ -286,6 +287,7 @@ impl TorrentMsg {
             let peers = Peer::find_for_torrent(id, db);
             let torrent_user_name = torrent.user_name(db);
             let category = Category::find(&torrent.category_id, db).ok_or("category not found")?;
+            let timezone = SETTINGS.read().unwrap().user.default_timezone;
 
             Ok(TorrentMsg {
                 torrent,
@@ -294,6 +296,7 @@ impl TorrentMsg {
                 nfo,
                 files,
                 peers,
+                timezone,
             })
         } else {
             bail!("torrent not found: {}", id)

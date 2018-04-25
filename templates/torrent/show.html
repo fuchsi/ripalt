@@ -63,7 +63,7 @@
                                         {% endif %}
                                     </p>
                                     <p class="col-sm-2">Added</p>
-                                    <p class="col-sm-10">{{torrent.created_at}}</p>
+                                    <p class="col-sm-10">{{torrent.created_at | format_date(timezone=timezone)}}</p>
                                     <p class="col-sm-2">Hits</p>
                                     <p class="col-sm-10">0{# torrent.hits #}</p>
                                     <p class="col-sm-2">Completed</p>
@@ -130,9 +130,9 @@
                                             <td scope="row">{{peer.bytes_uploaded | data_size}}</td>
                                             <td scope="row">{{peer.bytes_downloaded | data_size}}</td>
                                             <td scope="row">{{peer.ratio}}</td>
-                                            <td scope="row">{{peer.created_at}}</td>
-                                            <td scope="row">{{peer.updated_at}}</td>
-                                            <td scope="row">{{peer.finished_at}}</td>
+                                            <td scope="row">{{peer.created_at | format_date(timezone=timezone)}}</td>
+                                            <td scope="row">{{peer.updated_at | format_date(timezone=timezone)}}</td>
+                                            <td scope="row">{{peer.finished_at | format_date(timezone=timezone)}}</td>
                                             <td scope="row">{{peer.user_agent}}</td>
                                         </tr>
                                     {% endfor %}
@@ -166,8 +166,8 @@
                                                 <td scope="row">{{peer.bytes_uploaded | data_size}}</td>
                                                 <td scope="row">{{peer.bytes_downloaded | data_size}}</td>
                                                 <td scope="row">{{peer.ratio}}</td>
-                                                <td scope="row">{{peer.created_at}}</td>
-                                                <td scope="row">{{peer.updated_at}}</td>
+                                                <td scope="row">{{peer.created_at | format_date(timezone=timezone)}}</td>
+                                                <td scope="row">{{peer.updated_at | format_date(timezone=timezone)}}</td>
                                                 <td scope="row">{{peer.complete_ratio}}</td>
                                                 <td scope="row">{{peer.user_agent}}</td>
                                             </tr>

@@ -185,17 +185,27 @@ fn data_size(value: Value, _: HashMap<String, Value>) -> tera::Result<Value> {
     }
 }
 
-fn format_date(value: Value, _: HashMap<String, Value>) -> tera::Result<Value> {
+fn format_date(value: Value, args: HashMap<String, Value>) -> tera::Result<Value> {
     static FORMAT_STRING: &'static str = "%d.%m.%Y %H:%M:%S";
     let date = match value {
         Value::String(s) => {
-            DateTime::parse_from_rfc3339(&s[..]).map_err(|e| format!("not a date string: {}", e))?
+            match DateTime::parse_from_rfc3339(&s[..]).map_err(|e| format!("not a date string: {}", e)) {
+                Ok(date) => date.with_timezone(&Utc),
+                Err(_) => return Ok(Value::String(s)),
+            }
         }
         Value::Null => {
             return Ok(Value::String(String::from("---")));
         }
         _ => return Err("not a date time string".into()),
     };
+
+    if let Some(Value::Number(timezone)) = args.get("timezone") {
+        if let Some(timezone) = timezone.as_i64() {
+            let local = date.with_timezone(&FixedOffset::east(timezone as i32 * 3600));
+            return Ok(Value::String(local.format(FORMAT_STRING).to_string()));
+        }
+    }
 
     Ok(Value::String(date.format(FORMAT_STRING).to_string()))
 }

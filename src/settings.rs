@@ -30,6 +30,7 @@ pub struct Database {
 pub struct User {
     pub default_group: Uuid,
     pub passcode_length: usize,
+    pub default_timezone: i32,
 }
 
 #[derive(Debug, Deserialize)]

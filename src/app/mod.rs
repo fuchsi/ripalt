@@ -47,9 +47,9 @@ type SyncResponse<T> = actix_web::Result<T>;
 fn sync_redirect(loc: &str) -> SyncResponse<HttpResponse> {
     Ok(redirect(loc))
 }
-//fn async_redirect(loc: &str) -> FutureResponse<HttpResponse> {
-//    Box::new(future::ok(redirect(loc)))
-//}
+fn async_redirect(loc: &str) -> FutureResponse<HttpResponse> {
+    Box::new(future::ok(redirect(loc)))
+}
 fn redirect(loc: &str) -> HttpResponse {
     HttpResponse::SeeOther()
         .header(header::LOCATION, loc.to_owned())

@@ -305,6 +305,7 @@ impl Handler<UserProfile> for DbExecutor {
                     }
                 };
                 let uploads = UserUpload::find_for_user(&user.id, &db);
+                let timezone = util::user::user_timezone(&msg.1, &db);
 
                 Ok(UserProfileMsg{
                     user,
@@ -313,6 +314,7 @@ impl Handler<UserProfile> for DbExecutor {
                     completed,
                     connections,
                     uploads,
+                    timezone,
                 })
             },
             None => bail!("user not found"),

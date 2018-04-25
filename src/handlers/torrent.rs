@@ -217,12 +217,14 @@ pub struct NewFile {
 
 pub struct LoadTorrent {
     id: Uuid,
+    user_id: Uuid,
 }
 
 impl LoadTorrent {
-    pub fn new(id: &Uuid) -> LoadTorrent {
+    pub fn new(id: &Uuid, user_id: &Uuid) -> LoadTorrent {
         LoadTorrent{
             id: id.clone(),
+            user_id: user_id.clone(),
         }
     }
 }
@@ -236,7 +238,11 @@ impl Handler<LoadTorrent> for DbExecutor {
 
     fn handle(&mut self, msg: LoadTorrent, _: &mut Self::Context) -> <Self as Handler<LoadTorrent>>::Result {
         let conn = self.conn();
-        models::torrent::TorrentMsg::find(&msg.id, &conn)
+        let torrent = models::torrent::TorrentMsg::find(&msg.id, &conn);
+        torrent.map(|mut t| {
+            t.timezone = util::user::user_timezone(&msg.user_id, &conn);
+            t
+        })
     }
 }
 
@@ -296,13 +302,15 @@ pub struct LoadTorrentList {
     pub visible: Visible,
     pub page: i64,
     pub per_page: i64,
+    pub current_user_id: Uuid,
 }
 
 impl LoadTorrentList {
-    pub fn new() -> Self {
+    pub fn new(user_id: &Uuid) -> Self {
         LoadTorrentList {
             page: 1,
             per_page: 25,
+            current_user_id: user_id.clone(),
             ..Default::default()
         }
     }
@@ -374,15 +382,30 @@ impl LoadTorrentList {
     }
 }
 
+#[derive(Debug, Default)]
+pub struct TorrentListMsg {
+    pub torrents: Vec<models::TorrentList>,
+    pub count: i64,
+    pub request: LoadTorrentList,
+    pub timezone: i32,
+}
+
 impl Message for LoadTorrentList {
-    type Result = Result<(Vec<models::TorrentList>, i64, LoadTorrentList)>;
+    type Result = Result<TorrentListMsg>;
 }
 
 impl Handler<LoadTorrentList> for DbExecutor {
-    type Result = Result<(Vec<models::TorrentList>, i64,  LoadTorrentList)>;
+    type Result = Result<TorrentListMsg>;
 
     fn handle(&mut self, msg: LoadTorrentList, _: &mut Self::Context) -> <Self as Handler<LoadTorrentList>>::Result {
-        let (list, count) = msg.query(&self.conn());
-        Ok((list, count, msg))
+        let db = self.conn();
+        let (list, count) = msg.query(&db);
+        let timezone = util::user::user_timezone(&msg.current_user_id, &db);
+        Ok(TorrentListMsg{
+            torrents: list,
+            count,
+            request: msg,
+            timezone,
+        })
     }
 }

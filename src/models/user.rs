@@ -267,6 +267,17 @@ impl Property {
         self.insert_into(user_properties::table).execute(db)
     }
 
+    pub fn find(user_id: &Uuid, name: &str, db: &PgConnection) -> Option<Property>
+    {
+        use schema::user_properties::dsl;
+
+        dsl::user_properties
+            .filter(dsl::user_id.eq(&user_id))
+            .filter(dsl::name.eq(name))
+            .first::<Property>(db)
+            .ok()
+    }
+
     pub fn get_from_name_value<T>(name: &str, value: T, db: &PgConnection) -> Option<Property>
     where
         T: Into<serde_json::Value>,
@@ -309,6 +320,7 @@ pub struct UserProfileMsg {
     pub uploads: Vec<UserUpload>,
     pub completed: Vec<CompletedTorrent>,
     pub connections: Vec<UserConnection>,
+    pub timezone: i32,
 }
 
 #[derive(Debug, Serialize, Queryable, Identifiable)]

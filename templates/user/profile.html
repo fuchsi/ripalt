@@ -32,9 +32,9 @@
                 <div class="tab-pane active" id="profile-details" role="tabpanel" aria-labelledby="details-tab">
                     <div class="row border-bottom">
                         <p class="col-sm-2">Registered</p>
-                        <p class="col-sm-10">{{user.created_at | format_date }}</p>
+                        <p class="col-sm-10">{{user.created_at | format_date(timezone=timezone) }}</p>
                         <p class="col-sm-2">Last Active</p>
-                        <p class="col-sm-10">{{user.updated_at | format_date }}</p>
+                        <p class="col-sm-10">{{user.updated_at | format_date(timezone=timezone) }}</p>
                         <p class="col-sm-2">Announce URL</p>
                         <p class="col-sm-10">
                             /tracker/announce/{{user.passcode}}
@@ -232,7 +232,7 @@
                                 <td>{{c.bytes_downloaded | data_size }}</td>
                                 <td>{{ratio_total}}</td>
                                 <td>{{c.size | data_size }}</td>
-                                <td>{{c.completed_at | format_date }}</td>
+                                <td>{{c.completed_at | format_date(timezone=timezone) }}</td>
                                 <td>{{c.time_seeded | duration }}</td>
                                 <td>
                                     {% if c.is_seeder %}

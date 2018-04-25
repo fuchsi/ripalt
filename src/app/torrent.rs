@@ -39,6 +39,7 @@ struct ListContext {
     category: Option<Uuid>,
     name: Option<String>,
     visible: Option<String>,
+    timezone: i32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -60,10 +61,15 @@ impl ListForm {
     }
 }
 
-pub fn list(req: HttpRequest<State>) -> FutureResponse<Template> {
+pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
+    let user_id = match session_creds(&mut req) {
+        Some((u, _)) => u,
+        None => return async_redirect("/login"),
+    };
+
     let page_size = 100i64; // todo: get this from the user properties
     let page = 1i64;
-    let mut torrent_list = LoadTorrentList::new();
+    let mut torrent_list = LoadTorrentList::new(&user_id);
     torrent_list.page(page as i64, page_size as i64);
 
     let fut_form;
@@ -96,28 +102,29 @@ pub fn list(req: HttpRequest<State>) -> FutureResponse<Template> {
         fut_db = fut_form.and_then(move |torrent_list| req.state().db().send(torrent_list))
     }
 
-    let fut_response = fut_db.from_err().and_then(move |result| {
-        let (list, total_count, ltl) = result.unwrap_or((vec![], 0, LoadTorrentList::default()));
+    let fut_response = fut_db.from_err().and_then(move |result: Result<TorrentListMsg>| {
+        let msg = result.unwrap_or_else(|_| TorrentListMsg::default());
         let categories = categories(req.state());
-        let total_count = total_count;
-        let count = list.len() as i64;
-        let pages = total_count / ltl.per_page;
+        let total_count = msg.count;
+        let count = msg.torrents.len() as i64;
+        let pages = total_count / msg.request.per_page;
 
         let ctx = ListContext {
             categories,
-            list,
+            list: msg.torrents,
             total_count,
             count,
-            page: ltl.page,
+            page: msg.request.page,
             pages,
-            per_page: ltl.per_page,
-            name: ltl.name,
-            visible: Some(ltl.visible.to_string()),
-            category: ltl.category,
+            per_page: msg.request.per_page,
+            name: msg.request.name,
+            visible: Some(msg.request.visible.to_string()),
+            category: msg.request.category,
+            timezone: msg.timezone,
         };
         trace!("ctx: {:#?}", ctx);
         let reg = &req.state().template();
-        Template::render(&reg, "torrent/list.html", &ctx)
+        Template::render(&reg, "torrent/list.html", &ctx).map(|t| t.into())
     });
 
     fut_response.responder()
@@ -335,6 +342,7 @@ struct ShowContext<'a> {
     num_files: usize,
     may_edit: bool,
     may_delete: bool,
+    timezone: i32,
 }
 
 impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
@@ -378,6 +386,7 @@ impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
             num_files: tc.files.len(),
             may_edit: false,
             may_delete: false,
+            timezone: tc.timezone,
         }
     }
 }
@@ -457,23 +466,13 @@ struct ShowTorrent<'a> {
     description: &'a str,
     size: &'a i64,
     completed: &'a i32,
-    last_action: String,
-    last_seeder: String,
-    created_at: String,
+    last_action: &'a Option<DateTime<Utc>>,
+    last_seeder: &'a Option<DateTime<Utc>>,
+    created_at: &'a DateTime<Utc>,
 }
 
 impl<'a> From<&'a Torrent> for ShowTorrent<'a> {
     fn from(torrent: &'a Torrent) -> Self {
-        let format_string = "%d.%m.%Y %H:%M:%S %Z";
-        let created_at = torrent.created_at.format(format_string).to_string();
-        let last_action = match torrent.last_action {
-            Some(dt) => dt.format(format_string).to_string(),
-            None => String::from("--"),
-        };
-        let last_seeder = match torrent.last_seeder {
-            Some(dt) => dt.format(format_string).to_string(),
-            None => String::from("--"),
-        };
 
         ShowTorrent {
             id: &torrent.id,
@@ -484,9 +483,9 @@ impl<'a> From<&'a Torrent> for ShowTorrent<'a> {
             description: &torrent.description[..],
             size: &torrent.size,
             completed: &torrent.completed,
-            last_action,
-            last_seeder,
-            created_at,
+            last_action: &torrent.last_action,
+            last_seeder: &torrent.last_seeder,
+            created_at: &torrent.created_at,
         }
     }
 }
@@ -511,7 +510,7 @@ pub fn torrent(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespon
     let fut_response = req.clone()
         .state()
         .db()
-        .send(LoadTorrent::new(&id))
+        .send(LoadTorrent::new(&id, &user_id))
         .from_err()
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {

@@ -57,9 +57,9 @@
                     <tr>
                         <td scope="row">{{torrent.category_name}}</td>
                         <td scope="row"><a href="/torrent/{{torrent.id}}">{{torrent.name}}</a></td>
-                        <td scope="row">{{torrent.created_at | format_date}}</td>
-                        <td scope="row">{{torrent.last_action | format_date}}</td>
-                        <td scope="row">{{torrent.last_seeder | format_date}}</td>
+                        <td scope="row">{{torrent.created_at | format_date(timezone=timezone)}}</td>
+                        <td scope="row">{{torrent.last_action | format_date(timezone=timezone)}}</td>
+                        <td scope="row">{{torrent.last_seeder | format_date(timezone=timezone)}}</td>
                         <td scope="row">{{torrent.files}}</td>
                         <td scope="row">{{torrent.size | data_size}}</td>
                         <td scope="row">{{torrent.completed}}</td>
