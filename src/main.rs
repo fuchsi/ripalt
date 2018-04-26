@@ -66,6 +66,8 @@ extern crate tera;
 extern crate url;
 extern crate walkdir;
 extern crate markdown;
+extern crate tokio_core;
+extern crate tokio_io;
 
 #[cfg(test)]
 #[macro_use]
@@ -73,6 +75,7 @@ extern crate pretty_assertions;
 
 pub mod api;
 pub mod app;
+mod chat;
 mod cleanup;
 pub mod db;
 pub mod error;

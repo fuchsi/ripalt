@@ -32,6 +32,7 @@ pub struct State {
     db: Addr<Syn, DbExecutor>,
     acl: Arc<RwLock<Acl>>,
     template: Option<TemplateContainer>,
+    chat: Option<Addr<Syn, chat::Server>>
 }
 
 impl State {
@@ -41,6 +42,7 @@ impl State {
             db,
             acl,
             template: None,
+            chat: None,
         }
     }
 
@@ -75,6 +77,17 @@ impl State {
         match &self.template {
             Some(template) => template.clone(),
             None => panic!("template system not initialized"),
+        }
+    }
+
+    pub fn set_chat(&mut self, chat: Addr<Syn, chat::Server>) {
+        self.chat = chat;
+    }
+
+    pub fn chat(&self) -> &Addr<Sync, chat::Server> {
+        match &self.chat {
+            Some(chat) => chat,
+            None => panic!("chat actor not available"),
         }
     }
 }
