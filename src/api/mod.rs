@@ -18,8 +18,11 @@
 
 use super::*;
 
+use self::identity::{ApiIdentityPolicy, RequestIdentity, IdentityService};
+
+mod chat;
 pub mod identity;
-pub mod user;
+mod user;
 
 pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
     let settings = SETTINGS.read().unwrap();
@@ -52,10 +55,12 @@ pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
                 .name(session_name)
                 .secure(*session_secure),
         ))
-        .middleware(IdentityService::new(identity::ApiIdentityPolicy::new(
+        .middleware(IdentityService::new(ApiIdentityPolicy::new(
             &jwt_secret,
         )))
         .prefix("/api/v1")
         .resource("/user/stats", |r| r.method(Method::GET).a(user::stats))
+        .resource("/chat/messages", |r| r.method(Method::GET).a(chat::messages))
+        .resource("/chat/publish", |r| r.method(Method::POST).with2(chat::publish))
         .default_resource(|r| r.method(Method::GET).h(NormalizePath::default()))
 }

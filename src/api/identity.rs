@@ -18,10 +18,140 @@
 
 use super::*;
 
-use actix_web::middleware::identity::{Identity, IdentityPolicy};
-use actix_web::middleware::Response;
+use actix_web::middleware::{Middleware, Response, Started};
+use actix_web::error::{Error as AwError, Result as AwResult};
 use jwt::{decode, Validation};
 use std::rc::Rc;
+
+/// Identity policy definition.
+pub trait IdentityPolicy<S>: Sized + 'static {
+    type Identity: Identity;
+    type Future: Future<Item = Self::Identity, Error = AwError>;
+
+    /// Parse the session from request and load data from a service identity.
+    fn from_request(&self, request: &mut HttpRequest<S>) -> Self::Future;
+}
+
+pub trait Identity {
+    fn identity(&self) -> Option<&str>;
+
+    fn forget(&mut self);
+
+    fn credentials(&self) -> Option<(&Uuid, &Uuid)>;
+
+    fn user_id(&self) -> Option<&Uuid> {
+        self.credentials().map(|s| s.0 )
+    }
+
+    fn group_id(&self) -> Option<&Uuid> {
+        self.credentials().map(|s| s.1 )
+    }
+}
+
+pub trait RequestIdentity {
+    /// Return the claimed identity of the user associated request or
+    /// ``None`` if no identity can be found associated with the request.
+    fn identity(&self) -> Option<&str>;
+
+    /// This method is used to 'forget' the current identity on subsequent
+    /// requests.
+    fn forget(&mut self);
+
+    fn credentials(&self) -> Option<(&Uuid, &Uuid)>;
+
+    fn user_id(&self) -> Option<&Uuid> {
+        self.credentials().map(|s| s.0 )
+    }
+
+    fn group_id(&self) -> Option<&Uuid> {
+        self.credentials().map(|s| s.1 )
+    }
+}
+
+impl<S> RequestIdentity for HttpRequest<S> {
+    fn identity(&self) -> Option<&str> {
+        if let Some(id) = self.extensions_ro().get::<IdentityBox>() {
+            return id.0.identity();
+        }
+        None
+    }
+
+    fn forget(&mut self) {
+        if let Some(id) = self.extensions_mut().get_mut::<IdentityBox>() {
+            return id.0.forget();
+        }
+    }
+
+    fn credentials(&self) -> Option<(&Uuid, &Uuid)> {
+        if let Some(id) = self.extensions_ro().get::<IdentityBox>() {
+            return id.0.credentials();
+        }
+        None
+    }
+}
+
+/// Request identity middleware
+///
+/// ```rust
+/// # extern crate actix;
+/// # extern crate actix_web;
+/// use actix_web::App;
+/// use actix_web::middleware::identity::{IdentityService, CookieIdentityPolicy};
+///
+/// fn main() {
+///    let app = App::new().middleware(
+///        IdentityService::new(                      // <- create identity middleware
+///            CookieIdentityPolicy::new(&[0; 32])    // <- create cookie session backend
+///               .name("auth-cookie")
+///               .secure(false))
+///    );
+/// }
+/// ```
+pub struct IdentityService<T> {
+    backend: T,
+}
+
+impl<T> IdentityService<T> {
+    /// Create new identity service with specified backend.
+    pub fn new(backend: T) -> Self {
+        IdentityService { backend }
+    }
+}
+
+struct IdentityBox(Box<Identity>);
+
+#[doc(hidden)]
+unsafe impl Send for IdentityBox {}
+#[doc(hidden)]
+unsafe impl Sync for IdentityBox {}
+
+impl<S: 'static, T: IdentityPolicy<S>> Middleware<S> for IdentityService<T> {
+    fn start(&self, req: &mut HttpRequest<S>) -> AwResult<Started> {
+        let mut req = req.clone();
+
+        let fut = self.backend
+            .from_request(&mut req)
+            .then(move |res| match res {
+                Ok(id) => {
+                    req.extensions().insert(IdentityBox(Box::new(id)));
+                    FutOk(None)
+                }
+                Err(err) => FutErr(err),
+            });
+        Ok(Started::Future(Box::new(fut)))
+    }
+
+    fn response(
+        &self, req: &mut HttpRequest<S>, resp: HttpResponse
+    ) -> AwResult<Response> {
+        if let Some(_id) = req.extensions().remove::<IdentityBox>() {
+            Ok(Response::Done(resp))
+        } else {
+            Ok(Response::Done(resp))
+        }
+    }
+}
+
 
 pub struct ApiIdentityPolicy(Rc<ApiIdentityInner>);
 
@@ -38,7 +168,7 @@ impl<S> IdentityPolicy<S> for ApiIdentityPolicy {
     fn from_request(&self, request: &mut HttpRequest<S>) -> Self::Future {
         let identity = self.0.load(request);
         if identity.is_some() {
-            FutOk(ApiIdentity { identity })
+            FutOk(ApiIdentity::new(identity))
         } else {
             FutErr(actix_web::error::ErrorUnauthorized("unauthorized"))
         }
@@ -46,30 +176,31 @@ impl<S> IdentityPolicy<S> for ApiIdentityPolicy {
 }
 
 pub struct ApiIdentity {
-    identity: Option<String>,
+    identity: Option<(Uuid, Uuid)>,
+    str_identity: Option<String>
+}
+
+impl ApiIdentity {
+    pub fn new(identity: Option<(Uuid, Uuid)>) -> ApiIdentity {
+        let str_identity = identity.map(|s| s.0.to_string());
+        ApiIdentity{identity, str_identity}
+    }
 }
 
 impl Identity for ApiIdentity {
     fn identity(&self) -> Option<&str> {
-        self.identity.as_ref().map(|s| s.as_ref())
-    }
-
-    fn remember(&mut self, key: String) {
-        warn!("Identity::remember is not available");
-        self.identity = Some(key);
+        self.str_identity.as_ref().map(|s| s.as_ref() )
     }
 
     fn forget(&mut self) {
-        warn!("Identity::forget is not available");
         self.identity = None;
     }
 
-    fn write(&mut self, resp: HttpResponse) -> actix_web::error::Result<Response> {
-        warn!("Identity::write is not available");
-
-        Ok(Response::Done(resp))
+    fn credentials(&self) -> Option<(&Uuid, &Uuid)> {
+        self.identity.as_ref().map(|s| (&s.0, &s.1) )
     }
 }
+
 
 struct ApiIdentityInner {
     key: Vec<u8>,
@@ -80,9 +211,10 @@ impl ApiIdentityInner {
         ApiIdentityInner { key: key.to_vec() }
     }
 
-    fn load<S>(&self, req: &mut HttpRequest<S>) -> Option<String> {
-        if let Ok(user_id) = req.session().get::<String>("user_id") {
-            return user_id;
+    fn load<S>(&self, req: &mut HttpRequest<S>) -> Option<(Uuid, Uuid)> {
+        let from_session = session_creds(req);
+        if from_session.is_some() {
+            return from_session;
         }
         if let Some(header) = req.headers().get("authorization") {
             if let Ok(header) = header.to_str() {
@@ -92,8 +224,8 @@ impl ApiIdentityInner {
                         Ok(c) => c,
                         Err(_) => return None,
                     };
-                    let user_id = token_data.claims.user_id.clone();
-                    return Some(user_id);
+                    let Claims {iat: _, user_id, group_id } = token_data.claims;
+                    return Some((user_id, group_id));
                 }
             }
         }
@@ -104,5 +236,6 @@ impl ApiIdentityInner {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     iat: i64,
-    user_id: String,
+    user_id: Uuid,
+    group_id: Uuid,
 }

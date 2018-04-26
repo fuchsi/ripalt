@@ -53,6 +53,7 @@ extern crate config;
 extern crate data_encoding;
 extern crate fast_chemail;
 extern crate jsonwebtoken as jwt;
+extern crate markdown;
 extern crate multipart;
 extern crate notify;
 extern crate num_cpus;
@@ -65,32 +66,30 @@ extern crate serde_json;
 extern crate tera;
 extern crate url;
 extern crate walkdir;
-extern crate markdown;
 
 #[cfg(test)]
 #[macro_use]
 extern crate pretty_assertions;
 
-pub mod api;
-pub mod app;
+mod api;
+mod app;
 mod cleanup;
-pub mod db;
-pub mod error;
-pub mod handlers;
-pub mod models;
-pub mod schema;
-pub mod settings;
-pub mod state;
-pub mod template;
-pub mod tracker;
-pub mod util;
+mod db;
+mod error;
+mod handlers;
+mod models;
+mod schema;
+mod settings;
+mod state;
+mod template;
+mod tracker;
+mod util;
 
 use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
 
 use actix::prelude::*;
-use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
-use actix_web::middleware::identity::{IdentityService, RequestIdentity};
+use actix_web::error::{ErrorBadRequest, ErrorForbidden, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::middleware::{csrf, CookieSessionBackend, DefaultHeaders, ErrorHandlers, Logger,
                             RequestSession, SessionStorage};
 use actix_web::{fs::StaticFiles,
@@ -219,7 +218,7 @@ impl actix_web::pred::Predicate<State> for RequireUserMsg {
     }
 }
 
-fn session_creds(req: &mut actix_web::HttpRequest<State>) -> Option<(Uuid, Uuid)> {
+fn session_creds<S>(req: &mut actix_web::HttpRequest<S>) -> Option<(Uuid, Uuid)> {
     let user_id = match req.session().get::<Uuid>("user_id").unwrap_or(None) {
         Some(user_id) => user_id,
         None => return None,
