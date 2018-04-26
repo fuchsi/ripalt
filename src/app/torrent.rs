@@ -582,23 +582,19 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             // save().temp() reads the request fully, parsing all fields and saving all files
             // in a new temporary directory under the OS temporary directory.
             match multipart.save().temp() {
-                SaveResult::Full(entries) => process_update(&entries),
+                SaveResult::Full(entries) => {
+                    let torrent = UpdateTorrentMsg::new(id, UserSubjectMsg::new(user_id, group_id, acl));
+                    process_update(&entries, torrent)
+                },
                 SaveResult::Partial(_, reason) => Err(format!("partial read: {:?}", reason).into()),
                 SaveResult::Error(error) => Err(format!("io error: {}", error).into()),
             }
         });
 
-    let fut_process = fut_prepare
-        .map_err(|error| ErrorInternalServerError(error.to_string()))
-        .and_then(move |mut torrent| {
-            torrent.id = id;
-            torrent.user_id = user_id;
-            torrent.group_id = group_id;
-            torrent.acl = acl;
-            Ok(torrent)
-        });
     let cloned = req.clone();
-    let fut_result = fut_process.and_then(move |torrent| {
+    let fut_result = fut_prepare
+        .map_err(|e| ErrorInternalServerError(e.to_string()))
+        .and_then(move |torrent| {
         cloned
             .state()
             .db()
@@ -633,9 +629,8 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .responder()
 }
 
-fn process_update(entries: &Entries) -> Result<UpdateTorrentMsg> {
+fn process_update(entries: &Entries, mut msg: UpdateTorrentMsg) -> Result<UpdateTorrentMsg> {
     let mut key = "torrent_name".to_string();
-    let mut msg = UpdateTorrentMsg::default();
 
     let name = &entries.fields[&key][0];
     if let SavedData::Text(ref name) = name.data {

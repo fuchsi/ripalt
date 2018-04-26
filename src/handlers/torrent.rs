@@ -107,19 +107,28 @@ impl Handler<NewTorrentMsg> for DbExecutor {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct UpdateTorrentMsg {
     pub id: Uuid,
     pub name: String,
     pub description: String,
     pub nfo_file: Option<Vec<u8>>,
     pub category: Uuid,
-    pub user_id: Uuid,
-    pub group_id: Uuid,
-    pub acl: AclContainer,
+    pub user: UserSubjectMsg,
 }
 
 impl UpdateTorrentMsg {
+    pub fn new(id: Uuid, user: UserSubjectMsg) -> Self {
+        UpdateTorrentMsg{
+            id,
+            name: Default::default(),
+            description: Default::default(),
+            nfo_file: Default::default(),
+            category: Default::default(),
+            user,
+        }
+    }
+
     fn replace_nfo(&self, conn: &DbConn) -> Result<usize> {
         let nfo_file = match self.nfo_file {
             Some(ref nfo_file) => nfo_file,
@@ -162,7 +171,7 @@ impl Handler<UpdateTorrentMsg> for DbExecutor {
     ) -> <Self as Handler<UpdateTorrentMsg>>::Result {
         let conn = self.conn();
         let torrent = models::Torrent::find(&msg.id, &conn).ok_or_else(|| "torrent not found")?;
-        let subj = UserSubject::new(&msg.user_id, &msg.group_id, Arc::clone(&msg.acl));
+        let subj = UserSubject::from(&msg.user);
         if !subj.may_write(&torrent) {
             bail!("user is not allowed");
         }
