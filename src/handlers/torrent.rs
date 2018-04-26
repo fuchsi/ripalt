@@ -543,9 +543,7 @@ impl Handler<DeleteTorrentMsg> for DbExecutor {
     type Result = Result<usize>;
 
     fn handle(&mut self, msg: DeleteTorrentMsg, _: &mut Self::Context) -> <Self as Handler<DeleteTorrentMsg>>::Result {
-        use schema::torrents::dsl as t;
         let conn = self.conn();
-
 
         let torrent = models::Torrent::find(&msg.id, &conn).ok_or_else(|| "torrent not found")?;
         let subj = UserSubject::from(&msg.user);

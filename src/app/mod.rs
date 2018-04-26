@@ -228,7 +228,6 @@ struct MultipartRequest {
 
 impl MultipartRequest {
     pub fn new(content_type: &str, body: Bytes) -> Self {
-        debug!("content-type: {}", content_type);
         let boundary: String = match content_type.rfind("boundary=") {
             // todo: check for trailing stuff
             Some(index) => {
@@ -237,7 +236,6 @@ impl MultipartRequest {
             }
             None => String::from("--"),
         };
-        debug!("boundary: {}", boundary);
         MultipartRequest { body, boundary }
     }
 }

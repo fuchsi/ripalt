@@ -20,8 +20,12 @@ use super::*;
 
 use std::collections::HashMap;
 use std::fmt::Write;
+use std::convert::TryInto;
 
 use tera::{Result, Value};
+use markdown;
+use regex::Regex;
+use regex::Captures;
 
 use util;
 
@@ -93,5 +97,12 @@ pub fn duration(value: Value, _: HashMap<String, Value>) -> Result<Value> {
         }
         Value::Null => Ok(Value::String("0s".to_string())),
         _ => Ok(Value::String("0s".to_string())),
+    }
+}
+
+pub fn markdown(value: Value, _: HashMap<String, Value>) -> Result<Value> {
+    match value {
+        Value::String(s) => Ok(Value::String(markdown::to_html(&s))),
+        _ => bail!("markdown: not a string"),
     }
 }

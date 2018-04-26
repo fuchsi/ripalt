@@ -614,7 +614,7 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.insert("message", "Torrent was edited.");
                     ctx.insert("title", "Edit Torrent");
                     ctx.insert("sub_title", "Edit Succeeded");
-                    ctx.insert("continue_link", &cloned.url_for("torrent#view", &[id.to_string()]).unwrap().to_string());
+                    ctx.insert("continue_link", &cloned.url_for("torrent#read", &[id.to_string()]).unwrap().to_string());
                     Template::render(&cloned.state().template(), "torrent/success.html", &ctx).map(|t| t.into())
                 },
                 Err(e) => {
@@ -651,25 +651,27 @@ fn process_update(entries: &Entries, mut msg: UpdateTorrentMsg) -> Result<Update
         msg.category = Uuid::parse_str(category)?;
     }
     key = "nfo_file".to_string();
-    let nfo = &entries.fields[&key][0];
-    match nfo.headers.content_type {
-        Some(ref c) if c.type_() == "text" => match nfo.data {
-            SavedData::Bytes(ref b) => {
-                msg.nfo_file = Some(b.clone());
-            }
-            SavedData::Text(ref s) => {
-                msg.nfo_file = Some(s.as_bytes().to_vec());
-            }
-            SavedData::File(ref path, size) => {
-                let mut file = std::fs::File::open(path).unwrap();
-                let mut buf: Vec<u8> = Vec::with_capacity(size as usize);
-                let res = file.read_to_end(&mut buf);
-                trace!("nfo from file({:?} {}B): {:?}", path, size, buf);
-                trace!("read result: {:?}", res);
-                msg.nfo_file = Some(buf);
-            }
-        },
-        _ => {},
+    if let Some(ref nfo) = entries.fields.get(&key) {
+        let nfo = &nfo[0];
+        match nfo.headers.content_type {
+            Some(ref c) if c.type_() == "text" => match nfo.data {
+                SavedData::Bytes(ref b) => {
+                    msg.nfo_file = Some(b.clone());
+                }
+                SavedData::Text(ref s) => {
+                    msg.nfo_file = Some(s.as_bytes().to_vec());
+                }
+                SavedData::File(ref path, size) => {
+                    let mut file = std::fs::File::open(path)?;
+                    let mut buf: Vec<u8> = Vec::with_capacity(size as usize);
+                    let res = file.read_to_end(&mut buf);
+                    trace!("nfo from file({:?} {}B): {:?}", path, size, buf);
+                    trace!("read result: {:?}", res);
+                    msg.nfo_file = Some(buf);
+                }
+            },
+            _ => {},
+        }
     }
 
     Ok(msg)
@@ -786,7 +788,7 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.insert("error", &e.to_string());
                     ctx.insert("title", "Delete Torrent");
                     ctx.insert("sub_title", "Delete Failed");
-                    ctx.insert("back_link", &cloned.url_for("torrent#view", &[id.to_string()]).unwrap().to_string());
+                    ctx.insert("back_link", &cloned.url_for("torrent#read", &[id.to_string()]).unwrap().to_string());
                     Template::render(&cloned.state().template(), "torrent/failed.html", &ctx).map(|t| t.into())
                 }
             }

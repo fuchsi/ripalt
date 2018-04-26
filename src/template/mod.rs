@@ -49,6 +49,7 @@ pub fn init_tera() -> TemplateContainer {
     tera.register_filter("data_size", helper::data_size);
     tera.register_filter("format_date", helper::format_date);
     tera.register_filter("duration", helper::duration);
+    tera.register_filter("markdown", helper::markdown);
 
     Arc::new(RwLock::new(tera))
 }

@@ -65,6 +65,7 @@ extern crate serde_json;
 extern crate tera;
 extern crate url;
 extern crate walkdir;
+extern crate markdown;
 
 #[cfg(test)]
 #[macro_use]
