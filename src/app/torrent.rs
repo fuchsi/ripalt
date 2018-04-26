@@ -22,6 +22,7 @@ use codepage_437::{BorrowFromCp437, CP437_CONTROL};
 use futures::Future;
 use std::io::Read;
 
+use handlers::UserSubjectMsg;
 use handlers::torrent::*;
 use models::{torrent::TorrentFile, Category, Torrent, TorrentMsg, TorrentList};
 
@@ -491,8 +492,7 @@ pub fn torrent(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             Ok(tc) => {
                 let mut ctx = ShowContext::from(&tc);
                 {
-                    let acl = req.state().acl();
-                    let subj = UserSubject::new(&user_id, &group_id, &acl);
+                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
                     ctx.may_edit = subj.may_write(&tc.torrent);
                     ctx.may_delete = subj.may_delete(&tc.torrent);
                 }
@@ -531,8 +531,7 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                 ctx.categories = categories(&req.state());
                 let may_edit =
                 {
-                    let acl = req.state().acl();
-                    let subj = UserSubject::new(&user_id, &group_id, &acl);
+                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
                     ctx.may_delete = subj.may_delete(&tc.torrent);
                     subj.may_write(&tc.torrent)
                 };
@@ -543,7 +542,9 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                 } else {
                     let mut ctx = Context::new();
                     ctx.insert("id", &id);
-                    Template::render(&req.state().template(), "torrent/edit_denied.html", &ctx)
+                    ctx.insert("title", &format!("Edit Torrent: {}", tc.torrent.name));
+                    ctx.insert("message", "You are not allowed to edit this Torrent");
+                    Template::render(&req.state().template(), "torrent/denied.html", &ctx)
                         .map(|t| t.into())
                 }
             }
@@ -614,11 +615,18 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
 
             match result {
                 Ok(_) => {
-                    Template::render(&cloned.state().template(), "torrent/edit_ok.html", &ctx).map(|t| t.into())
+                    ctx.insert("message", "Torrent was edited.");
+                    ctx.insert("title", "Edit Torrent");
+                    ctx.insert("sub_title", "Edit Succeeded");
+                    ctx.insert("continue_link", &cloned.url_for("torrent#view", &[id.to_string()]).unwrap().to_string());
+                    Template::render(&cloned.state().template(), "torrent/success.html", &ctx).map(|t| t.into())
                 },
                 Err(e) => {
                     ctx.insert("error", &e.to_string());
-                    Template::render(&cloned.state().template(), "torrent/edit_failed.html", &ctx).map(|t| t.into())
+                    ctx.insert("title", "Edit Torrent");
+                    ctx.insert("sub_title", "Edit Failed");
+                    ctx.insert("back_link", &cloned.url_for("torrent#edit", &[id.to_string()]).unwrap().to_string());
+                    Template::render(&cloned.state().template(), "torrent/failed.html", &ctx).map(|t| t.into())
                 }
             }
         })
@@ -672,9 +680,125 @@ fn process_update(entries: &Entries) -> Result<UpdateTorrentMsg> {
     Ok(msg)
 }
 
-pub fn delete(req: HttpRequest<State>) -> SyncResponse<Template> {
-    let ctx = Context::new();
-    Template::render(&req.state().template(), "torrent/delete.html", &ctx)
+pub fn delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
+    let (user_id, group_id) = match session_creds(&mut req) {
+        Some((u, g)) => (u, g),
+        None => return async_redirect("/login"),
+    };
+    let id = match req.match_info().query::<String>("id") {
+        Ok(id) => match Uuid::parse_str(&id[..]) {
+            Ok(id) => id,
+            Err(e) => return Box::new(FutErr(ErrorInternalServerError(e))),
+        },
+        Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
+    };
+
+    req.clone()
+        .state()
+        .db()
+        .send(LoadTorrentMsg::new(&id, &user_id))
+        .from_err()
+        .and_then(move |result: Result<TorrentMsg>| match result {
+            Ok(tc) => {
+                let mut ctx = EditContext::from(&tc);
+                let may_edit =
+                    {
+                        let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
+                        subj.may_delete(&tc.torrent)
+                    };
+
+                if may_edit {
+                    Template::render(&req.state().template(), "torrent/delete.html", &ctx)
+                        .map(|t| t.into())
+                } else {
+                    let mut ctx = Context::new();
+                    ctx.insert("id", &id);
+                    ctx.insert("title", &format!("Delete Torrent: {}", tc.torrent.name));
+                    ctx.insert("message", "You are not allowed to delete this Torrent");
+                    Template::render(&req.state().template(), "torrent/denied.html", &ctx)
+                        .map(|t| t.into())
+                }
+            }
+            Err(e) => {
+                info!("torrent '{}' not found: {}", id, e);
+                Err(ErrorNotFound(e.to_string()))
+            }
+        })
+        .responder()
+}
+
+#[derive(Deserialize)]
+struct DeleteForm {
+    id: Uuid,
+    reason: String,
+}
+
+pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
+    let (user_id, group_id) = match session_creds(&mut req) {
+        Some((u, g)) => (u, g),
+        None => return async_redirect("/login"),
+    };
+    let id = match req.match_info().query::<String>("id") {
+        Ok(id) => match Uuid::parse_str(&id[..]) {
+            Ok(id) => id,
+            Err(e) => return Box::new(FutErr(ErrorInternalServerError(e))),
+        },
+        Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
+    };
+
+    let acl = req.state().acl_arc();
+    let fut_prepare = req.clone()
+        .urlencoded::<DeleteForm>()
+        .from_err();
+
+    let fut_process = fut_prepare
+        .and_then(move |form| {
+            let DeleteForm {id, reason} = form;
+            let user = UserSubjectMsg::new(user_id, group_id, acl);
+            let msg = DeleteTorrentMsg{
+                id,
+                reason,
+                user,
+            };
+            Ok(msg)
+        });
+    let cloned = req.clone();
+    let fut_result = fut_process.and_then(move |torrent| {
+        cloned
+            .state()
+            .db()
+            .send(torrent)
+            .map_err(|error| ErrorInternalServerError(error))
+    });
+
+    let cloned = req.clone();
+    fut_result
+        .from_err()
+        .and_then(move |result| {
+            let mut ctx = Context::new();
+            ctx.insert("id", &id);
+
+
+            match result {
+                Ok(_) => {
+                    ctx.insert("message", "Torrent was deleted");
+                    ctx.insert("title", "Delete Torrent");
+                    ctx.insert("sub_title", "Delete Succeeded");
+                    ctx.insert("continue_link", "/torrents");
+                    Template::render(&cloned.state().template(), "torrent/success.html", &ctx).map(|t| t.into())
+                },
+                Err(e) => {
+                    ctx.insert("error", &e.to_string());
+                    ctx.insert("title", "Delete Torrent");
+                    ctx.insert("sub_title", "Delete Failed");
+                    ctx.insert("back_link", &cloned.url_for("torrent#view", &[id.to_string()]).unwrap().to_string());
+                    Template::render(&cloned.state().template(), "torrent/failed.html", &ctx).map(|t| t.into())
+                }
+            }
+        })
+        .responder()
+
+
 }
 
 pub fn download(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {

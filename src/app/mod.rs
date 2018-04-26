@@ -139,6 +139,12 @@ pub fn build(
             r.name("torrent#update");
             r.method(Method::POST).filter(require_user()).a(app::torrent::update);
         })
+        .resource("/torrent/delete/{id}", |r| {
+            r.name("torrent#delete");
+            r.method(Method::GET).filter(require_user()).a(app::torrent::delete);
+            r.name("torrent#delete");
+            r.method(Method::POST).filter(require_user()).a(app::torrent::do_delete);
+        })
         .resource("/torrent/download/{id}", |r| {
             r.name("torrent#download");
             r.method(Method::GET).filter(require_user()).f(app::torrent::download);
@@ -168,11 +174,6 @@ pub fn not_found(req: HttpRequest<State>) -> HttpResponse {
     let mut h = NormalizePath::default();
     let resp = h.handle(req.clone());
     resp
-//    if resp.status().is_server_error() || resp.status().is_client_error() {
-//        Ok(render_error(&req, resp))
-//    } else {
-//        Ok(resp)
-//    }
 }
 
 pub fn server_error(

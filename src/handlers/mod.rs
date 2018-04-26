@@ -1,4 +1,4 @@
-/*     
+/*
  * ripalt
  * Copyright (C) 2018 Daniel Müller
  *
@@ -17,6 +17,39 @@
  */
 
 use super::*;
+use std::convert::TryFrom;
 
-pub mod user;
 pub mod torrent;
+pub mod user;
+
+#[derive(Debug, Clone)]
+pub struct UserSubjectMsg {
+    uid: Uuid,
+    gid: Uuid,
+    acl: AclContainer,
+}
+
+impl UserSubjectMsg {
+    pub fn new(uid: Uuid, gid: Uuid, acl: AclContainer) -> Self {
+        Self { uid, gid, acl }
+    }
+}
+
+impl<'req> TryFrom<&'req mut HttpRequest<State>> for UserSubjectMsg {
+    type Error = Error;
+
+    fn try_from(req: &mut HttpRequest<State>) -> Result<Self> {
+        let (uid, gid) = match session_creds(req) {
+            Some((u, g)) => (u, g),
+            None => bail!("session credentials not available"),
+        };
+        let acl = req.state().acl_arc();
+        Ok(Self::new(uid, gid, acl))
+    }
+}
+
+impl<'a> From<&'a UserSubjectMsg> for UserSubject<'a> {
+    fn from(msg: &UserSubjectMsg) -> UserSubject {
+        UserSubject::new(&msg.uid, &msg.gid, Arc::clone(&msg.acl))
+    }
+}

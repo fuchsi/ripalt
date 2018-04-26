@@ -6,10 +6,10 @@
             <div class="card bg-dark">
                 <div class="card-header">Error</div>
                 <div class="card-body">
-                    <div class="card-title text-danger">Edit failed</div>
+                    <div class="card-title text-danger">Insufficient privileges</div>
                     <div class="card-text">
-                        <p>{{error}}</p>
-                        <a class="btn btn-primary" href="/torrent/edit/{{id}}">Go back</a>
+                        <p>{{message}}</p>
+                        <a class="btn btn-primary" href="/torrent/{{id}}">Go back</a>
                     </div>
                 </div>
             </div>
@@ -17,4 +17,4 @@
     </div>
 </div>
 {% endblock content %}
-{% block title %}Edit Torrent{% endblock title %}
+{% block title %}{{title}}{% endblock title %}

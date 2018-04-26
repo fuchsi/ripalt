@@ -312,16 +312,20 @@ pub trait Subject<T> {
 pub struct UserSubject<'a> {
     user_id: &'a Uuid,
     group_id: &'a Uuid,
-    acl: &'a Acl,
+    acl: AclContainer,
 }
 
 impl<'a> UserSubject<'a> {
-    pub fn new(user_id: &'a Uuid, group_id: &'a Uuid, acl: &'a Acl) -> UserSubject<'a> {
+    pub fn new(user_id: &'a Uuid, group_id: &'a Uuid, acl: AclContainer) -> UserSubject<'a> {
         UserSubject {
             user_id,
             group_id,
             acl,
         }
+    }
+
+    fn acl(&self) -> std::sync::RwLockReadGuard<Acl> {
+        self.acl.read().unwrap()
     }
 }
 
@@ -333,8 +337,7 @@ impl<'a> Subject<Torrent> for UserSubject<'a> {
             }
         }
 
-        self.acl
-            .is_allowed(self.user_id, self.group_id, "torrent", perm)
+        self.acl().is_allowed(self.user_id, self.group_id, "torrent", perm)
     }
 }
 
@@ -344,8 +347,7 @@ impl<'a> Subject<User> for UserSubject<'a> {
             return true;
         }
 
-        self.acl
-            .is_allowed(self.user_id, self.group_id, "user", perm)
+        self.acl().is_allowed(self.user_id, self.group_id, "user", perm)
     }
 }
 

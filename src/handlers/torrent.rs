@@ -162,8 +162,7 @@ impl Handler<UpdateTorrentMsg> for DbExecutor {
     ) -> <Self as Handler<UpdateTorrentMsg>>::Result {
         let conn = self.conn();
         let torrent = models::Torrent::find(&msg.id, &conn).ok_or_else(|| "torrent not found")?;
-        let acl = msg.acl.read().unwrap();
-        let subj = UserSubject::new(&msg.user_id, &msg.group_id, &acl);
+        let subj = UserSubject::new(&msg.user_id, &msg.group_id, Arc::clone(&msg.acl));
         if !subj.may_write(&torrent) {
             bail!("user is not allowed");
         }
@@ -518,5 +517,33 @@ impl Handler<LoadTorrentListMsg> for DbExecutor {
             request: msg,
             timezone,
         })
+    }
+}
+
+pub struct DeleteTorrentMsg {
+    pub id: Uuid,
+    pub reason: String,
+    pub user: UserSubjectMsg,
+}
+
+impl Message for DeleteTorrentMsg {
+    type Result = Result<usize>;
+}
+
+impl Handler<DeleteTorrentMsg> for DbExecutor {
+    type Result = Result<usize>;
+
+    fn handle(&mut self, msg: DeleteTorrentMsg, _: &mut Self::Context) -> <Self as Handler<DeleteTorrentMsg>>::Result {
+        use schema::torrents::dsl as t;
+        let conn = self.conn();
+
+
+        let torrent = models::Torrent::find(&msg.id, &conn).ok_or_else(|| "torrent not found")?;
+        let subj = UserSubject::from(&msg.user);
+        if !subj.may_delete(&torrent) {
+            bail!("user is not allowed");
+        }
+
+        torrent.delete(&conn)
     }
 }

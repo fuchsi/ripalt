@@ -88,7 +88,7 @@ use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
 
 use actix::prelude::*;
-use actix_web::error::{ErrorInternalServerError, ErrorUnauthorized, ErrorNotFound};
+use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::middleware::identity::{IdentityService, RequestIdentity};
 use actix_web::middleware::{csrf, CookieSessionBackend, DefaultHeaders, ErrorHandlers, Logger,
                             RequestSession, SessionStorage};

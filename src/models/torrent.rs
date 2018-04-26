@@ -118,6 +118,14 @@ impl Torrent {
         );
         query.execute(db).chain_err(|| "torrent update failed")
     }
+
+    pub fn delete(&self, db: &PgConnection) -> Result<usize> {
+        use schema::torrents::dsl as t;
+        diesel::delete(schema::torrents::table)
+            .filter(t::id.eq(&self.id))
+            .execute(db)
+            .map_err(|e| format!("failed to delete torrent: {}", e).into())
+    }
 }
 
 impl MaybeHasUser for Torrent {
