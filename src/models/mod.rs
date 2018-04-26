@@ -42,6 +42,7 @@ pub use self::user::{HasUser, MaybeHasUser, Property, User};
 
 pub mod acl;
 pub mod category;
+pub mod chat;
 pub mod group;
 pub mod peer;
 pub mod torrent;

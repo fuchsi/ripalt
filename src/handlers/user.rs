@@ -26,12 +26,6 @@ use fast_chemail;
 
 pub struct RequireUserMsg(pub Uuid);
 
-impl RequireUserMsg {
-    pub fn new(id: Uuid) -> Self {
-        RequireUserMsg(id)
-    }
-}
-
 impl Message for RequireUserMsg {
     type Result = Result<models::User>;
 }

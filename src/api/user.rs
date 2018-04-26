@@ -21,13 +21,8 @@ use handlers::user::LoadUserStatsMsg;
 use models::user::UserStatsMsg;
 
 pub fn stats(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
-    if let Some(identity) = req.identity() {
-        let user_id = match Uuid::parse_str(identity).map_err(ErrorInternalServerError) {
-            Ok(user_id) => user_id,
-            Err(e) => return Box::new(FutErr(e)),
-        };
-
-        req.state().db().send(LoadUserStatsMsg(user_id))
+    if let Some(user_id) = req.user_id() {
+        req.state().db().send(LoadUserStatsMsg(user_id.to_owned()))
             .from_err()
             .and_then(|result: Result<UserStatsMsg>| {
                 match result {

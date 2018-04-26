@@ -54,10 +54,6 @@ impl DbExecutor {
     pub fn conn(&self) -> DbConn {
         DbConn(self.0.get().unwrap())
     }
-
-    pub fn pg(&self) -> r2d2::PooledConnection<ConnectionManager<PgConnection>> {
-        self.0.get().unwrap()
-    }
 }
 
 impl Actor for DbExecutor {

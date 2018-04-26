@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Cleanup thread to remove orphaned peers.
 - Identity Provider for the API, which uses either the Session ID or a JWT.
     - New Setting: `jwt_secret`, the secret key for the JWTs.
-- API Endpoint to get the own stats (/api/v1/user/stats)
+- API endpoint to get the own stats (/api/v1/user/stats)
 - User Profiles.
 - Download NFOs.
 - Edit and Delete Torrents.
 - Support for user defined timezone and torrents per page settings.
+- Own Identity Middleware, more or less a copy of the original one.
+- API endpoints for the chat:
+    - `GET /api/v1/chat/messages` to fetch messages.
+    - `POST /api/v1/chat/publish` to publish a new message.
 
 ### Changed
 - User Stats accounting now collects the time seeded

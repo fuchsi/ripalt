@@ -26,14 +26,19 @@ use serde::{Serialize, Serializer, ser::SerializeStruct};
 use util::{self, password, rand};
 
 /// New users
+#[allow(dead_code)]
 pub const STATUS_NEW: i16 = 0;
 /// Inactive/parked users
+#[allow(dead_code)]
 pub const STATUS_INACTIVE: i16 = 1;
 /// Active/normal users
+#[allow(dead_code)]
 pub const STATUS_ACTIVE: i16 = 2;
 /// Locked users
+#[allow(dead_code)]
 pub const STATUS_LOCKED: i16 = 3;
 /// Banned (permanent or temporary) users
+#[allow(dead_code)]
 pub const STATUS_BANNED: i16 = 4;
 
 const SALTBYTES: usize = 32;

@@ -19,6 +19,7 @@
 use super::*;
 use std::convert::TryFrom;
 
+pub mod chat;
 pub mod torrent;
 pub mod user;
 

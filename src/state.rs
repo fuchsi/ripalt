@@ -58,6 +58,8 @@ impl State {
     pub fn acl_arc(&self) -> Arc<RwLock<Acl>> {
         self.acl.clone()
     }
+
+    #[allow(dead_code)]
     pub fn acl(&self) -> RwLockReadGuard<Acl> {
         self.acl.read().unwrap()
     }

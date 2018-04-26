@@ -30,6 +30,16 @@ table! {
 }
 
 table! {
+    chat_messages (id) {
+        id -> Uuid,
+        user_id -> Uuid,
+        chat -> Int2,
+        message -> Text,
+        created_at -> Timestamptz,
+    }
+}
+
+table! {
     completed_torrents (id) {
         id -> Uuid,
         user_id -> Uuid,
@@ -205,6 +215,7 @@ table! {
 
 joinable!(acl_group_rules -> groups (group_id));
 joinable!(acl_user_rules -> users (user_id));
+joinable!(chat_messages -> users (user_id));
 joinable!(peers -> torrents (torrent_id));
 joinable!(peers -> users (user_id));
 joinable!(torrents -> categories (category_id));
@@ -220,6 +231,7 @@ allow_tables_to_appear_in_same_query!(
     acl_group_rules,
     acl_user_rules,
     categories,
+    chat_messages,
     groups,
     peers,
     torrent_files,

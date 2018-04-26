@@ -231,6 +231,7 @@ impl NewTorrentBuilder {
         self
     }
 
+    #[allow(dead_code)]
     pub fn user(&mut self, user: Uuid) -> &Self {
         self.user = user;
         self
@@ -433,6 +434,7 @@ impl LoadTorrentListMsg {
         self
     }
 
+    #[allow(dead_code)]
     pub fn user(&mut self, user_id: Uuid) -> &Self {
         self.user_id = Some(user_id);
         self

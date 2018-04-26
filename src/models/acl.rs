@@ -248,6 +248,7 @@ impl Acl {
     /// # Panics
     ///
     /// This function panics if the underlying database shits the bed.
+    #[allow(dead_code)]
     pub fn reload(&mut self, db: &PgConnection) {
         self.group_rules.clear();
         self.user_rules.clear();
@@ -348,6 +349,12 @@ impl<'a> Subject<User> for UserSubject<'a> {
         }
 
         self.acl().is_allowed(self.user_id, self.group_id, "user", perm)
+    }
+}
+
+impl<'a> Subject<chat::ChatRoom> for UserSubject<'a> {
+    fn may(&self, obj: &chat::ChatRoom, perm: &Permission) -> bool {
+        self.acl().is_allowed(self.user_id, self.group_id, &format!("chat#{}", obj.to_string()), perm)
     }
 }
 

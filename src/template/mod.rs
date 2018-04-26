@@ -115,6 +115,7 @@ pub struct Template {
 
 impl Template {
     /// Create a new Template container
+    #[allow(dead_code)]
     pub fn new(body: String, content_type: String) -> Self {
         Template { body, content_type }
     }
