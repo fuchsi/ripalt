@@ -12,3 +12,4 @@
 
 config/ripalt.toml
 webroot/static/css/main.css
+webroot/static/css/main.css.map

@@ -18,11 +18,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - API endpoints for the chat:
     - `GET /api/v1/chat/messages` to fetch messages.
     - `POST /api/v1/chat/publish` to publish a new message.
+- A simple Chat (Shoutbox) with 2 Chatrooms (public and team)
 
 ### Changed
 - User Stats accounting now collects the time seeded
 - Usernames may now only contain letters, numbers, _ and -. And they must begin with a letter and have to be at least 4 characters long.
 - Passwords must now be at least 8 characters long.
+- Assets (for now just the stylesheets) are now generated at the build process and no longer shipped precompiled.
+    - A seperate compile script, or something, may be added later.
 
 ### Fixed
 - Uploaded torrents without a specific name, now have the `.torrent` extension removed.
