@@ -20,12 +20,9 @@ use super::*;
 
 use std::collections::HashMap;
 use std::fmt::Write;
-use std::convert::TryInto;
 
 use tera::{Result, Value};
 use markdown;
-use regex::Regex;
-use regex::Captures;
 
 use util;
 

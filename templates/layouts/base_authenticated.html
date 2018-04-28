@@ -146,8 +146,7 @@
 {% block script %}
 <script>
     $(() => {
-        fetch("/api/v1/user/stats", {credentials: 'same-origin'})
-            .then(resp => resp.json())
+        get_json("/api/v1/user/stats")
             .then(data => {
                 $('#navbarDropdownUserMenuLink').text(data.name);
                 $('#navbar-downloads').text(data.downloads);

@@ -1,0 +1,106 @@
+<div class="card bg-dark">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist" id="shoutbox-tabs">
+            {% for chatroom in chatrooms | default(value=[]) %}
+                <li class="nav-item">
+                    <a class="nav-link {% if chatroom.active %}active{% endif %}" href="#chat-{{chatroom.id}}" id="{{chatroom.id}}-tab" data-toggle="tab" role="tab" aria-controls="chat-{{chatroom.id}}" aria-selected="{% if chatroom.active %}true{% else %}false{% endif %}">
+                        {{chatroom.name}}
+                        <span class="badge badge-light invisible">0</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="shoutbox-tabs-content">
+            {% for chatroom in chatrooms | default(value=[]) %}
+                <div class="tab-pane {% if chatroom.active %}active{% endif %}" id="chat-{{chatroom.id}}" role="tabpanel" aria-labelledby="{{chatroom.id}}-tab">
+                    <div class="shoutbox" id="shoutbox-{{chatroom.id}}">
+                        <ul class="list-unstyled"></ul>
+                    </div>
+                    <form id="shoutbox-form-{{chatroom.id}}" class="shoutbox-form" data-id="{{chatroom.id}}">
+                        <input type="hidden" name="chat" value="{{chatroom.nid}}">
+                        <div class="input-group mb-3">
+                            <input type="text" id="shoutbox-message-{{chatroom.id}}" name="message" class="form-control" placeholder="Chat message" aria-label="Chat messages">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-primary" type="submit">Send</button>
+                            </div>
+                        </div>
+                        <div class="shoutbox-error invisible text-danger"></div>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<script>
+    (() => {
+        window.chatrooms = {{ chatrooms | safe | json_encode() }};
+        window.addEventListener('load', () => {
+            $('form.shoutbox-form').bind('submit', (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+
+                let form = $(ev.target);
+                let data = {
+                    chat: parseInt($('input[name=chat]', form).val(), 10),
+                    message: $('input[name=message]', form).val(),
+                };
+                $('.shoutbox-error.visible', form).removeClass('visible').addClass('visble').text('');
+
+                post_json("/api/v1/chat/publish", data)
+                    .then(data => {
+                        data.user_name = $('#navbarDropdownUserMenuLink').text();
+                        let id = form.attr('data-id');
+                        let target = $(`#shoutbox-${id}>ul`);
+                        $('input[name=message]', form).val('');
+                        shoutbox_add_line(target, data);
+                    })
+                    .catch(function(error) {
+                        console.log(`Error: ${error.message}`);
+                        $('.shoutbox-error', form).removeClass('invisible').addClass('visble').text(error.message);
+                    });
+            });
+            update_chatrooms();
+            window.setInterval(update_chatrooms, 5000);
+        });
+    })();
+    function update_chatrooms() {
+        for (let i = 0; i < chatrooms.length; i++) {
+            let chat = chatrooms[i];
+            let target = $(`#shoutbox-${chat.id}>ul`);
+            let url = `/api/v1/chat/messages?chat=${chat.nid}`;
+            let first_run = true;
+            if (chat.last_update !== undefined) {
+                url += `&since=${chat.last_update}`;
+                first_run = false;
+            }
+            get_json(url)
+                .then(data => {
+                    chatrooms[i]["last_update"] = (Date.now() / 1000).toFixed(0);
+                    if (!first_run && data.length > 0) {
+                        let badge = $(`#${chat.id}-tab:not([class*=active]) span.badge`);
+                        if (badge.length === 1) {
+                            let new_message = data.length;
+                            if (badge.text() !== '') {
+                                try {
+                                    console.log(parseInt(badge.text(), 10));
+                                    new_message += parseInt(badge.text(), 10);
+                                } catch (e) {
+                                    console.log(e);
+                                }
+                            }
+                            badge.text(new_message.toFixed(0)).removeClass('invisible');
+                            $(`#${chat.id}-tab:not([class*=active])`).one('click', (ev) => {
+                                $('span.badge', ev.target).addClass('invisible');
+
+                            });
+                        }
+                    }
+                    data.reverse().forEach(message => {
+                        shoutbox_add_line(target, message);
+                    })
+                });
+        }
+    }
+</script>

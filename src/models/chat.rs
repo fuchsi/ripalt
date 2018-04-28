@@ -21,7 +21,6 @@ use super::*;
 use schema::chat_messages;
 use schema::chat_messages::dsl as cm;
 use std::convert::TryFrom;
-use std::fmt::{Display, Formatter, Write};
 
 #[derive(PartialEq)]
 pub enum ChatRoom {

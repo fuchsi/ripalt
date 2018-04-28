@@ -18,17 +18,29 @@
 
 use super::*;
 
-pub fn authenticated(mut req: HttpRequest<State>) -> SyncResponse<Template> {
-    debug!("AUTHENTICATED INDEX BITCHES!");
-    match req.session().get::<Uuid>("user_id") {
-        Ok(user_id) => match user_id {
-            Some(user_id) => debug!("got a session / user_id = {:?}", user_id),
-            None => debug!("got a session but no user_id"),
-        },
-        Err(e) => debug!("no session: {}", e),
+use models::chat::ChatRoom;
+
+#[derive(Serialize)]
+struct Chat {
+    id: String,
+    nid: i16,
+    name: String,
+    active: bool,
+}
+
+pub fn authenticated(mut req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
+    let (user_id, group_id) = match session_creds(&mut req) {
+        Some((u, g)) => (u, g),
+        None => return sync_redirect("/login"),
+    };
+    let mut ctx = Context::new();
+    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
+    let mut chatrooms = vec![Chat{id: ChatRoom::Public.to_string(), nid: ChatRoom::Public.into(), name: "Shoutbox".to_string(), active: true}];
+    if subj.may_read(&ChatRoom::Team) {
+        chatrooms.push(Chat{id: ChatRoom::Team.to_string(), nid: ChatRoom::Team.into(), name: "Teambox".to_string(), active: false});
     }
-    let ctx = Context::new();
-    Template::render(&req.state().template(), "index/authenticated.html", &ctx)
+    ctx.insert("chatrooms", &chatrooms);
+    Template::render(&req.state().template(), "index/authenticated.html", &ctx).map(|t| t.into())
 }
 
 
