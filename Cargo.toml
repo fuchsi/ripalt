@@ -4,6 +4,8 @@ version = "0.2.0"
 authors = ["Daniel Müller <perlfuchsi@gmail.com>"]
 description = "An Anti-Leech Torrent Tracker"
 license = "GPL-3.0-or-later"
+readme = "README.md"
+build = "build.rs"
 
 [profile.release]
 lto = true
@@ -51,3 +53,7 @@ markdown = { git = "https://github.com/fuchsi/markdown.rs.git", branch = "bootst
 
 [dev-dependencies]
 pretty_assertions = "0.5.1"
+
+[build-dependencies]
+sass-rs = "0.2"
+walkdir = "2"

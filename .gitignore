@@ -11,3 +11,4 @@
 .env
 
 config/ripalt.toml
+webroot/static/css/main.css
