@@ -20,6 +20,7 @@ use super::*;
 
 use handlers::user::LoadUserProfileMsg;
 use models::user::UserProfileMsg;
+use actix_web::AsyncResponder;
 
 pub fn profile(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
     let user_id = match req.session().get::<Uuid>("user_id").unwrap_or(None) {

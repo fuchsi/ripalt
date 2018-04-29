@@ -210,6 +210,7 @@ table! {
         downloaded -> Int8,
         group_id -> Uuid,
         ip_address -> Nullable<Inet>,
+        last_active -> Nullable<Timestamptz>,
     }
 }
 

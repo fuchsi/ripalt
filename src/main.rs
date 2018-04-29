@@ -96,10 +96,8 @@ use actix_web::{fs::StaticFiles,
                 http::{header, Method, NormalizePath, StatusCode},
                 server::HttpServer,
                 App,
-                AsyncResponder,
                 Either,
                 FutureResponse,
-                HttpMessage,
                 HttpRequest,
                 HttpResponse,
                 Responder};
@@ -115,7 +113,7 @@ use uuid::Uuid;
 use db::{DbConn, DbExecutor};
 use error::*;
 use handlers::user::RequireUserMsg;
-use models::acl::{Acl, Permission, Subject, UserSubject};
+use models::acl::{Acl, Permission, UserSubject};
 use settings::Settings;
 use state::{AclContainer, State};
 use template::Template;
@@ -196,7 +194,7 @@ fn main() {
 }
 
 fn require_user() -> RequireUserMsg {
-    RequireUserMsg(uuid::Uuid::default())
+    RequireUserMsg(uuid::Uuid::default(), true)
 }
 
 impl actix_web::pred::Predicate<State> for RequireUserMsg {
@@ -204,7 +202,7 @@ impl actix_web::pred::Predicate<State> for RequireUserMsg {
         match req.session().get::<uuid::Uuid>("user_id") {
             Ok(user_id) => match user_id {
                 Some(user_id) => {
-                    let require_user = RequireUserMsg(user_id);
+                    let require_user = RequireUserMsg(user_id, true);
                     let user = req.state().db().send(require_user).wait().unwrap();
                     match user {
                         Ok(_) => true,

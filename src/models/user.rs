@@ -61,6 +61,7 @@ pub struct User {
     pub downloaded: i64,
     pub group_id: Uuid,
     pub ip_address: Option<IpNetwork>,
+    pub last_active: Option<Timestamp>,
 }
 
 impl Default for User {
@@ -79,6 +80,7 @@ impl Default for User {
             downloaded: 0,
             group_id: Default::default(),
             ip_address: None,
+            last_active: None,
         }
     }
 }
@@ -187,6 +189,15 @@ impl User {
             diesel::debug_query::<diesel::pg::Pg, _>(&query)
         );
         query.execute(db).chain_err(|| "user update failed")
+    }
+
+    pub fn update_last_active(&mut self, db: &PgConnection) -> Result<usize> {
+        use schema::users::dsl;
+        self.last_active = Some(Utc::now());
+        diesel::update(users::table)
+            .set(dsl::last_active.eq(&self.last_active))
+            .filter(dsl::id.eq(&self.id))
+            .execute(db).chain_err(|| "user update failed")
     }
 }
 

@@ -20,6 +20,7 @@ use super::*;
 
 use api::identity::RequestIdentity;
 use models::chat::{ChatMessage, ChatMessageWithUser, ChatRoom, NewChatMessage};
+use models::acl::Subject;
 
 pub struct LoadChatMessagesMsg {
     chat: ChatRoom,

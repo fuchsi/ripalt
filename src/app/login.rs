@@ -18,6 +18,8 @@
 
 use super::*;
 use handlers::user::LoginForm;
+use actix_web::AsyncResponder;
+use actix_web::HttpMessage;
 
 pub fn login(req: HttpRequest<State>) -> SyncResponse<Template> {
     let mut ctx = Context::new();

@@ -18,6 +18,7 @@
 
 use super::*;
 
+use actix_web::AsyncResponder;
 use serde::{ser::SerializeMap, Serialize, Serializer};
 use serde_bencode;
 

@@ -19,6 +19,7 @@
 use super::*;
 
 use models::chat::ChatRoom;
+use models::acl::Subject;
 
 #[derive(Serialize)]
 struct Chat {

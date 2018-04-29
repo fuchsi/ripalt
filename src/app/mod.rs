@@ -25,6 +25,7 @@ use std::fmt::Write;
 
 use models::User;
 
+use actix_web::HttpMessage;
 use template::TemplateContainer;
 use tera::Context;
 use bytes::Bytes;

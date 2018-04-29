@@ -20,6 +20,7 @@ use super::*;
 
 use actix_web::middleware::{Middleware, Response, Started};
 use actix_web::error::{Error as AwError, Result as AwResult};
+use actix_web::HttpMessage;
 use jwt::{decode, Validation};
 use std::rc::Rc;
 

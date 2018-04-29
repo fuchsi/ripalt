@@ -19,6 +19,8 @@
 use super::*;
 use handlers::user::LoadUserStatsMsg;
 use models::user::UserStatsMsg;
+use api::identity::RequestIdentity;
+use actix_web::AsyncResponder;
 
 pub fn stats(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     if let Some(user_id) = req.user_id() {

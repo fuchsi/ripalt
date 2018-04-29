@@ -21,10 +21,13 @@ use super::*;
 use codepage_437::{BorrowFromCp437, CP437_CONTROL};
 use futures::Future;
 use std::io::Read;
+use actix_web::AsyncResponder;
+use actix_web::HttpMessage;
 
 use handlers::UserSubjectMsg;
 use handlers::torrent::*;
 use models::{torrent::TorrentFile, Category, Torrent, TorrentMsg, TorrentList};
+use models::acl::Subject;
 
 #[derive(Debug, Serialize)]
 struct ListContext {

@@ -17,6 +17,7 @@
  */
 
 use super::*;
+use models::acl::Subject;
 
 #[derive(Debug)]
 pub struct NewTorrentMsg {

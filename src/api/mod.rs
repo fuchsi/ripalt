@@ -18,7 +18,7 @@
 
 use super::*;
 
-use self::identity::{ApiIdentityPolicy, RequestIdentity, IdentityService};
+use self::identity::{ApiIdentityPolicy, IdentityService};
 
 mod chat;
 pub mod identity;

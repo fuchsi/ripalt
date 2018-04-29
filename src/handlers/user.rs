@@ -24,7 +24,7 @@ use diesel::QueryDsl;
 use regex::Regex;
 use fast_chemail;
 
-pub struct RequireUserMsg(pub Uuid);
+pub struct RequireUserMsg(pub Uuid, pub bool);
 
 impl Message for RequireUserMsg {
     type Result = Result<models::User>;
@@ -35,7 +35,12 @@ impl Handler<RequireUserMsg> for DbExecutor {
 
     fn handle(&mut self, msg: RequireUserMsg, _ctx: &mut Self::Context) -> <Self as Handler<RequireUserMsg>>::Result {
         match models::User::find(&msg.0, &self.conn()) {
-            Some(user) => Ok(user),
+            Some(mut user) => {
+                if msg.1 {
+                    user.update_last_active(&self.conn())?;
+                }
+                Ok(user)
+            },
             None => bail!("user not found"),
         }
     }

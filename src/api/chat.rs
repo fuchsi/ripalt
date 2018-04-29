@@ -22,7 +22,9 @@ use std::convert::TryFrom;
 use handlers::chat::{LoadChatMessagesMsg, PublishChatMessagesMsg};
 use handlers::UserSubjectMsg;
 use actix_web::Json;
+use actix_web::AsyncResponder;
 use models::chat::ChatRoom;
+use api::identity::RequestIdentity;
 
 pub fn messages(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     if req.credentials().is_none() {
