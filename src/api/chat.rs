@@ -23,7 +23,7 @@ use handlers::chat::{LoadChatMessagesMsg, PublishChatMessagesMsg};
 use handlers::UserSubjectMsg;
 use actix_web::Json;
 use actix_web::AsyncResponder;
-use models::chat::ChatRoom;
+use models::chat::{ChatRoom, ChatMessageWithUser};
 use api::identity::RequestIdentity;
 
 pub fn messages(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
@@ -68,11 +68,16 @@ pub fn publish(req: HttpRequest<State>, data: Json<PublishMessage>) -> FutureRes
     };
     let msg = PublishChatMessagesMsg::new(chat, message, user);
 
+    let group_id = *group_id;
     req.state().db().send(msg)
         .from_err()
-        .and_then(|result: Result<models::chat::ChatMessage>| {
+        .and_then(move |result: Result<models::chat::ChatMessage>| {
             match result {
-                Ok(message) => Ok(HttpResponse::Ok().json(message)),
+                Ok(message) => {
+                    let mut message = ChatMessageWithUser::from(message);
+                    message.user_group = group_id;
+                    Ok(HttpResponse::Ok().json(message))
+                },
                 Err(e) => Err(ErrorForbidden(e.to_string())),
             }
         })

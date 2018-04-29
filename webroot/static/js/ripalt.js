@@ -59,7 +59,7 @@ function shoutbox_add_line(target, data) {
     let line = $(`<li id="cm-${data.id}" class="shoutbox-line">`)
         .append($(`<span class="shoutbox-date">[${date.toLocaleString('de-DE', options)}]</span>`))
         .append(' ')
-        .append($(`<span class="shoutbox-user">&lt;<a href="/user/${data.user_id}">${data.user_name}</a>&gt;</span>`))
+        .append($(`<span class="shoutbox-user">&lt;<a class="user-group-${data.user_group}" href="/user/${data.user_id}">${data.user_name}</a>&gt;</span>`))
         .append(' ')
         .append($('<span class="shoutbox-message">').html(inline_markdown(data.message)));
 

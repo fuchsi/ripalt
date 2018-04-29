@@ -88,6 +88,7 @@ pub struct ChatMessageWithUser {
     pub message: String,
     pub created_at: Timestamp,
     pub user_name: String,
+    pub user_group: Uuid,
 }
 
 impl ChatMessageWithUser {
@@ -97,7 +98,7 @@ impl ChatMessageWithUser {
 
         let mut query = chat_messages::table.into_boxed()
             .inner_join(users::table)
-            .select((cm::id, cm::user_id, cm::chat, cm::message, cm::created_at, u::name))
+            .select((cm::id, cm::user_id, cm::chat, cm::message, cm::created_at, u::name, u::group_id))
             .filter(cm::chat.eq(chat));
 
         if let Some(since) = since {
@@ -108,6 +109,20 @@ impl ChatMessageWithUser {
             .limit(limit)
             .load::<Self>(db)
             .unwrap_or_default()
+    }
+}
+
+impl From<ChatMessage> for ChatMessageWithUser {
+    fn from(msg: ChatMessage) -> Self {
+        ChatMessageWithUser{
+            id: msg.id,
+            user_id: msg.user_id,
+            chat: msg.chat,
+            message: msg.message,
+            created_at: msg.created_at,
+            user_name: String::default(),
+            user_group: Uuid::default(),
+        }
     }
 }
 
