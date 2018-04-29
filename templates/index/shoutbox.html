@@ -47,7 +47,7 @@
                     chat: parseInt($('input[name=chat]', form).val(), 10),
                     message: $('input[name=message]', form).val(),
                 };
-                $('.shoutbox-error.visible', form).removeClass('visible').addClass('visble').text('');
+                $('.shoutbox-error.visible', form).removeClass('visible').addClass('visible').text('');
 
                 post_json("/api/v1/chat/publish", data)
                     .then(data => {
@@ -56,10 +56,15 @@
                         let target = $(`#shoutbox-${id}>ul`);
                         $('input[name=message]', form).val('');
                         shoutbox_add_line(target, data);
+                        let box_target = target.parent();
+                        if (box_target.height() < box_target.prop('scrollHeight')) {
+                            let scroll_top = box_target.prop('scrollHeight') - box_target.height();
+                            box_target.prop('scrollTop', scroll_top);
+                        }
                     })
                     .catch(function(error) {
                         console.log(`Error: ${error.message}`);
-                        $('.shoutbox-error', form).removeClass('invisible').addClass('visble').text(error.message);
+                        $('.shoutbox-error', form).removeClass('invisible').addClass('visible').text(error.message);
                     });
             });
             update_chatrooms();
@@ -105,9 +110,16 @@
                             });
                         }
                     }
-                    data.reverse().forEach(message => {
-                        shoutbox_add_line(target, message);
-                    })
+                    if (data.length > 0) {
+                        data.reverse().forEach(message => {
+                            shoutbox_add_line(target, message);
+                        });
+                        let box_target = target.parent();
+                        if (box_target.height() < box_target.prop('scrollHeight')) {
+                            let scroll_top = box_target.prop('scrollHeight') - box_target.height();
+                            box_target.prop('scrollTop', scroll_top);
+                        }
+                    }
                 })
                 .catch(error => console.error('Error:', error));
         }
