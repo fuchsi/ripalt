@@ -213,6 +213,7 @@ impl Serialize for User {
         root.serialize_field("status", &self.status)?;
         root.serialize_field("created_at", &self.created_at)?;
         root.serialize_field("updated_at", &self.updated_at)?;
+        root.serialize_field("last_active", &self.last_active)?;
         root.serialize_field("passcode", &util::to_hex(&self.passcode))?;
         root.serialize_field("uploaded", &self.uploaded)?;
         root.serialize_field("downloaded", &self.downloaded)?;
@@ -337,6 +338,7 @@ pub struct UserProfileMsg {
     pub completed: Vec<CompletedTorrent>,
     pub connections: Vec<UserConnection>,
     pub timezone: i32,
+    pub may_view_passcode: bool,
 }
 
 #[derive(Debug, Serialize, Queryable, Identifiable)]

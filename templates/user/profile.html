@@ -34,20 +34,28 @@
                         <p class="col-sm-2">Registered</p>
                         <p class="col-sm-10">{{user.created_at | format_date(timezone=timezone) }}</p>
                         <p class="col-sm-2">Last Active</p>
-                        <p class="col-sm-10">{{user.updated_at | format_date(timezone=timezone) }}</p>
-                        <p class="col-sm-2">Announce URL</p>
-                        <p class="col-sm-10">
-                            /tracker/announce/{{user.passcode}}
-                            <small class="text-info">Only you and the Team Members can see your Announce URL.</small>
-                        </p>
+                        <p class="col-sm-10">{{user.last_active | format_date(timezone=timezone) }}</p>
+                        {% if may_view_passcode %}
+                            <p class="col-sm-2">Announce URL</p>
+                            <p class="col-sm-10">
+                                /tracker/announce/{{user.passcode}}
+                                <small class="text-info">Only you and the Team Members can see your Announce URL.</small>
+                            </p>
+                        {% endif %}
                     </div>
                     <div class="row mt-2 border-bottom">
                         <p class="col-sm-2">Uploaded</p>
                         <p class="col-sm-10">{{user.uploaded | data_size }}</p>
-                        <p class="col-sm-2">Last Active</p>
+                        <p class="col-sm-2">Downloaded</p>
                         <p class="col-sm-10">{{user.downloaded | data_size }}</p>
                         <p class="col-sm-2">Ratio</p>
-                        <p class="col-sm-10">{{user.uploaded / user.downloaded | round(precision=3)}}</p>
+                        <p class="col-sm-10">
+                            {% if user.downloaded == 0 %}
+                                Inf.
+                            {% else %}
+                                {{user.uploaded / user.downloaded | round(precision=3)}}
+                            {% endif %}
+                        </p>
                     </div>
                     {% if connections | length %}
                         <div class="row mt-2 border-bottom">

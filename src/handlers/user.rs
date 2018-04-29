@@ -289,9 +289,13 @@ impl Handler<LoadUserProfileMsg> for DbExecutor {
                         active_downloads.push(transfer);
                     }
                 }
+
                 let completed = CompletedTorrent::find_for_user(&user.id, &db);
-                let connections =
+                let connections: Vec<UserConnection>;
+                let may_view_passcode: bool;
+
                 {
+                    // get the current user
                     let _current_user;
                     let current_user = if msg.0 != msg.1 {
                         _current_user = models::User::find(&msg.1, db).unwrap();
@@ -299,12 +303,15 @@ impl Handler<LoadUserProfileMsg> for DbExecutor {
                     } else {
                         &user
                     };
+
                     if user.id == msg.1 || acl.is_allowed(&current_user.id, &current_user.group_id, "user#connections", &Permission::Read) {
-                        UserConnection::find_for_user(&user.id, &db)
+                        connections = UserConnection::find_for_user(&user.id, &db);
                     } else {
-                        Vec::new()
+                        connections = Vec::new();
                     }
-                };
+
+                    may_view_passcode = user.id == msg.1 || acl.is_allowed(&current_user.id, &current_user.group_id, "user#passcode", &Permission::Read);
+                }
                 let uploads = UserUpload::find_for_user(&user.id, &db);
                 let timezone = util::user::user_timezone(&msg.1, &db);
 
@@ -316,6 +323,7 @@ impl Handler<LoadUserProfileMsg> for DbExecutor {
                     connections,
                     uploads,
                     timezone,
+                    may_view_passcode,
                 })
             },
             None => bail!("user not found"),
