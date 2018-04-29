@@ -85,3 +85,68 @@ function inline_markdown(text) {
 
     return text;
 }
+
+function update_stats() {
+    get_json('/api/v1/user/stats')
+        .then(data => {
+            $('#navbarDropdownUserMenuLink').text(data.name);
+            $('#navbar-downloads').text(data.downloads);
+            $('#navbar-downloaded').text(data_size(data.downloaded));
+            $('#navbar-uploads').text(data.uploads);
+            $('#navbar-uploaded').text(data_size(data.uploaded));
+            $('#navbar-ratio').text(data.ratio.toFixed(3));
+        });
+}
+
+function update_chatrooms() {
+    if (chatrooms === undefined) {
+        return;
+    }
+    for (let i = 0; i < chatrooms.length; i++) {
+        let chat = chatrooms[i];
+        let target = $(`#shoutbox-${chat.id}>ul`);
+        let url = `/api/v1/chat/messages?chat=${chat.nid}`;
+        let first_run = true;
+        if (chat.last_update !== undefined) {
+            url += `&since=${chat.last_update}`;
+            first_run = false;
+        }
+        get_json(url)
+            .then((data) => {
+                if (data === undefined) {
+                    return;
+                }
+                chatrooms[i].last_update = (Date.now() / 1000).toFixed(0);
+                if (!first_run && data.length > 0) {
+                    let badge = $(`#${chat.id}-tab:not([class*=active]) span.badge`);
+                    if (badge.length === 1) {
+                        let new_message = data.length;
+                        if (badge.text() !== '') {
+                            try {
+                                console.log(parseInt(badge.text(), 10));
+                                new_message += parseInt(badge.text(), 10);
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        }
+                        badge.text(new_message.toFixed(0)).removeClass('invisible');
+                        $(`#${chat.id}-tab:not([class*=active])`).one('click', (ev) => {
+                            $('span.badge', ev.target).addClass('invisible');
+
+                        });
+                    }
+                }
+                if (data.length > 0) {
+                    data.reverse().forEach(message => {
+                        shoutbox_add_line(target, message);
+                    });
+                    let box_target = target.parent();
+                    if (box_target.height() < box_target.prop('scrollHeight')) {
+                        let scroll_top = box_target.prop('scrollHeight') - box_target.height();
+                        box_target.prop('scrollTop', scroll_top);
+                    }
+                }
+            })
+            .catch((error) => console.error('Error:', error));
+    }
+}
