@@ -57,12 +57,14 @@
     </div>
     <script>
         (() => {
+            'use strict';
             window.addEventListener('load', () => {
-                $('#upload_meta_file').bind('change', (ev) => {
+                $('#upload_meta_file').on('change', (ev) => {
                     let file = ev.target.value.replace('C:\\fakepath\\', '');
-                    if ($('#upload_torrent_name').val() === '') {
+                    let torrent_name = $('#upload_torrent_name');
+                    if (torrent_name.val() === '') {
                         file = file.replace('.torrent', '');
-                        $('#upload_torrent_name').val(file);
+                        torrent_name.val(file);
                     }
                 });
             });

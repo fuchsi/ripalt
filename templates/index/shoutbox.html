@@ -35,9 +35,10 @@
 </div>
 <script>
     (() => {
+        'use strict;'
         window.chatrooms = {{ chatrooms | safe | json_encode() }};
         window.addEventListener('load', () => {
-            $('form.shoutbox-form').bind('submit', (ev) => {
+            $('form.shoutbox-form').on('submit', (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
 
@@ -66,6 +67,10 @@
         });
     })();
     function update_chatrooms() {
+        'use strict;'
+        if (chatrooms === undefined) {
+            return;
+        }
         for (let i = 0; i < chatrooms.length; i++) {
             let chat = chatrooms[i];
             let target = $(`#shoutbox-${chat.id}>ul`);
@@ -77,6 +82,9 @@
             }
             get_json(url)
                 .then(data => {
+                    if (data === undefined) {
+                        return;
+                    }
                     chatrooms[i]["last_update"] = (Date.now() / 1000).toFixed(0);
                     if (!first_run && data.length > 0) {
                         let badge = $(`#${chat.id}-tab:not([class*=active]) span.badge`);
@@ -100,7 +108,8 @@
                     data.reverse().forEach(message => {
                         shoutbox_add_line(target, message);
                     })
-                });
+                })
+                .catch(error => console.error('Error:', error));
         }
     }
 </script>

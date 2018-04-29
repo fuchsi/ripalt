@@ -146,6 +146,7 @@
 {% block script %}
 <script>
     $(() => {
+        'use strict';
         get_json("/api/v1/user/stats")
             .then(data => {
                 $('#navbarDropdownUserMenuLink').text(data.name);
@@ -155,7 +156,7 @@
                 $('#navbar-uploaded').text(data_size(data.uploaded));
                 $('#navbar-ratio').text(data.ratio.toFixed(3));
             });
-        $('.custom-file input[type=file]').bind("change", (ev) => {
+        $('.custom-file input[type=file]').on("change", (ev) => {
             let file = ev.target.value.replace('C:\\fakepath\\', '');
             let id = ev.target.id;
             $('label[for=' + id + ']').text(file);

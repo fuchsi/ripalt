@@ -1,4 +1,5 @@
-const ds_prefixes = ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
+'use strict';
+const ds_prefixes = ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'];
 
 function data_size(amount) {
     let was_negative = false;
@@ -18,14 +19,21 @@ function data_size(amount) {
     }
 
     if (prefix === 0) {
-        return amount.toFixed(0) + " B";
+        return amount.toFixed(0) + ' B';
     }
 
-    return amount.toFixed(2) + " " + ds_prefixes[prefix] + "B";
+    return amount.toFixed(2) + ' ' + ds_prefixes[prefix] + 'B';
 }
 
 function get_json(url) {
-    return fetch(url, {credentials: 'same-origin'}).then(resp => resp.json())
+    return fetch(url, {credentials: 'same-origin'})
+        .then((resp) => {
+            if (resp.ok) {
+                return resp.json();
+            }
+            throw new Error('Network response was not ok.');
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 function post_json(url, data) {
@@ -34,14 +42,19 @@ function post_json(url, data) {
         method: 'post',
         body: JSON.stringify(data),
         headers: {'Content-Type': 'application/json'}
-    }).then(resp => resp.json())
+    }).then((resp) => {
+        if (resp.ok) {
+            return resp.json();
+        }
+        throw new Error('Network response was not ok.');
+    }).catch(error => console.error('Error:', error));
 }
 
 function shoutbox_add_line(target, data) {
     if ($(`li#cm-${data.id}`).length !== 0) {
         return;
     }
-    const options = {timeZone: 'UTC', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const options = {timeZone: 'UTC', hour: '2-digit', minute: '2-digit', second: '2-digit'};
     const date = new Date(data.created_at);
     let line = $(`<li id="cm-${data.id}" class="shoutbox-line">`)
         .append($(`<span class="shoutbox-date">[${date.toLocaleString('de-DE', options)}]</span>`))
@@ -55,16 +68,16 @@ function shoutbox_add_line(target, data) {
 
 function inline_markdown(text) {
     text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    text = text.replace(/(\*\*|__)(.+?)\1/g, "<strong>$2</strong>");
-    text = text.replace(/(\*|_)(.+?)\1/g, "<em>$2</em>");
-    text = text.replace(/`(.+?)`/g, "<code>$1</code>");
+    text = text.replace(/(\*\*|__)(.+?)\1/g, '<strong>$2</strong>');
+    text = text.replace(/(\*|_)(.+?)\1/g, '<em>$2</em>');
+    text = text.replace(/`(.+?)`/g, '<code>$1</code>');
     text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, name, url) => {
         let real_url;
         try {
-            let base = window.location
+            let base = window.location;
             real_url = new URL(url, base);
         } catch (err) {
-            console.log("Error parsing url: ", err);
+            console.log('Error parsing url: ', err);
             return match;
         }
         return `<a href="${real_url.href}" target="_blank">${name}</a>`;
