@@ -54,7 +54,7 @@ function shoutbox_add_line(target, data) {
     if ($(`li#cm-${data.id}`).length !== 0) {
         return;
     }
-    const options = {timeZone: 'UTC', hour: '2-digit', minute: '2-digit', second: '2-digit'};
+    const options = {hour: '2-digit', minute: '2-digit', second: '2-digit'};
     const date = new Date(data.created_at);
     let line = $(`<li id="cm-${data.id}" class="shoutbox-line">`)
         .append($(`<span class="shoutbox-date">[${date.toLocaleString('de-DE', options)}]</span>`))
