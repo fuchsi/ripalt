@@ -20,6 +20,9 @@ use super::*;
 
 use models::chat::ChatRoom;
 use models::acl::Subject;
+use handlers::user::ActiveUsersMsg;
+use chrono::Duration;
+use actix_web::AsyncResponder;
 
 #[derive(Serialize)]
 struct Chat {
@@ -29,19 +32,39 @@ struct Chat {
     active: bool,
 }
 
-pub fn authenticated(mut req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
+pub fn authenticated(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     let (user_id, group_id) = match session_creds(&mut req) {
         Some((u, g)) => (u, g),
-        None => return sync_redirect("/login"),
+        None => return async_redirect("/login"),
     };
     let mut ctx = Context::new();
+
+    // Chat
     let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
     let mut chatrooms = vec![Chat{id: ChatRoom::Public.to_string(), nid: ChatRoom::Public.into(), name: "Shoutbox".to_string(), active: true}];
     if subj.may_read(&ChatRoom::Team) {
         chatrooms.push(Chat{id: ChatRoom::Team.to_string(), nid: ChatRoom::Team.into(), name: "Teambox".to_string(), active: false});
     }
     ctx.insert("chatrooms", &chatrooms);
-    Template::render(&req.state().template(), "index/authenticated.html", &ctx).map(|t| t.into())
+
+    // Active Users
+    let active_users = ActiveUsersMsg(Duration::minutes(30));
+    let cloned = req.clone();
+    req.state().db().send(active_users)
+        .from_err()
+        .and_then(move |result| {
+            match result {
+                Ok(active_users) => {
+                    ctx.insert("active_users", &active_users);
+                },
+                Err(e) => {
+                    warn!("could not fetch active users: {}", e);
+                },
+            }
+            let tpl = cloned.state().template();
+            Template::render(&tpl, "index/authenticated.html", &ctx).map(|t| t.into())
+        })
+        .responder()
 }
 
 

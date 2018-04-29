@@ -21,7 +21,7 @@
 use super::*;
 use super::schema::groups;
 
-#[derive(Queryable, Debug, Identifiable, Associations, PartialEq, Insertable, AsChangeset)]
+#[derive(Queryable, Debug, Identifiable, Associations, PartialEq, Insertable, AsChangeset, Serialize)]
 #[table_name = "groups"]
 #[belongs_to(Group, foreign_key = "parent_id")]
 pub struct Group {

@@ -197,3 +197,24 @@ pre.nfo {
     }
   }
 }
+
+.user-group {
+  font-weight: bold;
+}
+
+.user-group-user {
+  color: $body-color;
+}
+.user-group-moderator {
+  color: #20c000;
+}
+.user-group-administrator {
+  color: #d08200;
+}
+.user-group-sysop {
+  color: #d10c00;
+}
+
+.index-user-list a:not(:last-child)::after {
+  content: ', ';
+}

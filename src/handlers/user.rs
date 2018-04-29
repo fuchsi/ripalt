@@ -23,6 +23,8 @@ use models::{Group, User, user::{UserProfileMsg, UserTransfer, CompletedTorrent,
 use diesel::QueryDsl;
 use regex::Regex;
 use fast_chemail;
+use std::collections::HashMap;
+use chrono::Duration;
 
 pub struct RequireUserMsg(pub Uuid, pub bool);
 
@@ -318,5 +320,86 @@ impl Handler<LoadUserProfileMsg> for DbExecutor {
             },
             None => bail!("user not found"),
         }
+    }
+}
+
+#[derive(Serialize, Debug)]
+pub struct ActiveUsers {
+    pub group_order: Vec<Uuid>,
+    pub groups: HashMap<Uuid, Group>,
+    pub user_list: HashMap<Uuid, Vec<(Uuid, String)>>,
+}
+
+pub struct ActiveUsersMsg(pub Duration);
+
+impl Message for ActiveUsersMsg {
+    type Result = Result<ActiveUsers>;
+}
+
+impl Handler<ActiveUsersMsg> for DbExecutor {
+    type Result = Result<ActiveUsers>;
+
+    fn handle(&mut self, msg: ActiveUsersMsg, _ctx: &mut Self::Context) -> <Self as Handler<ActiveUsersMsg>>::Result {
+        use schema::users::dsl as u;
+        use schema::groups::dsl as g;
+        let db: &PgConnection = &self.conn();
+        let date: DateTime<Utc> = Utc::now().checked_sub_signed(msg.0).unwrap();
+
+        let res = schema::users::table
+            .select((u::id, u::name, u::group_id))
+            .filter(u::last_active.ge(&date))
+            .order_by(u::group_id.desc())
+            .then_order_by(u::name.asc())
+            .load::<(Uuid, String, Uuid)>(db);
+
+        let res_groups = schema::groups::table
+            .order_by(g::parent_id.desc())
+            .load::<Group>(db);
+
+        let groups: Vec<Group> = match res_groups {
+            Ok(groups) => groups,
+            Err(e) => bail!("query failed: {}", e),
+        };
+        let users: Vec<(Uuid, String, Uuid)> = match res {
+            Ok(users) => users,
+            Err(e) => bail!("query failed: {}", e),
+        };
+
+        let mut group_order = Vec::with_capacity(groups.len());
+        let mut set_groups = HashMap::with_capacity(groups.len());
+        for group in groups {
+            if group.parent_id.is_none() {
+                group_order.push(group.id);
+            } else {
+                if let Some(pid) = group.parent_id {
+                    match group_order.binary_search(&pid) {
+                        Ok(index) => {
+                            let index = index+1;
+                            group_order.insert(index, group.id);
+                        },
+                        Err(_) => {
+                            group_order.push(group.id);
+                        },
+                    }
+                }
+            }
+            set_groups.insert(group.id, group);
+        }
+
+        let mut active_users: HashMap<Uuid, Vec<(Uuid, String)>> = HashMap::new();
+        for (uid, uname, gid) in users {
+            if let Some(user_list) = active_users.get_mut(&gid) {
+                user_list.push((uid, uname));
+                continue;
+            }
+
+            active_users.insert(gid, vec![(uid, uname)]);
+        }
+
+        Ok(ActiveUsers{
+            group_order: group_order,
+            groups: set_groups,
+            user_list: active_users,
+        })
     }
 }
