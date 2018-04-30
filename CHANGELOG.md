@@ -5,6 +5,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.0]
+
 ### Added
 - Cleanup thread to remove orphaned peers.
 - Identity Provider for the API, which uses either the Session ID or a JWT.
