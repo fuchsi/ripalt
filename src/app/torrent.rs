@@ -18,16 +18,23 @@
 
 use super::*;
 
-use codepage_437::{BorrowFromCp437, CP437_CONTROL};
-use futures::Future;
-use std::io::Read;
 use actix_web::AsyncResponder;
 use actix_web::HttpMessage;
+use codepage_437::{BorrowFromCp437, CP437_CONTROL};
+use futures::Future;
+use std::fs;
+use std::io::{self, Read, Write};
+use std::path::Path;
+use tempfile::NamedTempFile;
 
-use handlers::UserSubjectMsg;
 use handlers::torrent::*;
-use models::{torrent::TorrentFile, Category, Torrent, TorrentMsg, TorrentList};
+use handlers::UserSubjectMsg;
 use models::acl::Subject;
+use models::{torrent::{TorrentFile, TorrentImage},
+             Category,
+             Torrent,
+             TorrentList,
+             TorrentMsg};
 
 #[derive(Debug, Serialize)]
 struct ListContext {
@@ -82,7 +89,12 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             .then(move |result| match result {
                 Ok(form) => {
                     let visible = form.visible();
-                    let ListForm { name, mut category, page, .. } = form;
+                    let ListForm {
+                        name,
+                        mut category,
+                        page,
+                        ..
+                    } = form;
                     torrent_list.name(name);
                     if let Ok(category) = Uuid::parse_str(&category[..]) {
                         torrent_list.category(category);
@@ -103,29 +115,31 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         fut_db = fut_form.and_then(move |torrent_list| req.state().db().send(torrent_list))
     }
 
-    let fut_response = fut_db.from_err().and_then(move |result: Result<TorrentListMsg>| {
-        let msg = result.unwrap_or_else(|_| TorrentListMsg::default());
-        let categories = categories(req.state());
-        let total_count = msg.count;
-        let count = msg.torrents.len() as i64;
-        let pages = total_count / msg.request.per_page;
+    let fut_response = fut_db
+        .from_err()
+        .and_then(move |result: Result<TorrentListMsg>| {
+            let msg = result.unwrap_or_else(|_| TorrentListMsg::default());
+            let categories = categories(req.state());
+            let total_count = msg.count;
+            let count = msg.torrents.len() as i64;
+            let pages = total_count / msg.request.per_page;
 
-        let ctx = ListContext {
-            categories,
-            list: msg.torrents,
-            total_count,
-            count,
-            page: msg.request.page,
-            pages,
-            per_page: msg.request.per_page,
-            name: msg.request.name,
-            visible: Some(msg.request.visible.to_string()),
-            category: msg.request.category,
-            timezone: msg.timezone,
-        };
-        let reg = &req.state().template();
-        Template::render(&reg, "torrent/list.html", &ctx).map(|t| t.into())
-    });
+            let ctx = ListContext {
+                categories,
+                list: msg.torrents,
+                total_count,
+                count,
+                page: msg.request.page,
+                pages,
+                per_page: msg.request.per_page,
+                name: msg.request.name,
+                visible: Some(msg.request.visible.to_string()),
+                category: msg.request.category,
+                timezone: msg.timezone,
+            };
+            let reg = &req.state().template();
+            Template::render(&reg, "torrent/list.html", &ctx).map(|t| t.into())
+        });
 
     fut_response.responder()
 }
@@ -152,6 +166,7 @@ pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespons
     let cloned = req.clone();
     let fut_prepare = req.clone()
         .body()
+        .limit(8_388_608) // 8MB Limit
         .from_err()
         .and_then(move |body| -> Result<NewTorrentMsg> {
             let content_type = cloned.headers()[header::CONTENT_TYPE].to_str().unwrap();
@@ -217,7 +232,6 @@ fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
 
     let name = &entries.fields[&key][0];
     if let SavedData::Text(ref name) = name.data {
-        trace!("name: {:?}", name);
         if !name.is_empty() {
             has_name = true;
             upload_builder.name(name);
@@ -226,13 +240,11 @@ fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
     key = String::from("description");
     let desc = &entries.fields[&key][0];
     if let SavedData::Text(ref desc) = desc.data {
-        trace!("desc: {:?}", desc);
         upload_builder.description(desc);
     }
     key = String::from("category");
     let category = &entries.fields[&key][0];
     if let SavedData::Text(ref category) = category.data {
-        trace!("category: {:?}", category);
         upload_builder.category(Uuid::parse_str(&category[..]).unwrap());
     }
     key = String::from("nfo_file");
@@ -240,19 +252,15 @@ fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
     match nfo.headers.content_type {
         Some(ref c) if c.type_() == "text" => match nfo.data {
             SavedData::Bytes(ref b) => {
-                trace!("nfo from bytes: {:?}", b);
                 upload_builder.nfo(b.clone());
             }
             SavedData::Text(ref s) => {
-                trace!("nfo from str: {:?}", s);
                 upload_builder.nfo(s.as_bytes().to_vec());
             }
             SavedData::File(ref path, size) => {
-                let mut file = std::fs::File::open(path).unwrap();
+                let mut file = fs::File::open(path)?;
                 let mut buf: Vec<u8> = Vec::with_capacity(size as usize);
-                let res = file.read_to_end(&mut buf);
-                trace!("nfo from file({:?} {}B): {:?}", path, size, buf);
-                trace!("read result: {:?}", res);
+                file.read_to_end(&mut buf)?;
                 upload_builder.nfo(buf);
             }
         },
@@ -264,31 +272,69 @@ fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
         Some(ref c) if c.type_() == "application" && c.subtype() == "x-bittorrent" => {
             match meta_file.data {
                 SavedData::Bytes(ref b) => {
-                    trace!("meta_file from bytes: {:?}", b);
                     upload_builder.raw_meta(b.clone());
                 }
                 SavedData::Text(ref s) => {
-                    trace!("meta_file from s: {:?}", s);
                     upload_builder.raw_meta(s.as_bytes().to_vec());
                 }
                 SavedData::File(ref path, size) => {
-                    let mut file = std::fs::File::open(path).unwrap();
+                    let mut file = fs::File::open(path).unwrap();
                     let mut buf: Vec<u8> = Vec::with_capacity(size as usize);
-                    let res = file.read_to_end(&mut buf);
-                    trace!("meta_file from file({:?} {}B): {:?}", path, size, buf);
-                    trace!("read result: {:?}", res);
+                    file.read_to_end(&mut buf)?;
                     upload_builder.raw_meta(buf);
                 }
             }
 
             if !has_name {
                 if let Some(ref name) = meta_file.headers.filename {
-                    let name = &name[0..(name.len()-8)];
+                    let name = &name[0..(name.len() - 8)];
                     upload_builder.name(&name);
                 }
             }
         }
         _ => bail!("no meta file"),
+    }
+
+    let ts = Utc::now().timestamp();
+    key = String::from("images");
+    if let Some(ref images) = &entries.fields.get(&key) {
+        for (i, image) in images.iter().enumerate() {
+            match image.headers.content_type {
+                Some(ref c) if c.type_() == "image" => {
+                    if let Some(ref name) = image.headers.filename {
+                        // we only need the filename for the extension.
+                        // the file will be stored as: index_timestamp.ext
+                        let p = Path::new(name);
+                        let ext = p.extension()
+                            .and_then(|s| s.to_str())
+                            .map_or("".to_string(), |s| s.to_ascii_lowercase());
+                        let name = format!("{}_{}.{}", i, ts, ext);
+                        match image.data {
+                            SavedData::Bytes(ref b) => {
+                                let mut file = NamedTempFile::new()?;
+                                file.write_all(b)?;
+                                upload_builder.add_image(&name, file.into_temp_path());
+                            }
+                            SavedData::Text(ref s) => {
+                                let b = s.as_bytes();
+                                let mut file = NamedTempFile::new()?;
+                                file.write_all(b)?;
+                                upload_builder.add_image(&name, file.into_temp_path());
+                            }
+                            SavedData::File(ref path, _size) => {
+                                let mut file = NamedTempFile::new()?;
+                                // copy the whole uploaded file into a new tempfile. it's stupid, but works...
+                                // todo: fix this nonsense
+                                let mut source = fs::File::open(path)?;
+                                io::copy(&mut source, &mut file)?;
+                                upload_builder.add_image(&name, file.into_temp_path());
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
     }
 
     upload_builder.finish()
@@ -300,6 +346,7 @@ struct ShowContext<'a> {
     torrent_user_name: &'a Option<String>,
     nfo: String,
     files: &'a Vec<TorrentFile>,
+    images: &'a Vec<TorrentImage>,
     seeder: Vec<ShowPeer<'a>>,
     leecher: Vec<ShowPeer<'a>>,
     category: &'a models::Category,
@@ -344,6 +391,7 @@ impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
             torrent_user_name: &tc.torrent_user_name,
             nfo,
             files: &tc.files,
+            images: &tc.images,
             seeder,
             leecher,
             category,
@@ -456,7 +504,6 @@ struct ShowTorrent<'a> {
 
 impl<'a> From<&'a Torrent> for ShowTorrent<'a> {
     fn from(torrent: &'a Torrent) -> Self {
-
         ShowTorrent {
             id: &torrent.id,
             name: &torrent.name[..],
@@ -532,8 +579,7 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             Ok(tc) => {
                 let mut ctx = EditContext::from(&tc);
                 ctx.categories = categories(&req.state());
-                let may_edit =
-                {
+                let may_edit = {
                     let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
                     ctx.may_delete = subj.may_delete(&tc.torrent);
                     subj.may_write(&tc.torrent)
@@ -576,6 +622,7 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     let cloned = req.clone();
     let fut_prepare = req.clone()
         .body()
+        .limit(8_388_608) // 8MB Limit
         .from_err()
         .and_then(move |body| -> Result<UpdateTorrentMsg> {
             let content_type = cloned.headers()[header::CONTENT_TYPE].to_str().unwrap();
@@ -589,21 +636,26 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     let torrent = UpdateTorrentMsg::new(id, UserSubjectMsg::new(user_id, group_id, acl));
                     process_update(&entries, torrent)
                 },
-                SaveResult::Partial(_, reason) => Err(format!("partial read: {:?}", reason).into()),
+                SaveResult::Partial(_, reason) => {
+                    debug!("{:#?}", reason);
+                    Err(format!("partial read: {:?}", reason).into())
+                },
                 SaveResult::Error(error) => Err(format!("io error: {}", error).into()),
             }
         });
 
     let cloned = req.clone();
     let fut_result = fut_prepare
-        .map_err(|e| ErrorInternalServerError(e.to_string()))
+        .map_err(|e| {
+            error!("{}", e);
+            ErrorInternalServerError(e.to_string())
+        })
         .and_then(move |torrent| {
-        cloned
-            .state()
-            .db()
-            .send(torrent)
-            .map_err(|error| ErrorInternalServerError(error))
-    });
+            cloned.state().db().send(torrent).map_err(|error| {
+                error!("{}", error);
+                ErrorInternalServerError(error)
+            })
+        });
 
     let cloned = req.clone();
     fut_result
@@ -617,15 +669,29 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.insert("message", "Torrent was edited.");
                     ctx.insert("title", "Edit Torrent");
                     ctx.insert("sub_title", "Edit Succeeded");
-                    ctx.insert("continue_link", &cloned.url_for("torrent#read", &[id.to_string()]).unwrap().to_string());
-                    Template::render(&cloned.state().template(), "torrent/success.html", &ctx).map(|t| t.into())
-                },
+                    ctx.insert(
+                        "continue_link",
+                        &cloned
+                            .url_for("torrent#read", &[id.to_string()])
+                            .unwrap()
+                            .to_string(),
+                    );
+                    Template::render(&cloned.state().template(), "torrent/success.html", &ctx)
+                        .map(|t| t.into())
+                }
                 Err(e) => {
                     ctx.insert("error", &e.to_string());
                     ctx.insert("title", "Edit Torrent");
                     ctx.insert("sub_title", "Edit Failed");
-                    ctx.insert("back_link", &cloned.url_for("torrent#edit", &[id.to_string()]).unwrap().to_string());
-                    Template::render(&cloned.state().template(), "torrent/failed.html", &ctx).map(|t| t.into())
+                    ctx.insert(
+                        "back_link",
+                        &cloned
+                            .url_for("torrent#edit", &[id.to_string()])
+                            .unwrap()
+                            .to_string(),
+                    );
+                    Template::render(&cloned.state().template(), "torrent/failed.html", &ctx)
+                        .map(|t| t.into())
                 }
             }
         })
@@ -667,13 +733,60 @@ fn process_update(entries: &Entries, mut msg: UpdateTorrentMsg) -> Result<Update
                 SavedData::File(ref path, size) => {
                     let mut file = std::fs::File::open(path)?;
                     let mut buf: Vec<u8> = Vec::with_capacity(size as usize);
-                    let res = file.read_to_end(&mut buf);
-                    trace!("nfo from file({:?} {}B): {:?}", path, size, buf);
-                    trace!("read result: {:?}", res);
+                    file.read_to_end(&mut buf)?;
                     msg.nfo_file = Some(buf);
                 }
             },
-            _ => {},
+            _ => {}
+        }
+    }
+
+    let ts = Utc::now().timestamp();
+    key = String::from("images");
+    if let Some(ref images) = &entries.fields.get(&key) {
+        let key = String::from("replace_images");
+        if let Some(replace) = &entries.fields.get(&key) {
+            if let SavedData::Text(ref replace) = replace[0].data {
+                msg.replace_images = replace == "1";
+            }
+        }
+
+        for (i, image) in images.iter().enumerate() {
+            match image.headers.content_type {
+                Some(ref c) if c.type_() == "image" => {
+                    if let Some(ref name) = image.headers.filename {
+                        // we only need the filename for the extension.
+                        // the file will be stored as: index_timestamp.ext
+                        let p = Path::new(name);
+                        let ext = p.extension()
+                            .and_then(|s| s.to_str())
+                            .map_or("".to_string(), |s| s.to_ascii_lowercase());
+                        let name = format!("{}_{}.{}", i, ts, ext);
+                        match image.data {
+                            SavedData::Bytes(ref b) => {
+                                let mut file = NamedTempFile::new()?;
+                                file.write_all(b)?;
+                                msg.image_files.push((name, file.into_temp_path()));
+                            }
+                            SavedData::Text(ref s) => {
+                                let b = s.as_bytes();
+                                let mut file = NamedTempFile::new()?;
+                                file.write_all(b)?;
+                                msg.image_files.push((name, file.into_temp_path()));
+                            }
+                            SavedData::File(ref path, _size) => {
+                                let mut file = NamedTempFile::new()?;
+                                // copy the whole uploaded file into a new tempfile. it's stupid, but works...
+                                // todo: fix this nonsense
+                                let mut source = fs::File::open(path)?;
+                                io::copy(&mut source, &mut file)?;
+                                msg.image_files.push((name, file.into_temp_path()));
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
         }
     }
 
@@ -701,11 +814,10 @@ pub fn delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
                 let mut ctx = EditContext::from(&tc);
-                let may_edit =
-                    {
-                        let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
-                        subj.may_delete(&tc.torrent)
-                    };
+                let may_edit = {
+                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
+                    subj.may_delete(&tc.torrent)
+                };
 
                 if may_edit {
                     Template::render(&req.state().template(), "torrent/delete.html", &ctx)
@@ -747,21 +859,14 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     };
 
     let acl = req.state().acl_arc();
-    let fut_prepare = req.clone()
-        .urlencoded::<DeleteForm>()
-        .from_err();
+    let fut_prepare = req.clone().urlencoded::<DeleteForm>().from_err();
 
-    let fut_process = fut_prepare
-        .and_then(move |form| {
-            let DeleteForm {id, reason} = form;
-            let user = UserSubjectMsg::new(user_id, group_id, acl);
-            let msg = DeleteTorrentMsg{
-                id,
-                reason,
-                user,
-            };
-            Ok(msg)
-        });
+    let fut_process = fut_prepare.and_then(move |form| {
+        let DeleteForm { id, reason } = form;
+        let user = UserSubjectMsg::new(user_id, group_id, acl);
+        let msg = DeleteTorrentMsg { id, reason, user };
+        Ok(msg)
+    });
     let cloned = req.clone();
     let fut_result = fut_process.and_then(move |torrent| {
         cloned
@@ -778,27 +883,32 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             let mut ctx = Context::new();
             ctx.insert("id", &id);
 
-
             match result {
                 Ok(_) => {
                     ctx.insert("message", "Torrent was deleted");
                     ctx.insert("title", "Delete Torrent");
                     ctx.insert("sub_title", "Delete Succeeded");
                     ctx.insert("continue_link", "/torrents");
-                    Template::render(&cloned.state().template(), "torrent/success.html", &ctx).map(|t| t.into())
-                },
+                    Template::render(&cloned.state().template(), "torrent/success.html", &ctx)
+                        .map(|t| t.into())
+                }
                 Err(e) => {
                     ctx.insert("error", &e.to_string());
                     ctx.insert("title", "Delete Torrent");
                     ctx.insert("sub_title", "Delete Failed");
-                    ctx.insert("back_link", &cloned.url_for("torrent#read", &[id.to_string()]).unwrap().to_string());
-                    Template::render(&cloned.state().template(), "torrent/failed.html", &ctx).map(|t| t.into())
+                    ctx.insert(
+                        "back_link",
+                        &cloned
+                            .url_for("torrent#read", &[id.to_string()])
+                            .unwrap()
+                            .to_string(),
+                    );
+                    Template::render(&cloned.state().template(), "torrent/failed.html", &ctx)
+                        .map(|t| t.into())
                 }
             }
         })
         .responder()
-
-
 }
 
 pub fn download(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
@@ -813,10 +923,7 @@ pub fn download(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespo
     let fut_response = req.clone()
         .state()
         .db()
-        .send(LoadTorrentMetaMsg {
-            id,
-            uid,
-        })
+        .send(LoadTorrentMetaMsg { id, uid })
         .from_err()
         .and_then(
             move |result: Result<(String, Vec<u8>, Vec<u8>)>| match result {
@@ -856,27 +963,21 @@ pub fn nfo(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpR
     let fut_response = req.clone()
         .state()
         .db()
-        .send(LoadTorrentNfoMsg {
-            id,
-        })
+        .send(LoadTorrentNfoMsg { id })
         .from_err()
-        .and_then(
-            move |result: Result<(String, Vec<u8>)>| match result {
-                Ok((name, nfo_file)) => {
-                    Ok(HttpResponse::build(StatusCode::OK)
-                        .header(header::CONTENT_TYPE, "text/plain")
-                        .header(
-                            header::CONTENT_DISPOSITION,
-                            format!("attachment; filename=\"{}\"", name),
-                        )
-                        .body(nfo_file))
-                }
-                Err(e) => {
-                    info!("nfo '{}' not found: {}", id, e);
-                    Err(ErrorNotFound(e.to_string()))
-                }
-            },
-        );
+        .and_then(move |result: Result<(String, Vec<u8>)>| match result {
+            Ok((name, nfo_file)) => Ok(HttpResponse::build(StatusCode::OK)
+                .header(header::CONTENT_TYPE, "text/plain")
+                .header(
+                    header::CONTENT_DISPOSITION,
+                    format!("attachment; filename=\"{}\"", name),
+                )
+                .body(nfo_file)),
+            Err(e) => {
+                info!("nfo '{}' not found: {}", id, e);
+                Err(ErrorNotFound(e.to_string()))
+            }
+        });
 
     Either::B(fut_response.responder())
 }

@@ -73,23 +73,7 @@ impl Torrent {
         size: i64,
         db: &PgConnection,
     ) -> Result<Self> {
-        let id = Uuid::new_v4();
-        let now = Utc::now();
-        let torrent = NewTorrent {
-            id: &id,
-            name,
-            description,
-            info_hash,
-            category_id,
-            user_id,
-            size,
-            visible: false,
-            completed: 0,
-            last_action: None,
-            last_seeder: None,
-            created_at: &now,
-            updated_at: &now,
-        };
+        let torrent = NewTorrent::new(name, info_hash, category_id, user_id, description, size);
 
         torrent.insert(db)
     }
@@ -109,14 +93,11 @@ impl Torrent {
 
     pub fn save(&self, db: &PgConnection) -> Result<usize> {
         use schema::torrents::dsl;
-        let query = diesel::update(torrents::table)
+        diesel::update(torrents::table)
             .set(self)
-            .filter(dsl::id.eq(&self.id));
-        trace!(
-            "query: {}",
-            diesel::debug_query::<diesel::pg::Pg, _>(&query)
-        );
-        query.execute(db).chain_err(|| "torrent update failed")
+            .filter(dsl::id.eq(&self.id))
+            .execute(db)
+            .chain_err(|| "torrent update failed")
     }
 
     pub fn delete(&self, db: &PgConnection) -> Result<usize> {
@@ -134,27 +115,41 @@ impl MaybeHasUser for Torrent {
     }
 }
 
-#[derive(Debug, Insertable)]
+#[derive(Debug, Insertable, Identifiable)]
 #[table_name = "torrents"]
 pub struct NewTorrent<'a> {
-    pub id: &'a Uuid,
-    pub name: &'a str,
-    pub info_hash: &'a [u8],
-    pub category_id: &'a Uuid,
-    pub user_id: &'a Uuid,
-    pub description: &'a str,
-    pub size: i64,
-    pub visible: bool,
-    pub completed: i32,
-    pub last_action: Option<&'a Timestamp>,
-    pub last_seeder: Option<&'a Timestamp>,
-    pub created_at: &'a Timestamp,
-    pub updated_at: &'a Timestamp,
+    id: Uuid,
+    name: &'a str,
+    info_hash: &'a [u8],
+    category_id: &'a Uuid,
+    user_id: &'a Uuid,
+    description: &'a str,
+    size: i64,
 }
 
 impl<'a> NewTorrent<'a> {
+    pub fn new(
+        name: &'a str,
+        info_hash: &'a [u8],
+        category_id: &'a Uuid,
+        user_id: &'a Uuid,
+        description: &'a str,
+        size: i64,
+    ) -> Self {
+        let id = Uuid::new_v4();
+
+        NewTorrent {
+            id,
+            name,
+            info_hash,
+            category_id,
+            user_id,
+            description,
+            size,
+        }
+    }
     /// Insert the torrent into the database
-    fn insert(&self, db: &PgConnection) -> Result<Torrent> {
+    pub fn insert(&self, db: &PgConnection) -> Result<Torrent> {
         let res = self.insert_into(torrents::table).get_result(db);
 
         match res {
@@ -167,12 +162,20 @@ impl<'a> NewTorrent<'a> {
 #[derive(AsChangeset)]
 #[table_name = "torrents"]
 pub struct UpdateTorrent<'a> {
-    pub name: &'a str,
-    pub category_id: &'a Uuid,
-    pub description: &'a str,
+    name: &'a str,
+    category_id: &'a Uuid,
+    description: &'a str,
 }
 
 impl<'a> UpdateTorrent<'a> {
+    pub fn new(name: &'a str, category_id: &'a Uuid, description: &'a str) -> Self {
+        UpdateTorrent {
+            name,
+            category_id,
+            description,
+        }
+    }
+
     pub fn update(&self, id: &Uuid, db: &PgConnection) -> Result<usize> {
         use schema::torrents::dsl as t;
         diesel::update(schema::torrents::table)
@@ -197,14 +200,18 @@ impl TorrentMetaFile {
     }
 }
 
-#[derive(Debug, Insertable)]
+#[derive(Debug, Insertable, Identifiable)]
 #[table_name = "torrent_meta_files"]
 pub struct NewTorrentMetaFile<'a> {
-    pub id: &'a Uuid,
-    pub data: &'a [u8],
+    id: &'a Uuid,
+    data: &'a [u8],
 }
 
 impl<'a> NewTorrentMetaFile<'a> {
+    pub fn new(id: &'a Uuid, data: &'a [u8]) -> Self {
+        NewTorrentMetaFile { id, data }
+    }
+
     pub fn create(&self, db: &PgConnection) -> Result<usize> {
         self.insert_into(torrent_meta_files::table)
             .execute(db)
@@ -234,20 +241,30 @@ impl TorrentFile {
             .filter(dsl::torrent_id.eq(torrent_id))
             .order(dsl::file_name.asc())
             .load::<Self>(db)
-            .unwrap_or_else(|_| vec![])
+            .unwrap_or_default()
     }
 }
 
-#[derive(Debug, Insertable)]
+#[derive(Debug, Insertable, Identifiable)]
 #[table_name = "torrent_files"]
 pub struct NewTorrentFile<'a> {
-    pub id: &'a Uuid,
-    pub torrent_id: &'a Uuid,
-    pub file_name: &'a str,
-    pub size: i64,
+    id: Uuid,
+    torrent_id: &'a Uuid,
+    file_name: &'a str,
+    size: &'a i64,
 }
 
 impl<'a> NewTorrentFile<'a> {
+    pub fn new(torrent_id: &'a Uuid, file_name: &'a str, size: &'a i64) -> Self {
+        let id = Uuid::new_v4();
+        NewTorrentFile {
+            id,
+            torrent_id,
+            file_name,
+            size,
+        }
+    }
+
     pub fn create(&self, db: &PgConnection) -> Result<usize> {
         self.insert_into(torrent_files::table)
             .execute(db)
@@ -279,15 +296,24 @@ impl TorrentNFO {
     }
 }
 
-#[derive(Debug, Insertable)]
+#[derive(Debug, Insertable, Identifiable)]
 #[table_name = "torrent_nfos"]
 pub struct NewTorrentNFO<'a> {
-    pub id: &'a Uuid,
-    pub torrent_id: &'a Uuid,
-    pub data: &'a [u8],
+    id: Uuid,
+    torrent_id: &'a Uuid,
+    data: &'a [u8],
 }
 
 impl<'a> NewTorrentNFO<'a> {
+    pub fn new(torrent_id: &'a Uuid, data: &'a [u8]) -> Self {
+        let id = Uuid::new_v4();
+        NewTorrentNFO {
+            id,
+            torrent_id,
+            data,
+        }
+    }
+
     pub fn create(&self, db: &PgConnection) -> Result<usize> {
         self.insert_into(torrent_nfos::table)
             .execute(db)
@@ -301,6 +327,7 @@ pub struct TorrentMsg {
     pub torrent_user_name: Option<String>,
     pub category: Category,
     pub nfo: Option<TorrentNFO>,
+    pub images: Vec<TorrentImage>,
     pub files: Vec<TorrentFile>,
     pub peers: Vec<(Peer, String)>,
     pub timezone: i32,
@@ -310,6 +337,7 @@ impl TorrentMsg {
     pub fn find(id: &Uuid, db: &PgConnection) -> Result<Self> {
         if let Some(torrent) = Torrent::find(id, db) {
             let nfo = TorrentNFO::find_for_torrent(id, db);
+            let images = TorrentImage::find_for_torrent(id, db);
             let files = TorrentFile::find_for_torrent(id, db);
             let peers = Peer::find_for_torrent(id, db);
             let torrent_user_name = torrent.user_name(db);
@@ -321,6 +349,7 @@ impl TorrentMsg {
                 torrent_user_name,
                 category,
                 nfo,
+                images,
                 files,
                 peers,
                 timezone,
@@ -360,7 +389,7 @@ impl TorrentList {
             .select((dsl::seeder, dsl::leecher))
             .filter(dsl::id.eq(torrent_id))
             .first::<(i64, i64)>(db)
-            .unwrap_or_else(|_| (0, 0))
+            .unwrap_or_default()
     }
 
     pub fn peer_count_scrape(info_hash: &[u8], db: &PgConnection) -> (i64, i64, i32) {
@@ -370,7 +399,7 @@ impl TorrentList {
             .select((dsl::seeder, dsl::leecher, dsl::completed))
             .filter(dsl::info_hash.eq(info_hash))
             .first::<(i64, i64, i32)>(db)
-            .unwrap_or_else(|_| (0, 0, 0))
+            .unwrap_or_default()
     }
 }
 
@@ -430,5 +459,54 @@ impl<'a> From<&'a Peer> for Transfer {
             updated_at: Utc::now(),
             completed_at,
         }
+    }
+}
+
+#[derive(Debug, Queryable, Associations, Insertable, Identifiable, Serialize)]
+#[belongs_to(Torrent)]
+pub struct TorrentImage {
+    pub id: Uuid,
+    pub torrent_id: Uuid,
+    pub file_name: String,
+    pub index: i16,
+    pub created_at: Timestamp,
+}
+
+impl TorrentImage {
+    pub fn find_for_torrent(torrent_id: &Uuid, db: &PgConnection) -> Vec<Self> {
+        use schema::torrent_images::dsl;
+        dsl::torrent_images
+            .filter(dsl::torrent_id.eq(torrent_id))
+            .order_by(dsl::index.asc())
+            .load::<Self>(db)
+            .unwrap_or_default()
+    }
+}
+
+#[derive(Insertable, Identifiable)]
+#[table_name = "torrent_images"]
+pub struct NewTorrentImage<'a> {
+    id: Uuid,
+    torrent_id: &'a Uuid,
+    file_name: &'a str,
+    index: &'a i16,
+}
+
+impl<'a> NewTorrentImage<'a> {
+    pub fn new(torrent_id: &'a Uuid, file_name: &'a str, index: &'a i16) -> Self {
+        let id = Uuid::new_v4();
+        NewTorrentImage {
+            id,
+            torrent_id,
+            file_name,
+            index,
+        }
+    }
+
+    pub fn create(&self, db: &PgConnection) -> Result<usize> {
+        diesel::insert_into(schema::torrent_images::table)
+            .values(self)
+            .execute(db)
+            .map_err(|e| format!("torrent images insert failed: {}", e).into())
     }
 }

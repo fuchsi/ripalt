@@ -17,7 +17,12 @@
  */
 
 use super::*;
+use image::{self, DynamicImage, GenericImage};
 use models::acl::Subject;
+use std::fs::{self, File};
+use std::io::BufReader;
+use std::path::Path;
+use tempfile::TempPath;
 
 #[derive(Debug)]
 pub struct NewTorrentMsg {
@@ -25,7 +30,7 @@ pub struct NewTorrentMsg {
     pub description: String,
     pub meta_file: Vec<u8>,
     pub nfo_file: Vec<u8>,
-    //    pub image_file: Option<Vec<u8>>,
+    pub image_files: Vec<(String, TempPath)>,
     pub category: Uuid,
     pub user: Uuid,
     pub info_hash: Vec<u8>,
@@ -35,38 +40,37 @@ pub struct NewTorrentMsg {
 
 impl NewTorrentMsg {
     fn insert_meta(&self, id: &Uuid, conn: &DbConn) -> Result<usize> {
-        let meta = models::torrent::NewTorrentMetaFile{
-            id,
-            data: &self.meta_file,
-        };
-
+        let meta = models::torrent::NewTorrentMetaFile::new(id, &self.meta_file);
         meta.create(&conn)
     }
 
     fn insert_files(&self, id: &Uuid, conn: &DbConn) -> Result<()> {
         for f in &self.files {
-            let file_id = Uuid::new_v4();
-            let file = models::torrent::NewTorrentFile{
-                id: &file_id,
-                torrent_id: id,
-                file_name: &f.file_name[..],
-                size: f.size
-            };
-
+            let file = models::torrent::NewTorrentFile::new(id, &f.file_name[..], &f.size);
             file.create(&conn)?;
         }
 
         Ok(())
     }
 
-    fn insert_nfo(&self, id: &Uuid, conn: &DbConn) -> Result<usize> {
-        let nfo_id = Uuid::new_v4();
-        let nfo = models::torrent::NewTorrentNFO{
-            id: &nfo_id,
-            torrent_id: id,
-            data: &self.nfo_file,
-        };
+    fn insert_images(&self, id: &Uuid, conn: &DbConn) -> Result<()> {
+        for (i, (name, path)) in self.image_files.iter().enumerate() {
+            let index = i as i16;
+            let image = models::torrent::NewTorrentImage::new(id, name, &index);
+            match image.create(&conn) {
+                Ok(_) => {
+                    let timage = TorrentImage::new(id, name, path);
+                    timage.store()?;
+                }
+                Err(e) => return Err(e),
+            }
+        }
 
+        Ok(())
+    }
+
+    fn insert_nfo(&self, id: &Uuid, conn: &DbConn) -> Result<usize> {
+        let nfo = models::torrent::NewTorrentNFO::new(id, &self.nfo_file);
         nfo.create(&conn)
     }
 }
@@ -101,10 +105,102 @@ impl Handler<NewTorrentMsg> for DbExecutor {
         )?;
 
         msg.insert_meta(&torrent.id, &conn)?;
-        msg.insert_files(&torrent.id, &conn)?;
-        msg.insert_nfo(&torrent.id, &conn)?;
+        if let Err(e) = msg.insert_files(&torrent.id, &conn) {
+            error!("failed to insert files: {}", e);
+            error!("{:#?}", e);
+            torrent.delete(&conn)?;
+            return Err(e);
+        }
+        if let Err(e) = msg.insert_nfo(&torrent.id, &conn) {
+            error!("failed to insert nfo: {}", e);
+            error!("{:#?}", e);
+            torrent.delete(&conn)?;
+            return Err(e);
+        }
+        if let Err(e) = msg.insert_images(&torrent.id, &conn) {
+            error!("failed to insert images: {}", e);
+            error!("{:#?}", e);
+            torrent.delete(&conn)?;
+            return Err(e);
+        }
 
         Ok(torrent)
+    }
+}
+
+struct TorrentImage<'a> {
+    torrent_id: &'a Uuid,
+    file_name: &'a str,
+    path: &'a TempPath,
+}
+
+impl<'a> TorrentImage<'a> {
+    pub fn new(torrent_id: &'a Uuid, file_name: &'a str, path: &'a TempPath) -> Self {
+        TorrentImage {
+            torrent_id,
+            file_name,
+            path,
+        }
+    }
+
+    pub fn store(&self) -> Result<()> {
+        self.store_image()?;
+        self.store_thumbnail()
+    }
+
+    pub fn store_image(&self) -> Result<()> {
+        let path = format!("webroot/timg/{}", self.torrent_id);
+        if let Err(_) = fs::metadata(&path) {
+            fs::create_dir(&path)?;
+        }
+        let path = format!("{}/{}", path, self.file_name);
+        fs::copy(self.path, path)?;
+
+        Ok(())
+    }
+
+    pub fn store_thumbnail(&self) -> Result<()> {
+        let thumbnail = self.generate_thumbnail()?;
+        let path = format!("webroot/timg/{}/t{}", self.torrent_id, self.file_name);
+        thumbnail.save(path)?;
+
+        Ok(())
+    }
+
+    fn generate_thumbnail(&self) -> Result<DynamicImage> {
+        let img = self.open_image()?;
+        let width = SETTINGS.read().unwrap().torrent.image_thumbnail_width;
+        //let height = self.calc_height(width, img.width(), img.height());
+
+        let scaled = img.thumbnail(width, img.height());
+
+        Ok(scaled)
+    }
+
+    fn open_image(&self) -> Result<DynamicImage> {
+        let fin = File::open(self.path)?;
+        let fin = BufReader::new(fin);
+
+        let path = Path::new(self.file_name);
+        let ext = path.extension()
+            .and_then(|s| s.to_str())
+            .map_or("".to_string(), |s| s.to_ascii_lowercase());
+
+        let format = match &ext[..] {
+            "jpg" | "jpeg" => image::ImageFormat::JPEG,
+            "png" => image::ImageFormat::PNG,
+            "gif" => image::ImageFormat::GIF,
+            "webp" => image::ImageFormat::WEBP,
+            "tif" | "tiff" => image::ImageFormat::TIFF,
+            "tga" => image::ImageFormat::TGA,
+            "bmp" => image::ImageFormat::BMP,
+            "ico" => image::ImageFormat::ICO,
+            "hdr" => image::ImageFormat::HDR,
+            "pbm" | "pam" | "ppm" | "pgm" => image::ImageFormat::PNM,
+            format => bail!("Image format image/{:?} is not supported.", format),
+        };
+
+        image::load(fin, format).map_err(|e| format!("Image error: {}", e).into())
     }
 }
 
@@ -116,17 +212,21 @@ pub struct UpdateTorrentMsg {
     pub nfo_file: Option<Vec<u8>>,
     pub category: Uuid,
     pub user: UserSubjectMsg,
+    pub image_files: Vec<(String, TempPath)>,
+    pub replace_images: bool,
 }
 
 impl UpdateTorrentMsg {
     pub fn new(id: Uuid, user: UserSubjectMsg) -> Self {
-        UpdateTorrentMsg{
+        UpdateTorrentMsg {
             id,
             name: Default::default(),
             description: Default::default(),
             nfo_file: Default::default(),
             category: Default::default(),
             user,
+            image_files: Default::default(),
+            replace_images: false,
         }
     }
 
@@ -144,17 +244,62 @@ impl UpdateTorrentMsg {
 
         match res {
             Ok(_) => {
-                let nfo_id = Uuid::new_v4();
-                let nfo = models::torrent::NewTorrentNFO{
-                    id: &nfo_id,
-                    torrent_id: &self.id,
-                    data: nfo_file,
-                };
+                let nfo = models::torrent::NewTorrentNFO::new(&self.id, &nfo_file);
 
                 nfo.create(&conn)
             }
             Err(e) => Err(format!("failed to create new nfo: {}", e).into()),
         }
+    }
+
+    fn replace_images(&self, conn: &DbConn) -> Result<()> {
+        use schema::torrent_images::dsl as ti;
+        let db: &PgConnection = conn;
+        diesel::delete(ti::torrent_images)
+            .filter(ti::torrent_id.eq(&self.id))
+            .execute(db)?;
+
+        // delete images on disk
+        let path = format!("webroot/timg/{}", self.id);
+        if let Ok(_) = fs::metadata(&path) {
+            fs::remove_dir_all(&path)?;
+        }
+
+        for (i, (name, path)) in self.image_files.iter().enumerate() {
+            let index = i as i16;
+            let image = models::torrent::NewTorrentImage::new(&self.id, name, &index);
+            image.create(&conn)?;
+
+            let timage = TorrentImage::new(&self.id, name, path);
+            timage.store()?;
+        }
+
+        Ok(())
+    }
+
+    fn append_images(&self, conn: &DbConn) -> Result<()> {
+        use schema::torrent_images::dsl as ti;
+        let db: &PgConnection = conn;
+
+        let max_index: Option<i16> = ti::torrent_images
+            .select(diesel::dsl::max(ti::index))
+            .filter(ti::torrent_id.eq(&self.id))
+            .first(db)?;
+        let max_index: i16 = match max_index {
+            Some(index) => index + 1,
+            None => 0,
+        };
+
+        for (i, (name, path)) in self.image_files.iter().enumerate() {
+            let index = max_index + i as i16;
+            let image = models::torrent::NewTorrentImage::new(&self.id, name, &index);
+            image.create(&conn)?;
+
+            let timage = TorrentImage::new(&self.id, name, path);
+            timage.store()?;
+        }
+
+        Ok(())
     }
 }
 
@@ -182,14 +327,18 @@ impl Handler<UpdateTorrentMsg> for DbExecutor {
             None => bail!("category not found"),
         };
 
-        let torrent = models::torrent::UpdateTorrent{
-            name: &msg.name,
-            category_id: &msg.category,
-            description: &msg.description,
-        };
+        let torrent =
+            models::torrent::UpdateTorrent::new(&msg.name, &msg.category, &msg.description);
 
         if msg.nfo_file.is_some() {
             msg.replace_nfo(&conn)?;
+        }
+        if !msg.image_files.is_empty() {
+            if msg.replace_images {
+                msg.replace_images(&conn)?;
+            } else {
+                msg.append_images(&conn)?;
+            }
         }
 
         torrent.update(&msg.id, &conn)
@@ -202,6 +351,7 @@ pub struct NewTorrentBuilder {
     description: String,
     meta_file: Vec<u8>,
     nfo_file: Vec<u8>,
+    image_files: Vec<(String, TempPath)>,
     category: Uuid,
     user: Uuid,
 }
@@ -250,6 +400,14 @@ impl NewTorrentBuilder {
         self
     }
 
+    pub fn add_image<T>(&mut self, name: &T, path: TempPath) -> &Self
+    where
+        T: ToString,
+    {
+        self.image_files.push((name.to_string(), path));
+        self
+    }
+
     pub fn finish(self) -> Result<NewTorrentMsg> {
         let info_hash = util::torrent::info_hash(&self.meta_file)?;
         let files: Vec<NewFile> = util::torrent::files(&self.meta_file)?
@@ -265,6 +423,7 @@ impl NewTorrentBuilder {
             user: self.user,
             meta_file: self.meta_file,
             nfo_file: self.nfo_file,
+            image_files: self.image_files,
             size,
             info_hash,
             files,
@@ -324,7 +483,11 @@ impl Message for LoadTorrentMsg {
 impl Handler<LoadTorrentMsg> for DbExecutor {
     type Result = Result<models::torrent::TorrentMsg>;
 
-    fn handle(&mut self, msg: LoadTorrentMsg, _: &mut Self::Context) -> <Self as Handler<LoadTorrentMsg>>::Result {
+    fn handle(
+        &mut self,
+        msg: LoadTorrentMsg,
+        _: &mut Self::Context,
+    ) -> <Self as Handler<LoadTorrentMsg>>::Result {
         let conn = self.conn();
         let torrent = models::torrent::TorrentMsg::find(&msg.id, &conn);
         torrent.map(|mut t| {
@@ -333,7 +496,6 @@ impl Handler<LoadTorrentMsg> for DbExecutor {
         })
     }
 }
-
 
 pub struct LoadTorrentMetaMsg {
     pub id: Uuid,
@@ -347,11 +509,18 @@ impl Message for LoadTorrentMetaMsg {
 impl Handler<LoadTorrentMetaMsg> for DbExecutor {
     type Result = Result<(String, Vec<u8>, Vec<u8>)>;
 
-    fn handle(&mut self, msg: LoadTorrentMetaMsg, _: &mut Self::Context) -> <Self as Handler<LoadTorrentMetaMsg>>::Result {
+    fn handle(
+        &mut self,
+        msg: LoadTorrentMetaMsg,
+        _: &mut Self::Context,
+    ) -> <Self as Handler<LoadTorrentMetaMsg>>::Result {
         let conn = self.conn();
         let torrent = models::torrent::Torrent::find(&msg.id, &conn).ok_or("torrent not found")?;
-        let meta_file = models::torrent::TorrentMetaFile::find(&msg.id, &conn).ok_or("meta file not found")?;
-        let passcode = models::User::find(&msg.uid, &conn).ok_or("user not found")?.passcode;
+        let meta_file =
+            models::torrent::TorrentMetaFile::find(&msg.id, &conn).ok_or("meta file not found")?;
+        let passcode = models::User::find(&msg.uid, &conn)
+            .ok_or("user not found")?
+            .passcode;
         let name = format!("{}.torrent", torrent.name);
 
         Ok((name, meta_file.data, passcode))
@@ -369,17 +538,20 @@ impl Message for LoadTorrentNfoMsg {
 impl Handler<LoadTorrentNfoMsg> for DbExecutor {
     type Result = Result<(String, Vec<u8>)>;
 
-    fn handle(&mut self, msg: LoadTorrentNfoMsg, _: &mut Self::Context) -> <Self as Handler<LoadTorrentNfoMsg>>::Result {
+    fn handle(
+        &mut self,
+        msg: LoadTorrentNfoMsg,
+        _: &mut Self::Context,
+    ) -> <Self as Handler<LoadTorrentNfoMsg>>::Result {
         let conn = self.conn();
         let torrent = models::torrent::Torrent::find(&msg.id, &conn).ok_or("torrent not found")?;
-        let nfo_file = models::torrent::TorrentNFO::find_for_torrent(&msg.id, &conn).ok_or("nfo file not found")?;
+        let nfo_file = models::torrent::TorrentNFO::find_for_torrent(&msg.id, &conn)
+            .ok_or("nfo file not found")?;
         let name = format!("{}.nfo", torrent.name);
 
         Ok((name, nfo_file.data))
     }
 }
-
-
 
 #[derive(Debug)]
 pub enum Visible {
@@ -397,9 +569,9 @@ impl Default for Visible {
 impl ToString for Visible {
     fn to_string(&self) -> String {
         match self {
-            Visible::Visible => String::from("visible"),
-            Visible::Invisible => String::from("dead"),
-            Visible::All => String::from("all"),
+            &Visible::Visible => String::from("visible"),
+            &Visible::Invisible => String::from("dead"),
+            &Visible::All => String::from("all"),
         }
     }
 }
@@ -494,7 +666,9 @@ impl LoadTorrentListMsg {
     }
 
     fn user_per_page(&self, db: &PgConnection) -> i64 {
-        if let Some(prop) = models::user::Property::find(&self.current_user_id, "torrents_per_page", db) {
+        if let Some(prop) =
+            models::user::Property::find(&self.current_user_id, "torrents_per_page", db)
+        {
             if let Some(number) = prop.value.as_i64() {
                 return number;
             }
@@ -519,11 +693,15 @@ impl Message for LoadTorrentListMsg {
 impl Handler<LoadTorrentListMsg> for DbExecutor {
     type Result = Result<TorrentListMsg>;
 
-    fn handle(&mut self, mut msg: LoadTorrentListMsg, _: &mut Self::Context) -> <Self as Handler<LoadTorrentListMsg>>::Result {
+    fn handle(
+        &mut self,
+        mut msg: LoadTorrentListMsg,
+        _: &mut Self::Context,
+    ) -> <Self as Handler<LoadTorrentListMsg>>::Result {
         let db = self.conn();
         let (list, count) = msg.query(&db);
         let timezone = util::user::user_timezone(&msg.current_user_id, &db);
-        Ok(TorrentListMsg{
+        Ok(TorrentListMsg {
             torrents: list,
             count,
             request: msg,
@@ -545,13 +723,23 @@ impl Message for DeleteTorrentMsg {
 impl Handler<DeleteTorrentMsg> for DbExecutor {
     type Result = Result<usize>;
 
-    fn handle(&mut self, msg: DeleteTorrentMsg, _: &mut Self::Context) -> <Self as Handler<DeleteTorrentMsg>>::Result {
+    fn handle(
+        &mut self,
+        msg: DeleteTorrentMsg,
+        _: &mut Self::Context,
+    ) -> <Self as Handler<DeleteTorrentMsg>>::Result {
         let conn = self.conn();
 
         let torrent = models::Torrent::find(&msg.id, &conn).ok_or_else(|| "torrent not found")?;
         let subj = UserSubject::from(&msg.user);
         if !subj.may_delete(&torrent) {
             bail!("user is not allowed");
+        }
+
+        // delete images on disk
+        let path = format!("webroot/timg/{}", msg.id);
+        if let Ok(_) = fs::metadata(&path) {
+            fs::remove_dir_all(&path)?;
         }
 
         torrent.delete(&conn)

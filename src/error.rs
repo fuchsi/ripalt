@@ -34,6 +34,8 @@ error_chain! {
         ActixWebToStr(::actix_web::http::header::ToStrError);
         DataEncodingDecode(::data_encoding::DecodeError);
         ParseUuid(::uuid::ParseError);
+        Image(::image::ImageError);
+        Diesel(::diesel::result::Error);
     }
 
     errors {

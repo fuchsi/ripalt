@@ -17,7 +17,7 @@
  */
 
 #![recursion_limit = "1024"]
-#![feature(decl_macro, use_extern_macros, custom_derive)]
+#![feature(decl_macro, use_extern_macros, custom_derive, try_from)]
 // allow pass by value, since most request handlers don't consume HttpRequest
 // allow unused import, because of false positives when importing traits
 #![cfg_attr(feature = "cargo-clippy", allow(needless_pass_by_value, unused_imports))]
@@ -52,6 +52,7 @@ extern crate codepage_437;
 extern crate config;
 extern crate data_encoding;
 extern crate fast_chemail;
+extern crate image;
 extern crate jsonwebtoken as jwt;
 extern crate markdown;
 extern crate multipart;
@@ -63,6 +64,7 @@ extern crate regex;
 extern crate ring;
 extern crate serde_bencode;
 extern crate serde_json;
+extern crate tempfile;
 extern crate tera;
 extern crate url;
 extern crate walkdir;
@@ -89,7 +91,8 @@ use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
 
 use actix::prelude::*;
-use actix_web::error::{ErrorBadRequest, ErrorForbidden, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
+use actix_web::error::{ErrorBadRequest, ErrorForbidden, ErrorInternalServerError, ErrorNotFound,
+                       ErrorUnauthorized};
 use actix_web::middleware::{csrf, CookieSessionBackend, DefaultHeaders, ErrorHandlers, Logger,
                             RequestSession, SessionStorage};
 use actix_web::{fs::StaticFiles,

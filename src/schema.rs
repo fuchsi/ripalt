@@ -99,6 +99,16 @@ table! {
 }
 
 table! {
+    torrent_images (id) {
+        id -> Uuid,
+        torrent_id -> Uuid,
+        file_name -> Varchar,
+        index -> Int2,
+        created_at -> Timestamptz,
+    }
+}
+
+table! {
     torrent_meta_files (id) {
         id -> Uuid,
         data -> Bytea,
@@ -166,7 +176,6 @@ table! {
     }
 }
 
-
 table! {
     user_properties (id) {
         id -> Uuid,
@@ -219,6 +228,7 @@ joinable!(acl_user_rules -> users (user_id));
 joinable!(chat_messages -> users (user_id));
 joinable!(peers -> torrents (torrent_id));
 joinable!(peers -> users (user_id));
+joinable!(torrent_images -> torrents (torrent_id));
 joinable!(torrents -> categories (category_id));
 joinable!(torrents -> users (user_id));
 joinable!(transfers -> torrents (torrent_id));
@@ -236,6 +246,7 @@ allow_tables_to_appear_in_same_query!(
     groups,
     peers,
     torrent_files,
+    torrent_images,
     torrent_meta_files,
     torrent_nfos,
     torrents,

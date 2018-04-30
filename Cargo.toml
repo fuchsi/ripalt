@@ -50,6 +50,8 @@ jsonwebtoken = "4.0.1"
 regex = "0.2.10"
 fast_chemail = "0.9.5"
 markdown = { git = "https://github.com/fuchsi/markdown.rs.git", branch = "bootstrap" }
+image = "0.19.0"
+tempfile = "3.0.1"
 
 [dev-dependencies]
 pretty_assertions = "0.5.1"

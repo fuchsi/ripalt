@@ -19,7 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     - `GET /api/v1/chat/messages` to fetch messages.
     - `POST /api/v1/chat/publish` to publish a new message.
 - A simple Chat (Shoutbox) with 2 Chatrooms (public and team)
-- Show active(last active within 30m) users on the index page
+- Show active(last active within 30m) users on the index page.
+- Add Images to Torrent uploads.
 
 ### Changed
 - User Stats accounting now collects the time seeded

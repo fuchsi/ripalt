@@ -98,6 +98,7 @@ pub fn build(
                 .handler(StatusCode::NOT_FOUND, app::server_error),
         )
         .handler("/static", StaticFiles::new("webroot/static/"))
+        .handler("/timg", StaticFiles::new("webroot/timg"))
         .resource("/", |r| {
             r.name("index");
             r.route().filter(require_user()).f(app::index::authenticated);

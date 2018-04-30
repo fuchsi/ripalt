@@ -37,6 +37,30 @@
                             </div>
                         </div>
                         <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Image</label>
+                                <div class="custom-file">
+                                    <input class="custom-file-input" type="file" name="images" id="edit_image_file0" accept="image/*">
+                                    <label class="custom-file-label" for="edit_image_file0">Image</label>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Image</label>
+                                <div class="custom-file">
+                                    <input class="custom-file-input" type="file" name="images" id="edit_image_file1" accept="image/*">
+                                    <label class="custom-file-label" for="edit_image_file1">Image</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="replace_images" value="1">
+                                    <label class="custom-control-label" for="replace_images">Replace Images</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
                             <div class="form-group col-md-12">
                                 <label for="edit_description">Description</label>
                                 <textarea class="form-control" name="description" id="edit_description" rows="10">{{torrent.description}}</textarea>

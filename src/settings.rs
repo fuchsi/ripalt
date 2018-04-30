@@ -48,6 +48,11 @@ pub struct Tracker {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct Torrent {
+    pub image_thumbnail_width: u32,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct Settings {
     pub debug: bool,
     pub jwt_secret: String,
@@ -61,6 +66,7 @@ pub struct Settings {
     pub user: User,
     pub email: Email,
     pub tracker: Tracker,
+    pub torrent: Torrent,
 }
 
 impl Settings {

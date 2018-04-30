@@ -1,4 +1,4 @@
-/*     
+/*
  * ripalt
  * Copyright (C) 2018 Daniel Müller
  *
@@ -18,10 +18,10 @@
 extern crate sass_rs;
 extern crate walkdir;
 
-use walkdir::{DirEntry, WalkDir};
 use std::env;
-use std::io::prelude::*;
 use std::fs::File;
+use std::io::prelude::*;
+use walkdir::{DirEntry, WalkDir};
 
 fn main() {
     println!("cargo:rerun-if-changed=assets");
@@ -56,9 +56,12 @@ fn compile_scss() {
                             },
                             Err(e) => eprintln!("compile_scss:{}: io error: {}", file_name, e),
                         },
-                        Err(e) => eprintln!("compile_scss:{}: could not create target file: {}", file_name, e),
+                        Err(e) => eprintln!(
+                            "compile_scss:{}: could not create target file: {}",
+                            file_name, e
+                        ),
                     }
-                },
+                }
                 Err(e) => eprintln!("compile_scss:{}: sass error: {}", file_name, e),
             }
         }
@@ -66,7 +69,8 @@ fn compile_scss() {
 }
 
 fn is_hidden(entry: &DirEntry) -> bool {
-    entry.file_name()
+    entry
+        .file_name()
         .to_str()
         .map(|s| s.starts_with("."))
         .unwrap_or(false)

@@ -25,3 +25,8 @@ announce_url = "http://localhost:8081/tracker/announce"
 comment = "Fe₂O₃ powered tracking"
 default_numwant = 50
 interval = 900
+
+[torrent]
+image_thumbnail_width = 200 # width for torrent image thumbnails in pixels
+# remove_dead_torrents_after = 30 # remove dead torrents after X days
+# remove_dead_peers_after = 60 # remove dead peers after X minutes

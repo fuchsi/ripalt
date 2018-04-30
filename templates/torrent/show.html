@@ -208,14 +208,19 @@
                         Images
                     </div>
                     <div class="card-body">
-                        <div class="text-center">
-                            <img class="rounded" src="holder.js/200x200?theme=gray" alt="img1">
-                            <img class="rounded ml-2" src="holder.js/200x200?theme=gray" alt="img2">
-                        </div>
-                        <div class="text-center mt-2">
-                            <img class="rounded" src="holder.js/200x200?theme=gray" alt="img3">
-                            <img class="rounded ml-2" src="holder.js/200x200?theme=gray" alt="img4">
-                        </div>
+                        {% for image in images %}
+                            {% if loop.index is odd %}
+                                <div class="text-center{% if not loop.first%} mt-2{% endif %}">
+                                    <a href="/timg/{{torrent.id}}/{{image.file_name}}">
+                                        <img class="rounded" src="/timg/{{torrent.id}}/t{{image.file_name}}" alt="{{image.file_name}}">
+                                    </a>
+                            {% else %}
+                                    <a href="/timg/{{torrent.id}}/{{image.file_name}}">
+                                        <img class="rounded ml-2" src="/timg/{{torrent.id}}/t{{image.file_name}}" alt="{{image.file_name}}">
+                                    </a>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
             </div>
