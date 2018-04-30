@@ -408,6 +408,11 @@ impl NewTorrentBuilder {
         self
     }
 
+    pub fn nfo_as_description(&mut self) -> &Self {
+        self.description = String::from_utf8_lossy(&self.nfo_file).to_string();
+        self
+    }
+
     pub fn finish(self) -> Result<NewTorrentMsg> {
         let info_hash = util::torrent::info_hash(&self.meta_file)?;
         let files: Vec<NewFile> = util::torrent::files(&self.meta_file)?
@@ -431,7 +436,7 @@ impl NewTorrentBuilder {
     }
 }
 
-pub struct LoadCategoriesMsg {}
+pub struct LoadCategoriesMsg{}
 
 impl Message for LoadCategoriesMsg {
     type Result = Result<Vec<models::Category>>;

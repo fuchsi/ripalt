@@ -249,6 +249,9 @@ fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
     }
     key = String::from("nfo_file");
     let nfo = &entries.fields[&key][0];
+    let use_nfo_as_description = &entries.fields.get(&"nfo_as_description".to_string())
+        .map(|v| if let SavedData::Text(ref v) = v[0].data { v == "1"} else { false } )
+        .unwrap_or_default();
     match nfo.headers.content_type {
         Some(ref c) if c.type_() == "text" => match nfo.data {
             SavedData::Bytes(ref b) => {
@@ -266,6 +269,10 @@ fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
         },
         _ => bail!("no nfo"),
     }
+    if *use_nfo_as_description {
+        upload_builder.nfo_as_description();
+    }
+
     key = String::from("meta_file");
     let meta_file = &entries.fields[&key][0];
     match meta_file.headers.content_type {
