@@ -20,6 +20,7 @@ use super::*;
 use std::convert::TryFrom;
 
 pub mod chat;
+pub mod message;
 pub mod torrent;
 pub mod user;
 

@@ -98,6 +98,26 @@ function update_stats() {
         });
 }
 
+function update_messages() {
+    get_json('/api/v1/message/unread')
+        .then(data => {
+            let new_message_count = data.length;
+            let navbar = $('#navbar-inbox');
+            navbar.text(new_message_count.toFixed(0));
+            if (new_message_count > 0) {
+                if (!navbar.hasClass('font-weight-bold')) {
+                    navbar.addClass('font-weight-bold');
+                    navbar.parent().addClass('text-info');
+                }
+            } else {
+                if (navbar.hasClass('font-weight-bold')) {
+                    navbar.removeClass('font-weight-bold');
+                    navbar.parent().removeClass('text-info');
+                }
+            }
+        });
+}
+
 function update_chatrooms() {
     if (chatrooms === undefined) {
         return;

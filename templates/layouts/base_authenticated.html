@@ -37,9 +37,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="navbar-inbox">
+                    <a class="nav-link" href="/messages/inbox">
                         <span class="fas fa-inbox" aria-hidden="true"></span>
-                        0
+                        <span id="navbar-inbox">0</span>
                     </a>
                 </li>
                 <li class="nav-item dropdown">
@@ -148,7 +148,9 @@
     $(() => {
         'use strict';
         update_stats();
+        update_messages();
         window.setInterval(update_stats, 60000);
+        window.setInterval(update_messages, 60000);
         $('.custom-file input[type=file]').on("change", (ev) => {
             let file = ev.target.value.replace('C:\\fakepath\\', '');
             let id = ev.target.id;

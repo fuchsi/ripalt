@@ -24,6 +24,9 @@ use ipnetwork::IpNetwork;
 use ring::digest;
 use serde::{Serialize, Serializer, ser::SerializeStruct};
 use util::{self, password, rand};
+use models::message::NewMessageFolder;
+use std::collections::HashMap;
+use std::sync::Mutex;
 
 /// New users
 #[allow(dead_code)]
@@ -198,6 +201,16 @@ impl User {
             .set(dsl::last_active.eq(&self.last_active))
             .filter(dsl::id.eq(&self.id))
             .execute(db).chain_err(|| "user update failed")
+    }
+
+    pub fn create_message_folders(&self, db: &PgConnection) -> Result<()> {
+        let folders = vec!["inbox", "sent", "system"];
+
+        for name in folders {
+            NewMessageFolder::new(&self.id, name, 0).save(db)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -448,5 +461,28 @@ impl UserUpload {
             .order_by(tl::created_at.desc())
             .load::<UserUpload>(db)
             .unwrap()
+    }
+}
+
+pub fn username(id: &Uuid, db: &PgConnection) -> Option<String> {
+    lazy_static! {
+        static ref USERS: Mutex<HashMap<Uuid, String>> = Mutex::new(HashMap::new());
+    }
+
+    let mut users = USERS.lock().unwrap();
+    if let Some(name) = users.get(id) {
+        return Some(name.to_owned());
+    }
+
+    let name: diesel::QueryResult<String> = users::table.select(users::name)
+        .filter(users::id.eq(id))
+        .first(db);
+
+    match name {
+        Ok(name) => {
+            users.insert(*id, name.clone());
+            Some(name)
+        },
+        Err(_) => None,
     }
 }

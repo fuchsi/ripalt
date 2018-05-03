@@ -56,10 +56,7 @@ fn compile_scss() {
                             },
                             Err(e) => eprintln!("compile_scss:{}: io error: {}", file_name, e),
                         },
-                        Err(e) => eprintln!(
-                            "compile_scss:{}: could not create target file: {}",
-                            file_name, e
-                        ),
+                        Err(e) => eprintln!("compile_scss:{}: could not create target file: {}", file_name, e),
                     }
                 }
                 Err(e) => eprintln!("compile_scss:{}: sass error: {}", file_name, e),
@@ -69,9 +66,5 @@ fn compile_scss() {
 }
 
 fn is_hidden(entry: &DirEntry) -> bool {
-    entry
-        .file_name()
-        .to_str()
-        .map(|s| s.starts_with("."))
-        .unwrap_or(false)
+    entry.file_name().to_str().map(|s| s.starts_with(".")).unwrap_or(false)
 }

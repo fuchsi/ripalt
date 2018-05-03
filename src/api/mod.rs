@@ -21,7 +21,8 @@ use super::*;
 use self::identity::{ApiIdentityPolicy, IdentityService};
 
 mod chat;
-pub mod identity;
+pub(crate) mod identity;
+pub(crate) mod message;
 mod user;
 
 pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
@@ -62,5 +63,11 @@ pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
         .resource("/user/stats", |r| r.method(Method::GET).a(user::stats))
         .resource("/chat/messages", |r| r.method(Method::GET).a(chat::messages))
         .resource("/chat/publish", |r| r.method(Method::POST).with2(chat::publish))
+        .resource("/message/messages", |r| r.method(Method::GET).a(message::messages))
+        .resource("/message/unread", |r| r.method(Method::GET).a(message::unread))
+        .resource("/message/read", |r| r.method(Method::GET).a(message::message))
+        .resource("/message/send", |r| r.method(Method::POST).with2(message::send))
+        .resource("/message/delete", |r| r.method(Method::POST).with2(message::delete))
+        .resource("/message/mark_read", |r| r.method(Method::POST).with2(message::mark_read))
         .default_resource(|r| r.method(Method::GET).h(NormalizePath::default()))
 }

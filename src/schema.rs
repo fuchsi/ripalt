@@ -67,6 +67,28 @@ table! {
 }
 
 table! {
+    message_folders (id) {
+        id -> Uuid,
+        user_id -> Uuid,
+        name -> Varchar,
+        purge -> Int2,
+    }
+}
+
+table! {
+    messages (id) {
+        id -> Uuid,
+        folder_id -> Uuid,
+        sender_id -> Nullable<Uuid>,
+        receiver_id -> Uuid,
+        subject -> Varchar,
+        body -> Text,
+        is_read -> Bool,
+        created_at -> Timestamptz,
+    }
+}
+
+table! {
     peers (id) {
         id -> Uuid,
         torrent_id -> Uuid,
@@ -226,6 +248,8 @@ table! {
 joinable!(acl_group_rules -> groups (group_id));
 joinable!(acl_user_rules -> users (user_id));
 joinable!(chat_messages -> users (user_id));
+joinable!(message_folders -> users (user_id));
+joinable!(messages -> message_folders (folder_id));
 joinable!(peers -> torrents (torrent_id));
 joinable!(peers -> users (user_id));
 joinable!(torrent_images -> torrents (torrent_id));
@@ -244,6 +268,8 @@ allow_tables_to_appear_in_same_query!(
     categories,
     chat_messages,
     groups,
+    message_folders,
+    messages,
     peers,
     torrent_files,
     torrent_images,

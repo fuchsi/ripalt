@@ -121,7 +121,7 @@ impl SignupForm {
         self.password.len() >= 8
     }
 
-    pub fn is_valid(&self, conn: &DbConn) -> Result<()> {
+    pub fn is_valid(&self, conn: &DbConn) -> Result<bool> {
         if !self.username_valid() {
             bail!("username is invalid");
         }
@@ -141,7 +141,7 @@ impl SignupForm {
             bail!("email address is already taken");
         }
 
-        Ok(())
+        Ok(true)
     }
 }
 
@@ -155,31 +155,31 @@ impl Handler<SignupForm> for DbExecutor {
     fn handle(&mut self, msg: SignupForm, _: &mut Self::Context) -> Self::Result {
         let conn = self.conn();
 
-        match msg.is_valid(&conn) {
-            Ok(_) => {
-                let settings = match SETTINGS.read() {
-                    Ok(s) => s,
-                    Err(e) => bail!("failed to read settings: {}", e),
-                };
-                let gid = &settings.user.default_group;
+        if msg.is_valid(&conn)? {
+            let settings = match SETTINGS.read() {
+                Ok(s) => s,
+                Err(e) => bail!("failed to read settings: {}", e),
+            };
+            let gid = &settings.user.default_group;
 
-                if let Some(group) = Group::find(gid, &conn) {
-                    let user = User::create(
-                        &conn,
-                        msg.username.clone(),
-                        msg.email.clone(),
-                        &msg.password[..],
-                        &group,
-                    )?;
+            if let Some(group) = Group::find(gid, &conn) {
+                let user = User::create(
+                    &conn,
+                    msg.username.clone(),
+                    msg.email.clone(),
+                    &msg.password[..],
+                    &group,
+                )?;
+                user.create_message_folders(&conn)?;
 
-                    let confirm_id = user.create_confirm_id(&conn);
+                let confirm_id = user.create_confirm_id(&conn);
 
-                    Ok(util::to_hex(&confirm_id))
-                } else {
-                    bail!("default group not found")
-                }
+                Ok(util::to_hex(&confirm_id))
+            } else {
+                bail!("default group not found")
             }
-            Err(e) => Err(e),
+        } else {
+            bail!("invalid data")
         }
     }
 }
@@ -235,7 +235,11 @@ impl Handler<LoadUserStatsMsg> for DbExecutor {
         let db: &PgConnection = &self.conn();
         match models::User::find(&msg.0, db) {
             Some(user) => {
-                let ratio = user.uploaded as f64 / user.downloaded as f64;
+                let ratio = if user.downloaded > 0 {
+                    user.uploaded as f64 / user.downloaded as f64
+                } else {
+                    0f64
+                };
                 let uploads = schema::peers::table
                     .count()
                     .filter(dsl::user_id.eq(&user.id))

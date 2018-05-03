@@ -32,6 +32,9 @@ pub struct User {
     pub passcode_length: usize,
     pub default_timezone: i32,
     pub default_torrents_per_page: i64,
+    pub default_delete_message_on_reply: bool,
+    pub default_save_message_in_sent: bool,
+    pub default_accept_messages: String,
 }
 
 #[derive(Debug, Deserialize)]

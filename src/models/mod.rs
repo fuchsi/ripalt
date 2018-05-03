@@ -36,14 +36,17 @@ pub type Bytes = Vec<u8>;
 
 pub use self::category::Category;
 pub use self::group::Group;
+pub use self::message::{Message, MessageFolder};
 pub use self::peer::Peer;
-pub use self::torrent::{Torrent, TorrentList, TorrentMetaFile, TorrentMsg};
-pub use self::user::{HasUser, MaybeHasUser, Property, User};
+pub use self::torrent::{Torrent, TorrentFile, TorrentImage, TorrentList, TorrentMetaFile,
+                        TorrentMsg, TorrentNFO};
+pub use self::user::{HasUser, MaybeHasUser, Property, User, username};
 
 pub mod acl;
 pub mod category;
 pub mod chat;
 pub mod group;
+pub mod message;
 pub mod peer;
 pub mod torrent;
 pub mod user;
