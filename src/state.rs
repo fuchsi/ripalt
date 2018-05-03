@@ -71,14 +71,6 @@ impl State {
             None => panic!("template system not initialized"),
         }
     }
-
-    /// Get a cloned arc container with the template object
-    pub fn template_arc(&self) -> TemplateContainer {
-        match &self.template {
-            Some(template) => template.clone(),
-            None => panic!("template system not initialized"),
-        }
-    }
 }
 
 pub fn init_acl(pool: &Pool) -> Arc<RwLock<Acl>> {

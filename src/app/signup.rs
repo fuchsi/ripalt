@@ -21,7 +21,7 @@ use handlers::user::{ConfirmMsg, SignupForm};
 use actix_web::AsyncResponder;
 use actix_web::HttpMessage;
 
-pub fn signup(req: HttpRequest<State>) -> SyncResponse<Template> {
+pub fn signup(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     let mut ctx = Context::new();
     ctx.insert("username", "");
     ctx.insert("email", "");
@@ -30,20 +30,15 @@ pub fn signup(req: HttpRequest<State>) -> SyncResponse<Template> {
     Template::render(&req.state().template(), "signup/signup.html", &ctx)
 }
 
-pub fn take_signup(
-    req: HttpRequest<State>,
-) -> Box<Future<Item = HttpResponse, Error = actix_web::Error>> {
-    // Clone the request before creating the form out of it.
-    // Bcz cloned requests don't contain the body smh. ¯\_(ツ)_/¯
-    let req2 = req.clone();
-    let form = match req.urlencoded::<SignupForm>().wait() {
+pub fn take_signup(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
+    let cloned = req.clone();
+    let form = match cloned.urlencoded::<SignupForm>().wait() {
         Ok(form) => form,
         Err(e) => return Box::new(future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))))
     };
-    let req = req2;
-    let hbs_reg = req.state().template_arc();
 
-    req.state()
+    let cloned = req.clone();
+    cloned.state()
         .db()
         .send(form.clone())
         .from_err()
@@ -56,7 +51,7 @@ pub fn take_signup(
                     fail = false;
                     let settings = match SETTINGS.read() {
                         Ok(s) => s,
-                        Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
+                        Err(e) => return Err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
                     };
 
                     if settings.email.enabled {
@@ -79,16 +74,13 @@ pub fn take_signup(
                 "signup/signup_complete.html"
             };
 
-            let reg = match hbs_reg.read() {
-                Ok(s) => s,
-                Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
-            };
-            future::result(Template::render(&reg, tpl, ctx).map(|t| t.into() ))
+            let template = req.state().template();
+            Template::render(&template, tpl, ctx)
         })
         .responder()
 }
 
-pub fn confirm(mut req: HttpRequest<State>) -> Box<Future<Item = HttpResponse, Error = actix_web::Error>> {
+pub fn confirm(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     let id = match req.match_info().query("id") {
         Ok(id) => id,
         Err(e) => return Box::new(future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))))
@@ -102,9 +94,8 @@ pub fn confirm(mut req: HttpRequest<State>) -> Box<Future<Item = HttpResponse, E
         ip_address,
     };
 
-    let hbs_reg = req.state().template_arc();
-
-    req.state()
+    let cloned = req.clone();
+    cloned.state()
         .db()
         .send(confirm)
         .from_err()
@@ -116,11 +107,11 @@ pub fn confirm(mut req: HttpRequest<State>) -> Box<Future<Item = HttpResponse, E
                 Ok(user) => {
                     match req.session().set("user_id", user.id) {
                         Ok(_) => {},
-                        Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
+                        Err(e) => return Err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
                     };
                     match req.session().set("group_id", user.group_id) {
                         Ok(_) => {},
-                        Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
+                        Err(e) => return Err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
                     };
                     fail = false;
                 },
@@ -135,14 +126,8 @@ pub fn confirm(mut req: HttpRequest<State>) -> Box<Future<Item = HttpResponse, E
                 "signup/confirm_complete.html"
             };
 
-            let reg = match hbs_reg.read() {
-                Ok(s) => s,
-                Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
-            };
-            match Template::render(&reg, tpl, ctx) {
-                Ok(resp) => future::ok(resp.into()),
-                Err(e) => future::err(e),
-            }
+            let template = req.state().template();
+            Template::render(&template, tpl, ctx)
         })
         .responder()
 }

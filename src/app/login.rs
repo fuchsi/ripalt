@@ -21,25 +21,22 @@ use handlers::user::LoginForm;
 use actix_web::AsyncResponder;
 use actix_web::HttpMessage;
 
-pub fn login(req: HttpRequest<State>) -> SyncResponse<Template> {
+pub fn login(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     let mut ctx = Context::new();
     ctx.insert("username", "");
     ctx.insert("error", "");
     Template::render(&req.state().template(), "login/login.html", &ctx)
 }
 
-pub fn take_login(
-    req: HttpRequest<State>,
-) -> Box<Future<Item = HttpResponse, Error = actix_web::Error>> {
-    let req2 = req.clone();
-    let form = match req.urlencoded::<LoginForm>().wait() {
+pub fn take_login(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
+    let cloned = req.clone();
+    let form = match cloned.urlencoded::<LoginForm>().wait() {
         Ok(form) => form,
         Err(e) => return Box::new(future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))))
     };
-    let mut req = req2;
-    let hbs_reg = req.state().template_arc();
 
-    req.state()
+    let cloned = req.clone();
+    cloned.state()
         .db()
         .send(form.clone())
         .from_err()
@@ -52,11 +49,11 @@ pub fn take_login(
                     debug!("set session / user_id to: {:?}", user.id);
                     match req.session().set("user_id", user.id) {
                         Ok(_) => {},
-                        Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
+                        Err(e) => return Err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
                     };
                     match req.session().set("group_id", user.group_id) {
                         Ok(_) => {},
-                        Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
+                        Err(e) => return Err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
                     };
                     fail = false;
                 },
@@ -67,16 +64,10 @@ pub fn take_login(
             }
 
             if fail {
-                let reg = match hbs_reg.read() {
-                    Ok(s) => s,
-                    Err(e) => return future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
-                };
-                match Template::render(&reg, "login/login.html", ctx) {
-                    Ok(resp) => future::ok(resp.into()),
-                    Err(e) => future::err(e),
-                }
+                let tpl = req.state().template();
+                Template::render(&tpl, "login/login.html", ctx)
             } else {
-                future::ok(HttpResponse::TemporaryRedirect().header(header::LOCATION, "/").finish())
+                Ok(redirect("/"))
             }
         })
         .responder()
@@ -86,5 +77,5 @@ pub fn logout(mut req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     req.session().clear();
     let t: Vec<&str> = vec![];
     let url = req.url_for("index", &t).unwrap();
-    Ok(HttpResponse::TemporaryRedirect().header(header::LOCATION, url.to_string()).finish())
+    sync_redirect(&url.to_string())
 }

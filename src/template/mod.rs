@@ -128,7 +128,7 @@ impl Template {
         tpl: &TemplateSystem,
         name: &str,
         ctx: T,
-    ) -> ::std::result::Result<Self, actix_web::Error>
+    ) -> actix_web::Result<HttpResponse>
     where
         T: Serialize,
     {
@@ -140,7 +140,10 @@ impl Template {
         let mut tpl = Template::default();
         tpl.body = s;
 
-        Ok(tpl)
+        let resp = HttpResponse::build(StatusCode::OK)
+            .content_type(&tpl.content_type[..])
+            .body(tpl.body);
+        Ok(resp)
     }
 }
 
@@ -168,7 +171,7 @@ impl Responder for Template {
     fn respond_to(
         self,
         _req: HttpRequest<()>,
-    ) -> actix_web::Result<HttpResponse, actix_web::Error> {
+    ) -> actix_web::Result<<Self as Responder>::Item, <Self as Responder>::Error> {
         Ok(self.into())
     }
 }

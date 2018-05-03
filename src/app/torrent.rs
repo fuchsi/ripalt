@@ -138,13 +138,13 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                 timezone: msg.timezone,
             };
             let reg = &req.state().template();
-            Template::render(&reg, "torrent/list.html", &ctx).map(|t| t.into())
+            Template::render(&reg, "torrent/list.html", &ctx)
         });
 
     fut_response.responder()
 }
 
-pub fn new(req: HttpRequest<State>) -> SyncResponse<Template> {
+pub fn new(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     let mut ctx = HashMap::new();
     ctx.insert("categories", categories(req.state()));
 
@@ -207,7 +207,7 @@ pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespons
                 error: e.to_string(),
             };
 
-            Template::render(&cloned.state().template(), "torrent/new.html", &ctx).map(|t| t.into())
+            Template::render(&cloned.state().template(), "torrent/new.html", &ctx)
         }
     });
 
@@ -219,7 +219,7 @@ pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespons
         };
 
         let hbs = &cloned.state().template();
-        Template::render(hbs, "torrent/new.html", &ctx).map(|t| t.into())
+        Template::render(hbs, "torrent/new.html", &ctx)
     });
 
     Either::B(fut_response.responder())
@@ -554,7 +554,6 @@ pub fn torrent(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.may_delete = subj.may_delete(&tc.torrent);
                 }
                 Template::render(&req.state().template(), "torrent/show.html", &ctx)
-                    .map(|t| t.into())
             }
             Err(e) => {
                 info!("torrent '{}' not found: {}", id, e);
@@ -594,14 +593,12 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
 
                 if may_edit {
                     Template::render(&req.state().template(), "torrent/edit.html", &ctx)
-                        .map(|t| t.into())
                 } else {
                     let mut ctx = Context::new();
                     ctx.insert("id", &id);
                     ctx.insert("title", &format!("Edit Torrent: {}", tc.torrent.name));
                     ctx.insert("message", "You are not allowed to edit this Torrent");
                     Template::render(&req.state().template(), "torrent/denied.html", &ctx)
-                        .map(|t| t.into())
                 }
             }
             Err(e) => {
@@ -684,7 +681,6 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                             .to_string(),
                     );
                     Template::render(&cloned.state().template(), "torrent/success.html", &ctx)
-                        .map(|t| t.into())
                 }
                 Err(e) => {
                     ctx.insert("error", &e.to_string());
@@ -698,7 +694,6 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                             .to_string(),
                     );
                     Template::render(&cloned.state().template(), "torrent/failed.html", &ctx)
-                        .map(|t| t.into())
                 }
             }
         })
@@ -828,14 +823,12 @@ pub fn delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
 
                 if may_edit {
                     Template::render(&req.state().template(), "torrent/delete.html", &ctx)
-                        .map(|t| t.into())
                 } else {
                     let mut ctx = Context::new();
                     ctx.insert("id", &id);
                     ctx.insert("title", &format!("Delete Torrent: {}", tc.torrent.name));
                     ctx.insert("message", "You are not allowed to delete this Torrent");
                     Template::render(&req.state().template(), "torrent/denied.html", &ctx)
-                        .map(|t| t.into())
                 }
             }
             Err(e) => {
@@ -897,7 +890,6 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.insert("sub_title", "Delete Succeeded");
                     ctx.insert("continue_link", "/torrents");
                     Template::render(&cloned.state().template(), "torrent/success.html", &ctx)
-                        .map(|t| t.into())
                 }
                 Err(e) => {
                     ctx.insert("error", &e.to_string());
@@ -911,7 +903,6 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                             .to_string(),
                     );
                     Template::render(&cloned.state().template(), "torrent/failed.html", &ctx)
-                        .map(|t| t.into())
                 }
             }
         })

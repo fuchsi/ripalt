@@ -62,13 +62,13 @@ pub fn authenticated(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse
                 },
             }
             let tpl = cloned.state().template();
-            Template::render(&tpl, "index/authenticated.html", &ctx).map(|t| t.into())
+            Template::render(&tpl, "index/authenticated.html", &ctx)
         })
         .responder()
 }
 
 
-pub fn index(req: HttpRequest<State>) -> SyncResponse<Template> {
+pub fn index(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     let ctx = Context::new();
     Template::render(&req.state().template(), "index/public.html", &ctx)
 }

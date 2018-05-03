@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Use the NFO as description if the description is empty
 
+### Changed
+- `Template::render()` now returns `HttpResponse` instead of `Template`
+
 ## [0.2.0]
 
 ### Added

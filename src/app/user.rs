@@ -33,8 +33,7 @@ pub fn profile(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespon
         .from_err()
         .and_then(move |result: Result<UserProfileMsg>| {
             match result {
-                Ok(user) => Template::render(&cloned.state().template(), "user/profile.html", &user)
-                    .map(|t| t.into()),
+                Ok(user) => Template::render(&cloned.state().template(), "user/profile.html", &user),
                 Err(e) => {
                     info!("user '{}' not found: {}", user_id, e);
                     Err(ErrorNotFound(e.to_string()))
