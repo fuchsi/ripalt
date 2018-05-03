@@ -21,8 +21,8 @@ use super::*;
 use std::collections::HashMap;
 use std::fmt::Write;
 
-use tera::{Result, Value};
 use markdown;
+use tera::{Result, Value};
 
 use util;
 
@@ -40,8 +40,7 @@ pub fn data_size(value: Value, _: HashMap<String, Value>) -> Result<Value> {
 pub fn format_date(value: Value, args: HashMap<String, Value>) -> Result<Value> {
     static FORMAT_STRING: &'static str = "%d.%m.%Y %H:%M:%S";
     let date = match value {
-        Value::String(s) => match DateTime::parse_from_rfc3339(&s[..])
-            .map_err(|e| format!("not a date string: {}", e))
+        Value::String(s) => match DateTime::parse_from_rfc3339(&s[..]).map_err(|e| format!("not a date string: {}", e))
         {
             Ok(date) => date.with_timezone(&Utc),
             Err(_) => return Ok(Value::String(s)),
@@ -101,5 +100,16 @@ pub fn markdown(value: Value, _: HashMap<String, Value>) -> Result<Value> {
     match value {
         Value::String(s) => Ok(Value::String(markdown::to_html(&s))),
         _ => bail!("markdown: not a string"),
+    }
+}
+
+pub fn quote(value: Value, _: HashMap<String, Value>) -> Result<Value> {
+    match value {
+        Value::String(s) => Ok(Value::String(
+            s.lines()
+                .map(|line| format!("> {}", line))
+                .fold(String::new(), |acc, x| format!("{}\n{}", acc, x)),
+        )),
+        _ => bail!("quote: not a string"),
     }
 }

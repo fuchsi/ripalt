@@ -1,0 +1,84 @@
+{% extends "layouts/base_authenticated.html" %}
+{% block content %}
+<div class="col-md-12 mt-4">
+    <div class="row mt-auto">
+        <div class="col-md-9">
+            <div id="message-error" class="alert alert-danger d-none" role="alert"></div>
+            <div class="card bg-dark">
+                <div class="card-header">{{message.subject}}</div>
+                <div class="card-body">
+                    <dl class="row">
+                        {% if message.folder_name != "sent" %}
+                            <dt class="col-sm-1 text-right">From: </dt>
+                            <dd class="col-sm-11"><a href="/user/{{message.sender_id}}">{{message.sender_name}}</a></dd>
+                        {% else %}
+                            <dt class="col-sm-1 text-right">To: </dt>
+                            <dd class="col-sm-11"><a href="/user/{{message.receiver_id}}">{{message.receiver_name}}</a></dd>
+                        {% endif %}
+                        <dt class="col-sm-1 text-right">Date: </dt>
+                        <dd class="col-sm-11">{{message.created_at | format_date }}</dd>
+                        <dt class="col-sm-1 text-right">Subject: </dt>
+                        <dd class="col-sm-11">{{ message.subject }}</dd>
+                    </dl>
+                    <div class="message-body rounded p-2 mb-2">
+                        {{ message.body | safe | markdown }}
+                    </div>
+
+                    <div class="btn-group">
+                        <a role="button" class="btn btn-secondary" title="Reply" href="/messages/{{message.folder_name}}"><span class="fa fa-backward"></span> Back</a>
+                        {% if message.folder_name == "inbox" %}
+                            <a role="button" class="btn btn-primary" title="Reply" href="/message/reply/{{message.id}}"><span class="fa fa-reply"></span> Reply</a>
+                        {% endif %}
+                        {% if not message.is_read %}
+                            <button role="button" class="btn btn-secondary msg-mark" data-id="{{message.id}}" title="Mark as Read"><span class="fa fa-binoculars"></span> Mark as Read</button>
+                        {% endif %}
+                        <button role="button" class="btn btn-danger msg-delete" data-id="{{message.id}}" title="Delete"><span class="fa fa-trash"></span> Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="list-group">
+                <a class="list-group-item {% if message.folder_name == "inbox" %}active{% endif %}" href="/messages/inbox">Inbox</a>
+                <a class="list-group-item {% if message.folder_name == "sent" %}active{% endif %}" href="/messages/sent">Sent</a>
+                <a class="list-group-item {% if message.folder_name == "system" %}active{% endif %}" href="/messages/system">System Messages</a>
+                <a class="list-group-item" href="/message/new">New Message</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (() => {
+        'use strict';
+        window.addEventListener('load', () => {
+            $('.msg-mark').on('click', (ev) => {
+                ev.preventDefault();
+                let id = $(ev.target).attr('data-id');
+                post_json('/api/v1/message/mark_read', {'messages': [id]})
+                    .then((data) => {
+                        if (data.error !== undefined) {
+                            $('#message-error').removeClass('d-none').text(data.error);
+                        }
+                    })
+                    .catch(error => $('#message-error').removeClass('d-none').text(error));
+            });
+            $('.msg-delete').on('click', (ev) => {
+                ev.preventDefault();
+                let id = $(ev.target).attr('data-id');
+                post_json('/api/v1/message/delete', {'messages': [id]})
+                    .then((data) => {
+                        if (data.error !== undefined) {
+                            $('#message-error').removeClass('d-none').text(data.error);
+                            return;
+                        }
+                        if (data.length === 1) {
+                            window.location.href = '/messages/{{message.folder_name}}';
+                        }
+                    })
+                    .catch(error => $('#message-error').removeClass('d-none').text(error));
+            });
+        });
+    })();
+</script>
+{% endblock %}
+{% block title %}Message: {{message.subject}}{% endblock title %}

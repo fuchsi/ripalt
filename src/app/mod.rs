@@ -32,11 +32,12 @@ use bytes::Bytes;
 use multipart::server::{save::SavedData, Entries, Multipart, SaveResult};
 use std::io::Cursor;
 
-pub mod index;
-pub mod login;
-pub mod signup;
-pub mod torrent;
-pub mod user;
+mod index;
+mod login;
+mod message;
+mod signup;
+mod torrent;
+mod user;
 
 type SyncResponse<T> = actix_web::Result<T>;
 
@@ -167,6 +168,22 @@ pub fn build(
             r.name("user#profile");
             r.method(Method::GET).filter(require_user()).f(app::user::view);
         })
+        .resource("/messages/{folder:.*}", |r| {
+            r.name("message#messages");
+            r.method(Method::GET).filter(require_user()).f(app::message::messages);
+        })
+        .resource("/message/new", |r| {
+            r.name("message#new");
+            r.method(Method::GET).filter(require_user()).f(app::message::new);
+        })
+        .resource("/message/reply/{id}", |r| {
+            r.name("message#reply");
+            r.method(Method::GET).filter(require_user()).f(app::message::reply);
+        })
+        .resource("/message/{id}", |r| {
+            r.name("message#message");
+            r.method(Method::GET).filter(require_user()).f(app::message::message);
+        })
         .default_resource(|r| r.f(app::not_found))
 }
 
@@ -174,8 +191,7 @@ pub fn not_found(req: HttpRequest<State>) -> HttpResponse {
     use actix_web::dev::Handler;
 
     let mut h = NormalizePath::default();
-    let resp = h.handle(req.clone());
-    resp
+    h.handle(req.clone())
 }
 
 pub fn server_error(

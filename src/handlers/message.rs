@@ -33,6 +33,7 @@ pub struct MessageResponse {
     pub created_at: DateTime<Utc>,
     pub sender_name: String,
     pub receiver_name: String,
+    pub folder_name: String,
 }
 
 impl MessageResponse {
@@ -68,6 +69,7 @@ impl From<models::Message> for MessageResponse {
             created_at,
             sender_name: Default::default(),
             receiver_name: Default::default(),
+            folder_name: Default::default(),
         }
     }
 }
@@ -112,6 +114,7 @@ impl Handler<LoadMessagesMsg> for DbExecutor {
                     .map(|m| {
                         let mut mr = MessageResponse::from(m);
                         mr.set_user_names(&conn);
+                        mr.folder_name = folder.name.clone();
                         mr
                     })
                     .collect();
@@ -126,11 +129,16 @@ impl Handler<LoadMessagesMsg> for DbExecutor {
 pub struct LoadMessageMsg {
     id: Uuid,
     user_id: Uuid,
+    mark_as_read: bool,
 }
 
 impl LoadMessageMsg {
     pub fn new(id: Uuid, user_id: Uuid) -> Self {
-        LoadMessageMsg { id, user_id }
+        LoadMessageMsg { id, user_id, mark_as_read: false }
+    }
+
+    pub fn mark_as_read(&mut self, mark: bool) {
+        self.mark_as_read = mark;
     }
 }
 
@@ -144,10 +152,14 @@ impl Handler<LoadMessageMsg> for DbExecutor {
     fn handle(&mut self, msg: LoadMessageMsg, _: &mut Self::Context) -> <Self as Handler<LoadMessageMsg>>::Result {
         let conn = self.conn();
         match models::Message::find(&msg.id, &conn) {
-            Some(message) => match MessageFolder::find(&message.folder_id, &conn) {
+            Some(mut message) => match MessageFolder::find(&message.folder_id, &conn) {
                 Some(folder) => {
                     if folder.user_id == msg.user_id {
+                        if msg.mark_as_read {
+                            message.mark_as_read(&conn)?;
+                        }
                         let mut mr = MessageResponse::from(message);
+                        mr.folder_name = folder.name;
                         mr.set_user_names(&conn);
                         Ok(mr)
                     } else {
@@ -162,7 +174,7 @@ impl Handler<LoadMessageMsg> for DbExecutor {
 }
 
 pub struct NewMessageMsg {
-    receiver: Uuid,
+    receiver: String,
     subject: String,
     body: String,
     reply_to: Option<Uuid>,
@@ -209,7 +221,7 @@ impl Handler<NewMessageMsg> for DbExecutor {
             Some(sender) => sender,
             None => bail!("sender not found"),
         };
-        let receiver = match models::User::find(&msg.receiver, &conn) {
+        let receiver = match models::User::find_by_name(&msg.receiver, &conn) {
             Some(receiver) => receiver,
             None => bail!("receiver not found"),
         };
@@ -218,11 +230,11 @@ impl Handler<NewMessageMsg> for DbExecutor {
             None => bail!("inbox not found"),
         };
         let message = NewMessage::new(&rec_inbox.id, &sender.id, &receiver.id, &msg.subject, &msg.body);
-        let message = message.save(&conn)?;
+        let mut message = message.save(&conn)?;
         let settings = SETTINGS.read().unwrap();
         if settings.user.default_save_message_in_sent {
             if let Some(snd_sent) = MessageFolder::find_by_name("sent", &sender.id, &conn) {
-                message.copy_to_folder(&snd_sent.id, &conn)?;
+                message = message.copy_to_folder(&snd_sent.id, &conn)?;
             }
         }
         if let Some(ref reply_to) = msg.reply_to {
@@ -236,6 +248,7 @@ impl Handler<NewMessageMsg> for DbExecutor {
         let mut mr = MessageResponse::from(message);
         mr.sender_name = sender.name;
         mr.receiver_name = receiver.name;
+        mr.folder_name = rec_inbox.name;
 
         Ok(mr)
     }

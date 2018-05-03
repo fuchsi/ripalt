@@ -26,6 +26,8 @@ $table-dark-color: $body-color;
 
 $pre-color: #A9B7C6;
 
+$list-group-bg: #343a40;
+
 @import "../../bootstrap/scss/bootstrap";
 
 /* header and footer */
@@ -221,4 +223,8 @@ pre.nfo {
 
 .index-user-list a:not(:last-child)::after {
   content: ', ';
+}
+
+.message-body {
+  background-color: lighten($dark, 10%);
 }

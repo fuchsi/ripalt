@@ -25,7 +25,7 @@ use handlers::message::{DeleteMessagesMsg, LoadMessageMsg, LoadMessagesMsg, Mark
 
 #[derive(Deserialize)]
 pub struct NewMessage {
-    pub receiver: Uuid,
+    pub receiver: String,
     pub subject: String,
     pub body: String,
     pub reply_to: Option<Uuid>,

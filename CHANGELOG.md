@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     - `POST /api/v1/message/mark_read` mark messages as read.
     - `POST /api/v1/message/delete` delete messages.
     - `POST /api/v1/message/send` send a new message.
+- Message Frontend
 
 ### Changed
 - `Template::render()` now returns `HttpResponse` instead of `Template`

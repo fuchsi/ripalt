@@ -32,8 +32,7 @@ function get_json(url) {
                 return resp.json();
             }
             throw new Error('Network response was not ok.');
-        })
-        .catch(error => console.error('Error:', error));
+        });
 }
 
 function post_json(url, data) {
@@ -47,7 +46,7 @@ function post_json(url, data) {
             return resp.json();
         }
         throw new Error('Network response was not ok.');
-    }).catch(error => console.error('Error:', error));
+    });
 }
 
 function shoutbox_add_line(target, data) {
@@ -95,7 +94,8 @@ function update_stats() {
             $('#navbar-uploads').text(data.uploads);
             $('#navbar-uploaded').text(data_size(data.uploaded));
             $('#navbar-ratio').text(data.ratio.toFixed(3));
-        });
+        })
+        .catch(error => console.error('update_stats(): error', error));
 }
 
 function update_messages() {
@@ -115,7 +115,8 @@ function update_messages() {
                     navbar.parent().removeClass('text-info');
                 }
             }
-        });
+        })
+        .catch(error => console.error('update_messages(): error', error));
 }
 
 function update_chatrooms() {
@@ -167,6 +168,35 @@ function update_chatrooms() {
                     }
                 }
             })
-            .catch((error) => console.error('Error:', error));
+            .catch(error => console.error('update_chatrooms(): error', error));
     }
+}
+
+function messages_mark(messages) {
+    post_json('/api/v1/message/mark_read', {'messages': messages})
+        .then((data) => {
+            if (data.error !== undefined) {
+                $('#message-error').removeClass('d-none').text(data.error);
+                return;
+            }
+            for (let mid of data) {
+                $(`#message-${mid}`).removeClass('font-weight-bold');
+                $(`#message-${mid} .msg-mark`).remove();
+            }
+        })
+        .catch(error => $('#message-error').removeClass('d-none').text(error));
+}
+
+function messages_delete(messages) {
+    post_json('/api/v1/message/delete', {'messages': messages})
+        .then((data) => {
+            if (data.error !== undefined) {
+                $('#message-error').removeClass('d-none').text(data.error);
+                return;
+            }
+            for (let mid of data) {
+                $(`#message-${mid}`).remove();
+            }
+        })
+        .catch(error => $('#message-error').removeClass('d-none').text(error));
 }
