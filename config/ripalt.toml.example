@@ -1,32 +1,62 @@
+# enable debug mode
+# affects reloading templates at runtime
 debug = true
+# the session name / name of the session cookie
 session_name = "ripalt"
-# has no affect yet
+# has no effect yet
 session_strict = true
+# secret used to sign / encrypt the session cookie
 session_secret = "d8664b949068b642d5e157a18a4db20925ede9a87595eebc8488830884a745e4"
+# secret used to sign the JWTs
 jwt_secret = "926e683448191865ab1e1462dca75081698ce9d3098f37bf5bdecf8da44544ec"
+# hostname of the tracker
 domain = "localhost"
+# use https
 https = false
+# bind the http server to this address
 bind = "localhost:8081"
 
 [database]
+# database URL: postgres://user:password@host/database
 url = "postgres://ripalt:ripalt@localhost/ripalt"
 
 [user]
+# default group for new users
 default_group = "0eb8ac8f-01f4-4bf9-bb0d-e3ac0ecb15f9"
+# number of bytes in newly generated passcodes
 passcode_length = 16
+# default timezone, offset from UTC
 default_timezone = 2
+# default torrents per page
 default_torrents_per_page = 100
+# delete original message when replying
+default_delete_message_on_reply = false
+# store a copy of the sent message in the 'sent' folder
+default_save_message_in_sent = true
+# accept messages from:
+# all: everyone, except blocked users
+# friends: only users in the friends list
+# team: only the team and system messages
+default_accept_messages = "all"
 
 [email]
+# enable the email system
 enabled = false
 
 [tracker]
+# accounce url, which is set in the downloaded torrents
 announce_url = "http://localhost:8081/tracker/announce"
+# comment, set in the torrents
 comment = "Fe₂O₃ powered tracking"
+# default number of peers per announce
 default_numwant = 50
+# announce interval in seconds
 interval = 900
 
 [torrent]
-image_thumbnail_width = 200 # width for torrent image thumbnails in pixels
-# remove_dead_torrents_after = 30 # remove dead torrents after X days
-# remove_dead_peers_after = 60 # remove dead peers after X minutes
+# width for torrent image thumbnails in pixels
+image_thumbnail_width = 200
+# remove dead torrents after X days
+remove_dead_torrents_after = 30
+# remove dead peers after X minutes
+remove_dead_peers_after = 60
