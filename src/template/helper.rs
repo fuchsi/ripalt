@@ -39,6 +39,7 @@ pub fn data_size(value: Value, _: HashMap<String, Value>) -> Result<Value> {
 
 pub fn format_date(value: Value, args: HashMap<String, Value>) -> Result<Value> {
     static FORMAT_STRING: &'static str = "%d.%m.%Y %H:%M:%S";
+    static FORMAT_STRING_UTC: &'static str = "%d.%m.%Y %H:%M:%S UTC";
     let date = match value {
         Value::String(s) => match DateTime::parse_from_rfc3339(&s[..]).map_err(|e| format!("not a date string: {}", e))
         {
@@ -58,7 +59,7 @@ pub fn format_date(value: Value, args: HashMap<String, Value>) -> Result<Value> 
         }
     }
 
-    Ok(Value::String(date.format(FORMAT_STRING).to_string()))
+    Ok(Value::String(date.format(FORMAT_STRING_UTC).to_string()))
 }
 
 pub fn duration(value: Value, _: HashMap<String, Value>) -> Result<Value> {
