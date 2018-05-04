@@ -21,6 +21,7 @@ use std::convert::TryFrom;
 
 pub mod chat;
 pub mod message;
+pub mod static_content;
 pub mod torrent;
 pub mod user;
 

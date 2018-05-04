@@ -48,5 +48,6 @@ pub mod chat;
 pub mod group;
 pub mod message;
 pub mod peer;
+pub mod static_content;
 pub mod torrent;
 pub mod user;

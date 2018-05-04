@@ -18,7 +18,7 @@
 
 use super::*;
 use actix_web::AsyncResponder;
-use handlers::message::{DeleteMessagesMsg, LoadMessageMsg, LoadMessagesMsg, MarkMessagesMsg, NewMessageMsg};
+use handlers::message::{LoadMessageMsg, LoadMessagesMsg};
 
 #[derive(Deserialize)]
 pub struct NewMessage {

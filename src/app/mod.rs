@@ -36,6 +36,7 @@ mod index;
 mod login;
 mod message;
 mod signup;
+mod static_content;
 mod torrent;
 mod user;
 
@@ -184,6 +185,19 @@ pub fn build(
             r.name("message#message");
             r.method(Method::GET).filter(require_user()).f(app::message::message);
         })
+        .resource("/faq", |r| {
+            r.name("faq");
+            r.method(Method::GET).filter(require_user()).a(app::static_content::faq)
+        })
+        .resource("/rules", |r| {
+            r.name("rules");
+            r.method(Method::GET).filter(require_user()).a(app::static_content::rules)
+        })
+        .resource("/content/edit/{id}", |r| {
+            r.name("content#edit");
+            r.method(Method::GET).filter(require_user()).a(app::static_content::edit);
+            r.method(Method::POST).filter(require_user()).with2(app::static_content::update);
+        })
         .default_resource(|r| r.f(app::not_found))
 }
 
@@ -215,6 +229,20 @@ fn render_error(req: &HttpRequest<State>, resp: HttpResponse) -> HttpResponse {
     context.insert("error", "Internal Server Error".to_string());
 
     let tpl = if resp.status().is_server_error() {
+        match resp.body() {
+            actix_web::Body::Binary(b) => match b {
+                actix_web::Binary::Bytes(bytes) => {
+                    if let Ok(str) = String::from_utf8(bytes.to_vec()) {
+                        context.insert("error", str);
+                    }
+                },
+                actix_web::Binary::SharedString(str) => {
+                    context.insert("error", str.to_string());
+                },
+                _ => {},
+            },
+            _ => {},
+        }
         "error/5xx.html"
     } else {
         "error/4xx.html"

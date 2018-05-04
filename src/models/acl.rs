@@ -328,33 +328,47 @@ impl<'a> UserSubject<'a> {
     fn acl(&self) -> std::sync::RwLockReadGuard<Acl> {
         self.acl.read().unwrap()
     }
+
+    pub fn user_id(&self) -> &Uuid {
+        &self.user_id
+    }
+
+    pub fn group_id(&self) -> &Uuid {
+        &self.group_id
+    }
 }
 
 impl<'a> Subject<Torrent> for UserSubject<'a> {
     fn may(&self, obj: &Torrent, perm: &Permission) -> bool {
         if let Some(uid) = obj.user_id {
-            if uid == *self.user_id {
+            if uid == *self.user_id() {
                 return true;
             }
         }
 
-        self.acl().is_allowed(self.user_id, self.group_id, "torrent", perm)
+        self.acl().is_allowed(self.user_id(), self.group_id(), "torrent", perm)
     }
 }
 
 impl<'a> Subject<User> for UserSubject<'a> {
     fn may(&self, obj: &User, perm: &Permission) -> bool {
-        if obj.id == *self.user_id {
+        if obj.id == *self.user_id() {
             return true;
         }
 
-        self.acl().is_allowed(self.user_id, self.group_id, "user", perm)
+        self.acl().is_allowed(self.user_id(), self.group_id(), "user", perm)
     }
 }
 
 impl<'a> Subject<chat::ChatRoom> for UserSubject<'a> {
     fn may(&self, obj: &chat::ChatRoom, perm: &Permission) -> bool {
-        self.acl().is_allowed(self.user_id, self.group_id, &format!("chat#{}", obj.to_string()), perm)
+        self.acl().is_allowed(self.user_id(), self.group_id(), &format!("chat#{}", obj.to_string()), perm)
+    }
+}
+
+impl<'a> Subject<static_content::Content> for UserSubject<'a> {
+    fn may(&self, obj: &static_content::Content, perm: &Permission) -> bool {
+        self.acl().is_allowed(self.user_id(), self.group_id(), &format!("content#{}", obj.id), perm)
     }
 }
 

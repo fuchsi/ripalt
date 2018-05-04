@@ -1,0 +1,60 @@
+{% extends "layouts/base_authenticated.html" %}
+{% block content %}
+<div class="col-md-12 mt-4">
+    <div class="row mt-auto">
+        <div class="col-md-12">
+            <div class="card bg-dark">
+                <div class="card-header">Edit {{content.title}}</div>
+                <div class="card-body">
+                    <form action="/content/edit/{{content.id}}" method="post">
+                        <input type="hidden" name="id" value="{{content.id}}">
+                        <div class="form-row">
+                            <div class="form-group col-md-8">
+                                <label for="edit-title">Title:</label>
+                                <input class="form-control" type="text" name="title" id="edit-title" value="{{content.title}}" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-8">
+                                <label for="edit-content-type">Content Type:</label>
+                                <select class="form-control" id="edit-content-type" name="content_type" required>
+                                    <option value="text/markdown" {%if content.content_type == "text/markdown" %}selected{% endif %}>Markdown</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label for="edit-content">Content:</label>
+                                <textarea class="form-control" rows="20" name="content" id="edit-content" required>{{content.content}}</textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-2">
+                                <div class="btn-group">
+                                    <button type="submit" class="btn btn-primary"><span class="fa fa-save"></span> Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (() => {
+        'use strict';
+        window.addEventListener('load', () => {
+            $('#edit-content').on('keydown', (ev) => {
+                if (ev.keyCode === 9) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    let elem = $('#edit-content');
+                    elem.val(elem.val() + '    ');
+                }
+            })
+        });
+    })();
+</script>
+{% endblock content %}
+{% block title %}Edit {{content.title}}{% endblock title %}

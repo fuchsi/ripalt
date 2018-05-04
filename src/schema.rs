@@ -112,6 +112,17 @@ table! {
 }
 
 table! {
+    static_content (id) {
+        id -> Varchar,
+        title -> Varchar,
+        content -> Text,
+        content_type -> Varchar,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+table! {
     torrent_files (id) {
         id -> Uuid,
         torrent_id -> Uuid,
@@ -271,6 +282,7 @@ allow_tables_to_appear_in_same_query!(
     message_folders,
     messages,
     peers,
+    static_content,
     torrent_files,
     torrent_images,
     torrent_meta_files,

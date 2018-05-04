@@ -15,9 +15,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     - `POST /api/v1/message/delete` delete messages.
     - `POST /api/v1/message/send` send a new message.
 - Message Frontend
+- FAQ / Rules and other _static_ content.
 
 ### Changed
 - `Template::render()` now returns `HttpResponse` instead of `Template`
+- The `format_date` Helper now appends 'UTC' if no specific timezone is provided.
 
 ## [0.2.0]
 
