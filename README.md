@@ -82,7 +82,8 @@ target/release/ripalt
 and navigate your Browser to http://localhost:8081, or whatever you set in the config.
 
 ## Documentation
-coming soon™
+
+[API Documentation](https://fuchsi.github.io/ripalt/docs/ripalt/)
 
 ## SemVer
 This project follows SemVer only for the public API, public API here meaning the API endpoints appearing the the docs.
