@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `redis_async` crate."><meta name="keywords" content="rust, rustlang, rust-lang, redis_async"><title>redis_async - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate redis_async</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'redis_async', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>redis_async</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/redis_async/lib.rs.html#11-67' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>A client for Redis using Tokio and Futures.</p>
+<p>Three interfaces are provided: one low-level, that makes no assumptions about how Redis is used; a high-level client,
+suitable for the vast majority of use-cases; a PUBSUB client specifically for Redis's PUBSUB functionality.</p>
+<h2 id="low-level" class="section-header"><a href="#low-level">Low-level</a></h2>
+<p><a href="client/connect/fn.connect.html"><code>client::connect</code></a> returns a pair of <code>Sink</code> and <code>Stream</code> (see <a href="https://github.com/alexcrichton/futures-rs">futures</a>) which
+both transport <a href="resp/enum.RespValue.html"><code>resp::RespValue</code></a>s between client and Redis, these work independently of one another
+to allow pipelining.  It is the responsibility of the caller to match responses to requests.  It is also the
+responsibility of the client to convert application data into instances of <a href="resp/enum.RespValue.html"><code>resp::RespValue</code></a> and
+back (there are conversion traits available for common examples).</p>
+<p>This is a very low-level API compared to most Redis clients, but is done so intentionally, for two reasons: 1) it is
+the common demoniator between a functional Redis client (i.e. is able to support all types of requests, including those
+that block and have streaming responses), and 2) it results in clean <code>Sink</code>s and <code>Stream</code>s which will be composable
+with other Tokio-based libraries.</p>
+<p>For most practical purposes this low-level interface will not be used, the only exception possibly being the
+<a href="https://redis.io/commands/monitor"><code>MONITOR</code></a> command.</p>
+<h2 id="high-level" class="section-header"><a href="#high-level">High-level</a></h2>
+<p><a href="client/paired/fn.paired_connect.html"><code>client::paired_connect</code></a> is used for most Redis commands (those for which one command
+returns one response, it's not suitable for PUBSUB, <code>MONITOR</code> or other similar commands).  It allows a Redis command to
+be sent and a Future returned for each command.</p>
+<p>Commands will be sent in the order that <a href="client/paired/struct.PairedConnection.html#method.send"><code>send</code></a> is called, regardless
+of how the future is realised.  This is to allow us to take advantage of Redis's features by implicitly pipelining
+commands where appropriate.  One side-effect of this is that for many commands, e.g. <code>SET</code> we don't need to realise the
+future at all, it can be assumed to be fire-and-forget; but, the final future of the final command does need to be
+realised (at least) to ensure that the correct behaviour is observed.</p>
+<h2 id="pubsub" class="section-header"><a href="#pubsub">PUBSUB</a></h2>
+<p>PUBSUB in Redis works differently.  A connection will subscribe to one or more topics, then receive all messages that
+are published to that topic.  As such the single-request/single-response model of
+<a href="client/paired/fn.paired_connect.html"><code>paired_connect</code></a> will not work.  A specific
+<a href="client/pubsub/fn.pubsub_connect.html"><code>client::pubsub_connect</code></a> is provided for this purpose.</p>
+<p>It returns a future which resolves to a <a href="client/pubsub/struct.PubsubConnection.html"><code>PubsubConnection</code></a>, this provides a
+<a href="client/pubsub/struct.PubsubConnection.html#method.subscribe"><code>subscribe</code></a> function that takes a topic as a parameter and
+returns a future which, once the subscription is confirmed, resolves to a stream that contains all messages published
+to that topic.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="client/index.html"
+                                  title='mod redis_async::client'>client</a></td>
+                           <td class='docblock-short'>
+                                <p>The client API itself.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="error/index.html"
+                                  title='mod redis_async::error'>error</a></td>
+                           <td class='docblock-short'>
+                                <p>Error handling</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="resp/index.html"
+                                  title='mod redis_async::resp'>resp</a></td>
+                           <td class='docblock-short'>
+                                <p>An implementation of the RESP protocol</p>
+
+                           </td>
+                       </tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.faf.html"
+                                  title='macro redis_async::faf'>faf</a></td>
+                           <td class='docblock-short'>
+                                <p>Fire-and-forget, used to force the return type of a <code>send</code> command where the result is not required
+to satisfy the generic return type.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.resp_array.html"
+                                  title='macro redis_async::resp_array'>resp_array</a></td>
+                           <td class='docblock-short'>
+                                <p>Macro to create a RESP array, useful for preparing commands to send.  Elements can be any type, or a mixture
+of types, that satisfy <code>Into&lt;RespValue&gt;</code>.</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "redis_async";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

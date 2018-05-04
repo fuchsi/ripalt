@@ -1,0 +1,309 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `actix` crate."><meta name="keywords" content="rust, rustlang, rust-lang, actix"><title>actix - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate actix</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'actix', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>actix</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/actix/lib.rs.html#1-169' title='goto source code'>[src]</a></span></h1><div class='docblock'><h1 id="actix-is-a-rust-actors-framework" class="section-header"><a href="#actix-is-a-rust-actors-framework">Actix is a rust actors framework.</a></h1>
+<p><a href="https://actix.github.io/actix/actix/trait.Actor.html">Actors</a> are objects
+which encapsulate state and behavior, they communicate exclusively
+by exchanging messages. Actix actors are implemented on top of <a href="https://tokio.rs">Tokio</a>.
+Multiple actors could run in same thread. Actors could run in multiple
+threads with support of <a href="https://actix.github.io/actix/actix/struct.Arbiter.html"><code>Arbiter</code></a>.
+Actors exchange typed messages.</p>
+<h2 id="documentation" class="section-header"><a href="#documentation">Documentation</a></h2>
+<ul>
+<li><a href="http://actix.github.io/actix/guide/">User Guide</a></li>
+<li><a href="https://gitter.im/actix/actix">Chat on gitter</a></li>
+<li><a href="https://github.com/actix/actix">GitHub repository</a></li>
+<li><a href="https://crates.io/crates/actix">Cargo package</a></li>
+<li>Supported Rust version: 1.21 or later</li>
+</ul>
+<h2 id="features" class="section-header"><a href="#features">Features</a></h2>
+<ul>
+<li>Async/Sync actors.</li>
+<li>Actor communication in a local/thread context.</li>
+<li>Using Futures for asynchronous message handling.</li>
+<li>HTTP1/HTTP2 support (<a href="https://github.com/actix/actix-web">actix-web</a>)</li>
+<li>Actor supervision.</li>
+<li>Typed messages (No <code>Any</code> type). Generic messages are allowed.</li>
+<li>Minimum supported Rust version: 1.21 or later</li>
+</ul>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use fut::<a class="trait" href="../actix/fut/trait.ActorFuture.html" title="trait actix::fut::ActorFuture">ActorFuture</a>;</code></td></tr><tr><td><code>pub use fut::<a class="trait" href="../actix/fut/trait.ActorStream.html" title="trait actix::fut::ActorStream">ActorStream</a>;</code></td></tr><tr><td><code>pub use fut::<a class="trait" href="../actix/fut/trait.WrapFuture.html" title="trait actix::fut::WrapFuture">WrapFuture</a>;</code></td></tr><tr><td><code>pub use fut::<a class="trait" href="../actix/fut/trait.WrapStream.html" title="trait actix::fut::WrapStream">WrapStream</a>;</code></td></tr><tr><td><code>pub use sync::<a class="struct" href="../actix/sync/struct.SyncArbiter.html" title="struct actix::sync::SyncArbiter">SyncArbiter</a>;</code></td></tr><tr><td><code>pub use sync::<a class="struct" href="../actix/sync/struct.SyncContext.html" title="struct actix::sync::SyncContext">SyncContext</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="actors/index.html"
+                                  title='mod actix::actors'>actors</a></td>
+                           <td class='docblock-short'>
+                                <p>Helper actors</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="dev/index.html"
+                                  title='mod actix::dev'>dev</a></td>
+                           <td class='docblock-short'>
+                                <p>The <code>actix</code> prelude for library developers</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="fut/index.html"
+                                  title='mod actix::fut'>fut</a></td>
+                           <td class='docblock-short'>
+                                <p>Custom <code>Future</code> implementation with <code>Actix</code> support</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="io/index.html"
+                                  title='mod actix::io'>io</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="msgs/index.html"
+                                  title='mod actix::msgs'>msgs</a></td>
+                           <td class='docblock-short'>
+                                <p>Actix system messages</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="prelude/index.html"
+                                  title='mod actix::prelude'>prelude</a></td>
+                           <td class='docblock-short'>
+                                <p>The <code>actix</code> prelude</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="registry/index.html"
+                                  title='mod actix::registry'>registry</a></td>
+                           <td class='docblock-short'>
+                                <p>Actors registry</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="sync/index.html"
+                                  title='mod actix::sync'>sync</a></td>
+                           <td class='docblock-short'>
+                                <p>Sync actors support</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="utils/index.html"
+                                  title='mod actix::utils'>utils</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ActorResponse.html"
+                                  title='struct actix::ActorResponse'>ActorResponse</a></td>
+                           <td class='docblock-short'>
+                                <p>Helper type for representing different type of message responses</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Addr.html"
+                                  title='struct actix::Addr'>Addr</a></td>
+                           <td class='docblock-short'>
+                                <p>Address of the actor</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Arbiter.html"
+                                  title='struct actix::Arbiter'>Arbiter</a></td>
+                           <td class='docblock-short'>
+                                <p>Event loop controller</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Context.html"
+                                  title='struct actix::Context'>Context</a></td>
+                           <td class='docblock-short'>
+                                <p>Actor execution context</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.MessageResult.html"
+                                  title='struct actix::MessageResult'>MessageResult</a></td>
+                           <td class='docblock-short'>
+                                <p>Helper type that implements <code>MessageResponse</code> trait</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Recipient.html"
+                                  title='struct actix::Recipient'>Recipient</a></td>
+                           <td class='docblock-short'>
+                                <p><code>Recipient</code> type allows to send one specific message to an actor.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Response.html"
+                                  title='struct actix::Response'>Response</a></td>
+                           <td class='docblock-short'>
+                                <p>Helper type for representing different type of message responses</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SpawnHandle.html"
+                                  title='struct actix::SpawnHandle'>SpawnHandle</a></td>
+                           <td class='docblock-short'>
+                                <p>Spawned future handle. Could be used for cancelling spawned future.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Supervisor.html"
+                                  title='struct actix::Supervisor'>Supervisor</a></td>
+                           <td class='docblock-short'>
+                                <p>Actor supervisor</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Syn.html"
+                                  title='struct actix::Syn'>Syn</a></td>
+                           <td class='docblock-short'>
+                                <p>Sync destination of the actor. Actor can run in different thread</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.System.html"
+                                  title='struct actix::System'>System</a></td>
+                           <td class='docblock-short'>
+                                <p>System is an actor which manages process.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SystemRunner.html"
+                                  title='struct actix::SystemRunner'>SystemRunner</a></td>
+                           <td class='docblock-short'>
+                                <p>Helper object that runs System's event loop</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Unsync.html"
+                                  title='struct actix::Unsync'>Unsync</a></td>
+                           <td class='docblock-short'>
+                                <p>Unsync destination of the actor</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ActorState.html"
+                                  title='enum actix::ActorState'>ActorState</a></td>
+                           <td class='docblock-short'>
+                                <p>Actor execution state</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.MailboxError.html"
+                                  title='enum actix::MailboxError'>MailboxError</a></td>
+                           <td class='docblock-short'>
+                                <p>Set of error that can occurred during message delivery process</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Running.html"
+                                  title='enum actix::Running'>Running</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Actor.html"
+                                  title='trait actix::Actor'>Actor</a></td>
+                           <td class='docblock-short'>
+                                <p>Actors are objects which encapsulate state and behavior.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.ActorAddress.html"
+                                  title='trait actix::ActorAddress'>ActorAddress</a></td>
+                           <td class='docblock-short'>
+                                <p>Trait give access to actor's address</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.ActorContext.html"
+                                  title='trait actix::ActorContext'>ActorContext</a></td>
+                           <td class='docblock-short'>
+                                <p>Actor execution context</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.AsyncContext.html"
+                                  title='trait actix::AsyncContext'>AsyncContext</a></td>
+                           <td class='docblock-short'>
+                                <p>Asynchronous execution context</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Handler.html"
+                                  title='trait actix::Handler'>Handler</a></td>
+                           <td class='docblock-short'>
+                                <p>Message handler</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Message.html"
+                                  title='trait actix::Message'>Message</a></td>
+                           <td class='docblock-short'>
+                                <p>Message type</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.StreamHandler.html"
+                                  title='trait actix::StreamHandler'>StreamHandler</a></td>
+                           <td class='docblock-short'>
+                                <p>Stream handler</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Supervised.html"
+                                  title='trait actix::Supervised'>Supervised</a></td>
+                           <td class='docblock-short'>
+                                <p>Actors with ability to restart after failure</p>
+
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ResponseActFuture.html"
+                                  title='type actix::ResponseActFuture'>ResponseActFuture</a></td>
+                           <td class='docblock-short'>
+                                <p>A specialized actor future for async message handler</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ResponseFuture.html"
+                                  title='type actix::ResponseFuture'>ResponseFuture</a></td>
+                           <td class='docblock-short'>
+                                <p>A specialized future for async message handler</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "actix";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

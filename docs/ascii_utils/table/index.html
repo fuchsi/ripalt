@@ -1,0 +1,513 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `table` mod in crate `ascii_utils`."><meta name="keywords" content="rust, rustlang, rust-lang, table"><title>ascii_utils::table - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Module table</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#constants">Constants</a></li></ul></div><p class='location'><a href='../index.html'>ascii_utils</a></p><script>window.sidebarCurrent = {name: 'table', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>ascii_utils</a>::<wbr><a class="mod" href=''>table</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/ascii_utils/table.rs.html#8-146' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Defines the ASCII control characters.</p>
+</div><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ACK.html"
+                                  title='constant ascii_utils::table::ACK'>ACK</a></td>
+                           <td class='docblock-short'>
+                                <p>Acknowledgment</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ACK_AS_CHAR.html"
+                                  title='constant ascii_utils::table::ACK_AS_CHAR'>ACK_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BEL.html"
+                                  title='constant ascii_utils::table::BEL'>BEL</a></td>
+                           <td class='docblock-short'>
+                                <p>Bell</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BEL_AS_CHAR.html"
+                                  title='constant ascii_utils::table::BEL_AS_CHAR'>BEL_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BS.html"
+                                  title='constant ascii_utils::table::BS'>BS</a></td>
+                           <td class='docblock-short'>
+                                <p>Back Space</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BS_AS_CHAR.html"
+                                  title='constant ascii_utils::table::BS_AS_CHAR'>BS_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.CAN.html"
+                                  title='constant ascii_utils::table::CAN'>CAN</a></td>
+                           <td class='docblock-short'>
+                                <p>Cancel</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.CAN_AS_CHAR.html"
+                                  title='constant ascii_utils::table::CAN_AS_CHAR'>CAN_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.CR.html"
+                                  title='constant ascii_utils::table::CR'>CR</a></td>
+                           <td class='docblock-short'>
+                                <p>Carriage Return</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.CR_AS_CHAR.html"
+                                  title='constant ascii_utils::table::CR_AS_CHAR'>CR_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DC1.html"
+                                  title='constant ascii_utils::table::DC1'>DC1</a></td>
+                           <td class='docblock-short'>
+                                <p>Device Control 1 (oft. XON)</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DC2.html"
+                                  title='constant ascii_utils::table::DC2'>DC2</a></td>
+                           <td class='docblock-short'>
+                                <p>Device Control 2</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DC3.html"
+                                  title='constant ascii_utils::table::DC3'>DC3</a></td>
+                           <td class='docblock-short'>
+                                <p>Device Control 3 (oft. XOFF)</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DC4.html"
+                                  title='constant ascii_utils::table::DC4'>DC4</a></td>
+                           <td class='docblock-short'>
+                                <p>Device Control 4</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DC1_AS_CHAR.html"
+                                  title='constant ascii_utils::table::DC1_AS_CHAR'>DC1_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DC2_AS_CHAR.html"
+                                  title='constant ascii_utils::table::DC2_AS_CHAR'>DC2_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DC3_AS_CHAR.html"
+                                  title='constant ascii_utils::table::DC3_AS_CHAR'>DC3_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DC4_AS_CHAR.html"
+                                  title='constant ascii_utils::table::DC4_AS_CHAR'>DC4_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DELETE.html"
+                                  title='constant ascii_utils::table::DELETE'>DELETE</a></td>
+                           <td class='docblock-short'>
+                                <p>Delete</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DELETE_AS_CHAR.html"
+                                  title='constant ascii_utils::table::DELETE_AS_CHAR'>DELETE_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DLE.html"
+                                  title='constant ascii_utils::table::DLE'>DLE</a></td>
+                           <td class='docblock-short'>
+                                <p>Data Line Escape</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DLE_AS_CHAR.html"
+                                  title='constant ascii_utils::table::DLE_AS_CHAR'>DLE_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.EM.html"
+                                  title='constant ascii_utils::table::EM'>EM</a></td>
+                           <td class='docblock-short'>
+                                <p>End of Medium</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.EM_AS_CHAR.html"
+                                  title='constant ascii_utils::table::EM_AS_CHAR'>EM_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ENQ.html"
+                                  title='constant ascii_utils::table::ENQ'>ENQ</a></td>
+                           <td class='docblock-short'>
+                                <p>Enquiry</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ENQ_AS_CHAR.html"
+                                  title='constant ascii_utils::table::ENQ_AS_CHAR'>ENQ_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.EOT.html"
+                                  title='constant ascii_utils::table::EOT'>EOT</a></td>
+                           <td class='docblock-short'>
+                                <p>End of Transmission</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.EOT_AS_CHAR.html"
+                                  title='constant ascii_utils::table::EOT_AS_CHAR'>EOT_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ESC.html"
+                                  title='constant ascii_utils::table::ESC'>ESC</a></td>
+                           <td class='docblock-short'>
+                                <p>Escape</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ESC_AS_CHAR.html"
+                                  title='constant ascii_utils::table::ESC_AS_CHAR'>ESC_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ETB.html"
+                                  title='constant ascii_utils::table::ETB'>ETB</a></td>
+                           <td class='docblock-short'>
+                                <p>End of Transmit Block</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ETB_AS_CHAR.html"
+                                  title='constant ascii_utils::table::ETB_AS_CHAR'>ETB_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ETX.html"
+                                  title='constant ascii_utils::table::ETX'>ETX</a></td>
+                           <td class='docblock-short'>
+                                <p>End of Text</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ETX_AS_CHAR.html"
+                                  title='constant ascii_utils::table::ETX_AS_CHAR'>ETX_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.FF.html"
+                                  title='constant ascii_utils::table::FF'>FF</a></td>
+                           <td class='docblock-short'>
+                                <p>Form Feed</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.FF_AS_CHAR.html"
+                                  title='constant ascii_utils::table::FF_AS_CHAR'>FF_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.FS.html"
+                                  title='constant ascii_utils::table::FS'>FS</a></td>
+                           <td class='docblock-short'>
+                                <p>File Separator</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.FS_AS_CHAR.html"
+                                  title='constant ascii_utils::table::FS_AS_CHAR'>FS_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.GS.html"
+                                  title='constant ascii_utils::table::GS'>GS</a></td>
+                           <td class='docblock-short'>
+                                <p>Group Separator</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.GS_AS_CHAR.html"
+                                  title='constant ascii_utils::table::GS_AS_CHAR'>GS_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.HT.html"
+                                  title='constant ascii_utils::table::HT'>HT</a></td>
+                           <td class='docblock-short'>
+                                <p>Horizontal Tab</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.HT_AS_CHAR.html"
+                                  title='constant ascii_utils::table::HT_AS_CHAR'>HT_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.LF.html"
+                                  title='constant ascii_utils::table::LF'>LF</a></td>
+                           <td class='docblock-short'>
+                                <p>Line Feed</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.LF_AS_CHAR.html"
+                                  title='constant ascii_utils::table::LF_AS_CHAR'>LF_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.NAK.html"
+                                  title='constant ascii_utils::table::NAK'>NAK</a></td>
+                           <td class='docblock-short'>
+                                <p>Negative Acknowledgement</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.NAK_AS_CHAR.html"
+                                  title='constant ascii_utils::table::NAK_AS_CHAR'>NAK_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.NUL.html"
+                                  title='constant ascii_utils::table::NUL'>NUL</a></td>
+                           <td class='docblock-short'>
+                                <p>Null char</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.NUL_AS_CHAR.html"
+                                  title='constant ascii_utils::table::NUL_AS_CHAR'>NUL_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.RS.html"
+                                  title='constant ascii_utils::table::RS'>RS</a></td>
+                           <td class='docblock-short'>
+                                <p>Record Separator</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.RS_AS_CHAR.html"
+                                  title='constant ascii_utils::table::RS_AS_CHAR'>RS_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SI.html"
+                                  title='constant ascii_utils::table::SI'>SI</a></td>
+                           <td class='docblock-short'>
+                                <p>Shift In / X-Off</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SI_AS_CHAR.html"
+                                  title='constant ascii_utils::table::SI_AS_CHAR'>SI_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SO.html"
+                                  title='constant ascii_utils::table::SO'>SO</a></td>
+                           <td class='docblock-short'>
+                                <p>Shift Out / X-On</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SOH.html"
+                                  title='constant ascii_utils::table::SOH'>SOH</a></td>
+                           <td class='docblock-short'>
+                                <p>Start of Heading</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SOH_AS_CHAR.html"
+                                  title='constant ascii_utils::table::SOH_AS_CHAR'>SOH_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SO_AS_CHAR.html"
+                                  title='constant ascii_utils::table::SO_AS_CHAR'>SO_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SPACE.html"
+                                  title='constant ascii_utils::table::SPACE'>SPACE</a></td>
+                           <td class='docblock-short'>
+                                <p>Space</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SPACE_AS_CHAR.html"
+                                  title='constant ascii_utils::table::SPACE_AS_CHAR'>SPACE_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STX.html"
+                                  title='constant ascii_utils::table::STX'>STX</a></td>
+                           <td class='docblock-short'>
+                                <p>Start of Text</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STX_AS_CHAR.html"
+                                  title='constant ascii_utils::table::STX_AS_CHAR'>STX_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUB.html"
+                                  title='constant ascii_utils::table::SUB'>SUB</a></td>
+                           <td class='docblock-short'>
+                                <p>Substitute</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUB_AS_CHAR.html"
+                                  title='constant ascii_utils::table::SUB_AS_CHAR'>SUB_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SYN.html"
+                                  title='constant ascii_utils::table::SYN'>SYN</a></td>
+                           <td class='docblock-short'>
+                                <p>Synchronous Idle</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SYN_AS_CHAR.html"
+                                  title='constant ascii_utils::table::SYN_AS_CHAR'>SYN_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.US.html"
+                                  title='constant ascii_utils::table::US'>US</a></td>
+                           <td class='docblock-short'>
+                                <p>Unit Separator</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.US_AS_CHAR.html"
+                                  title='constant ascii_utils::table::US_AS_CHAR'>US_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.VT.html"
+                                  title='constant ascii_utils::table::VT'>VT</a></td>
+                           <td class='docblock-short'>
+                                <p>Vertical Tab</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.VT_AS_CHAR.html"
+                                  title='constant ascii_utils::table::VT_AS_CHAR'>VT_AS_CHAR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "ascii_utils";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

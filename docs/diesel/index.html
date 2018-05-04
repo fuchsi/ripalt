@@ -1,0 +1,425 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `diesel` crate."><meta name="keywords" content="rust, rustlang, rust-lang, diesel"><title>diesel - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate diesel</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'diesel', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>diesel</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/diesel/lib.rs.html#1-304' title='goto source code'>[src]</a></span></h1><div class='docblock'><h1 id="diesel" class="section-header"><a href="#diesel">Diesel</a></h1>
+<p>Diesel is an ORM and query builder designed to reduce the boilerplate for database interactions.
+If this is your first time reading this documentation,
+we recommend you start with the <a href="https://diesel.rs/guides/getting-started/">getting started guide</a>.
+We also have <a href="https://diesel.rs/guides">many other long form guides</a>.</p>
+<h1 id="where-to-find-things" class="section-header"><a href="#where-to-find-things">Where to find things</a></h1><h2 id="declaring-your-schema" class="section-header"><a href="#declaring-your-schema">Declaring your schema</a></h2>
+<p>So Diesel is able to validate your queries at compile time,
+it requires you to specify your schema in your code,
+which you can do with <a href="macro.table.html">the <code>table!</code> macro</a>.
+<code>diesel print-schema</code> or <code>infer_schema!</code> can be used
+to automatically generate these macro calls
+(by connecting to your database and querying its schema).</p>
+<h2 id="getting-started" class="section-header"><a href="#getting-started">Getting started</a></h2>
+<p>Queries usually start from either a table, or a function like <a href="fn.update.html"><code>update</code></a>.
+Those functions can be found <a href="#functions">here</a>.</p>
+<p>Diesel provides a <a href="../diesel/prelude/index.html"><code>prelude</code> module</a>,
+which exports most of the typically used traits and types.
+We are conservative about what goes in this module,
+and avoid anything which has a generic name.
+Files which use Diesel are expected to have <code>use diesel::prelude::*;</code>.</p>
+<h2 id="constructing-a-query" class="section-header"><a href="#constructing-a-query">Constructing a query</a></h2>
+<p>The tools the query builder gives you can be put into these three categories:</p>
+<ul>
+<li>&quot;Query builder methods&quot; are things that map to portions of a whole query
+(such as <code>ORDER</code> and <code>WHERE</code>). These methods usually have the same name
+as the SQL they map to, except for <code>WHERE</code> which is called <code>filter</code> in Diesel
+(To not conflict with the Rust keyword).
+These methods live in <a href="../diesel/query_dsl/index.html">the <code>query_dsl</code> module</a>.</li>
+<li>&quot;Expression methods&quot; are things you would call on columns
+or other individual values.
+These methods live in <a href="../diesel/expression_methods/index.html">the <code>expression_methods</code> module</a>
+You can often find these by thinking &quot;what would this be called&quot;
+if it were a method
+and typing that into the search bar
+(e.g. <code>LIKE</code> is called <code>like</code> in Diesel).
+Most operators are named based on the Rust function which maps to that
+operator in <a href="//doc.rust-lang.org/stable/std/ops/index.html"><code>std::ops</code></a>
+(For example <code>==</code> is called <code>.eq</code>, and <code>!=</code> is called <code>.ne</code>).</li>
+<li>&quot;Bare functions&quot; are normal SQL functions
+such as <code>sum</code>.
+They live in <a href="../diesel/dsl/index.html">the <code>dsl</code> module</a>.
+Diesel only supports a very small number of these functions.
+You can declare additional functions you want to use
+with <a href="macro.sql_function.html">the <code>sql_function!</code> macro</a>.</li>
+</ul>
+<h2 id="serializing-and-deserializing" class="section-header"><a href="#serializing-and-deserializing">Serializing and Deserializing</a></h2>
+<p>Types which represent the result of a SQL query implement
+a trait called <a href="deserialize/trait.Queryable.html"><code>Queryable</code></a>.</p>
+<p>Diesel maps &quot;Rust types&quot; (e.g. <code>i32</code>) to and from &quot;SQL types&quot;
+(e.g. <a href="sql_types/struct.Integer.html"><code>diesel::sql_types::Integer</code></a>).
+You can find all the types supported by Diesel in <a href="../diesel/sql_types/index.html">the <code>sql_types</code> module</a>.
+These types are only used to represent a SQL type.
+You should never put them on your <code>Queryable</code> structs.</p>
+<p>To find all the Rust types which can be used with a given SQL type,
+see the documentation for that SQL type.</p>
+<p>To find all the SQL types which can be used with a Rust type,
+go to the docs for either <a href="serialize/trait.ToSql.html"><code>ToSql</code></a> or <a href="deserialize/trait.FromSql.html"><code>FromSql</code></a>,
+go to the &quot;Implementors&quot; section,
+and find the Rust type you want to use.</p>
+<h2 id="getting-help" class="section-header"><a href="#getting-help">Getting help</a></h2>
+<p>If you run into problems, Diesel has a very active Gitter room.
+You can come ask for help at
+<a href="https://gitter.im/diesel-rs/diesel">gitter.im/diesel-rs/diesel</a></p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use <a class="mod" href="../diesel/prelude/index.html" title="mod diesel::prelude">prelude</a>::*;</code></td></tr><tr><td><code>pub use result::Error::<a class="enum" href="../diesel/result/enum.Error.html" title="enum diesel::result::Error">NotFound</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="associations/index.html"
+                                  title='mod diesel::associations'>associations</a></td>
+                           <td class='docblock-short'>
+                                <p>Traits related to relationships between multiple tables.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="backend/index.html"
+                                  title='mod diesel::backend'>backend</a></td>
+                           <td class='docblock-short'>
+                                <p>Types which represent various database backends</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="connection/index.html"
+                                  title='mod diesel::connection'>connection</a></td>
+                           <td class='docblock-short'>
+                                <p>Types related to database connections</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="data_types/index.html"
+                                  title='mod diesel::data_types'>data_types</a></td>
+                           <td class='docblock-short'>
+                                <p>Structs to represent the primitive equivalent of SQL types where
+there is no existing Rust primitive, or where using it would be
+confusing (such as date and time types). This module will re-export
+all backend specific data structures when compiled against that
+backend.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="deserialize/index.html"
+                                  title='mod diesel::deserialize'>deserialize</a></td>
+                           <td class='docblock-short'>
+                                <p>Types and traits related to deserializing values from the database</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="dsl/index.html"
+                                  title='mod diesel::dsl'>dsl</a></td>
+                           <td class='docblock-short'>
+                                <p>Includes various helper types and bare functions which are named too
+generically to be included in prelude, but are often used when using Diesel.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="expression/index.html"
+                                  title='mod diesel::expression'>expression</a></td>
+                           <td class='docblock-short'>
+                                <p>AST types representing various typed SQL expressions.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="expression_methods/index.html"
+                                  title='mod diesel::expression_methods'>expression_methods</a></td>
+                           <td class='docblock-short'>
+                                <p>Adds various methods to construct new expressions. These traits are exported
+by default, and implemented automatically.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="helper_types/index.html"
+                                  title='mod diesel::helper_types'>helper_types</a></td>
+                           <td class='docblock-short'>
+                                <p>Provide helper types for concisely writing the return type of functions.
+As with iterators, it is unfortunately difficult to return a partially
+constructed query without exposing the exact implementation of the
+function. Without higher kinded types, these various DSLs can't be
+combined into a single trait for boxing purposes.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="pg/index.html"
+                                  title='mod diesel::pg'>pg</a></td>
+                           <td class='docblock-short'>
+                                <p>Provides types and functions related to working with PostgreSQL</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="prelude/index.html"
+                                  title='mod diesel::prelude'>prelude</a></td>
+                           <td class='docblock-short'>
+                                <p>Re-exports important traits and types. Meant to be glob imported when using Diesel.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="query_builder/index.html"
+                                  title='mod diesel::query_builder'>query_builder</a></td>
+                           <td class='docblock-short'>
+                                <p>Contains traits responsible for the actual construction of SQL statements</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="query_dsl/index.html"
+                                  title='mod diesel::query_dsl'>query_dsl</a></td>
+                           <td class='docblock-short'>
+                                <p>Traits that construct SELECT statements</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="query_source/index.html"
+                                  title='mod diesel::query_source'>query_source</a></td>
+                           <td class='docblock-short'>
+                                <p>Types related to describing schema, and interactions between tables.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="r2d2/index.html"
+                                  title='mod diesel::r2d2'>r2d2</a></td>
+                           <td class='docblock-short'>
+                                <p>Connection pooling via r2d2</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="result/index.html"
+                                  title='mod diesel::result'>result</a></td>
+                           <td class='docblock-short'>
+                                <p>Errors, type aliases, and functions related to working with <code>Result</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="row/index.html"
+                                  title='mod diesel::row'>row</a></td>
+                           <td class='docblock-short'>
+                                <p>Contains the <code>Row</code> trait</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="serialize/index.html"
+                                  title='mod diesel::serialize'>serialize</a></td>
+                           <td class='docblock-short'>
+                                <p>Types and traits related to serializing values for the database</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="sql_types/index.html"
+                                  title='mod diesel::sql_types'>sql_types</a></td>
+                           <td class='docblock-short'>
+                                <p>Types which represent a SQL data type.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="types/index.html"
+                                  title='mod diesel::types'>types</a></td>
+                           <td class='docblock-short'>
+                               [<div class='stab deprecated'>Deprecated</div>] 
+                           </td>
+                       </tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.allow_tables_to_appear_in_same_query.html"
+                                  title='macro diesel::allow_tables_to_appear_in_same_query'>allow_tables_to_appear_in_same_query</a></td>
+                           <td class='docblock-short'>
+                                <p>Allow two or more tables which are otherwise unrelated to be used together
+in a query.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.diesel_infix_operator.html"
+                                  title='macro diesel::diesel_infix_operator'>diesel_infix_operator</a></td>
+                           <td class='docblock-short'>
+                                <p>Useful for libraries adding support for new SQL types. Apps should never
+need to call this.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.diesel_postfix_operator.html"
+                                  title='macro diesel::diesel_postfix_operator'>diesel_postfix_operator</a></td>
+                           <td class='docblock-short'>
+                                <p>Useful for libraries adding support for new SQL types. Apps should never
+need to call this.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.diesel_prefix_operator.html"
+                                  title='macro diesel::diesel_prefix_operator'>diesel_prefix_operator</a></td>
+                           <td class='docblock-short'>
+                                <p>Useful for libraries adding support for new SQL types. Apps should never
+need to call this.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.impl_query_id.html"
+                                  title='macro diesel::impl_query_id'>impl_query_id</a></td>
+                           <td class='docblock-short'>
+                               [<div class='stab deprecated'>Deprecated</div>] <p>Provides a standard implementation of <code>QueryId</code>.
+Apps should not need to concern themselves with this macro.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.joinable.html"
+                                  title='macro diesel::joinable'>joinable</a></td>
+                           <td class='docblock-short'>
+                                <p>Allow two tables to be referenced in a join query without providing an
+explicit <code>ON</code> clause.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.no_arg_sql_function.html"
+                                  title='macro diesel::no_arg_sql_function'>no_arg_sql_function</a></td>
+                           <td class='docblock-short'>
+                                <p>Declare a 0 argument SQL function for use in your code. This will generate a
+unit struct, which is an expression representing calling this function. See
+<a href="expression/dsl/struct.now.html"><code>now</code></a> for example output. <code>now</code> was
+generated using:</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.not_none.html"
+                                  title='macro diesel::not_none'>not_none</a></td>
+                           <td class='docblock-short'>
+                                <p>Gets the value out of an option, or returns an error.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.numeric_expr.html"
+                                  title='macro diesel::numeric_expr'>numeric_expr</a></td>
+                           <td class='docblock-short'>
+                                <p>Indicates that an expression allows all numeric operators. If you create new
+SQL functions that return a numeric type, you should invoke this macro that
+type. Unfortunately, Rust disallows us from automatically implementing <code>Add</code>
+for types which implement <code>Expression</code>, under its orphan rules.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.operator_allowed.html"
+                                  title='macro diesel::operator_allowed'>operator_allowed</a></td>
+                           <td class='docblock-short'>
+                                <p>Implements the Rust operator for a given type. If you create a new SQL
+function, which returns a type that you'd like to use an operator on, you
+should invoke this macro. Unfortunately, Rust disallows us from
+automatically implementing <code>Add</code> and other traits from <code>std::ops</code>, under its
+orphan rules.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.sql_function.html"
+                                  title='macro diesel::sql_function'>sql_function</a></td>
+                           <td class='docblock-short'>
+                                <p>Declare a sql function for use in your code. Useful if you have your own SQL functions that
+you'd like to use. You can optionally provide a doc string as well. <code>$struct_name</code> should just
+be any unique name. You will not need to reference it in your code, but it is required due to
+the fact that <a href="https://github.com/rust-lang/rust/issues/29599#issuecomment-153927167"><code>concat_idents!</code> is
+useless</a>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.table.html"
+                                  title='macro diesel::table'>table</a></td>
+                           <td class='docblock-short'>
+                                <p>Specifies that a table exists, and what columns it has. This will create a
+new public module, with the same name, as the name of the table. In this
+module, you'll find a unit struct named <code>table</code>, and a unit struct with the
+names of each of the columns. In the definition, you can also specify an
+additional set of columns which exist, but should not be selected by default
+(for example, for things like full text search)</p>
+
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.debug_query.html"
+                                  title='fn diesel::debug_query'>debug_query</a></td>
+                           <td class='docblock-short'>
+                                <p>Takes a query <code>QueryFragment</code> expression as an argument and returns a type
+that implements <code>fmt::Display</code> and <code>fmt::Debug</code> to show the query.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.delete.html"
+                                  title='fn diesel::delete'>delete</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates a <code>DELETE</code> statement.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.insert_into.html"
+                                  title='fn diesel::insert_into'>insert_into</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates an <code>INSERT</code> statement for the target table.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.insert_or_ignore_into.html"
+                                  title='fn diesel::insert_or_ignore_into'>insert_or_ignore_into</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates an <code>INSERT [OR] IGNORE</code> statement.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.replace_into.html"
+                                  title='fn diesel::replace_into'>replace_into</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates a <code>REPLACE</code> statement.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.select.html"
+                                  title='fn diesel::select'>select</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates a bare select statement, with no from clause. Primarily used for
+testing diesel itself, but likely useful for third party crates as well. The
+given expressions must be selectable from anywhere.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.sql_query.html"
+                                  title='fn diesel::sql_query'>sql_query</a></td>
+                           <td class='docblock-short'>
+                                <p>Construct a full SQL query using raw SQL.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.update.html"
+                                  title='fn diesel::update'>update</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates an <code>UPDATE</code> statement.</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "diesel";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

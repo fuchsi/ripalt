@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Block",""],["ListItem",""],["Span",""]],"fn":[["file_to_html","Opens a file and converts its contents to HTML"],["generate_markdown","Convert tokenset of Markdown items back to String"],["to_html","Converts a Markdown string to HTML"],["tokenize","Converts a Markdown string to a tokenset of Markdown items"]]});

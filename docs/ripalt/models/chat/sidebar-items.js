@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ChatRoom","The chatroom"]],"struct":[["ChatMessage","Chat message data structure"],["ChatMessageWithUser","Chat message data structure"],["NewChatMessage","A new chat message"]]});

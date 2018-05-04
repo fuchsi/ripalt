@@ -1,0 +1,140 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `tera` crate."><meta name="keywords" content="rust, rustlang, rust-lang, tera"><title>tera - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate tera</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'tera', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>tera</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/tera/lib.rs.html#1-64' title='goto source code'>[src]</a></span></h1><div class='docblock'><h1 id="tera" class="section-header"><a href="#tera">Tera</a></h1>
+<p>Tera is a template engine based on <a href="http://jinja.pocoo.org/">Jinja2</a>
+and the <a href="https://docs.djangoproject.com/en/1.9/topics/templates/">Django template language</a>.</p>
+<p>See the <a href="https://tera.netlify.com">site</a> for features and to get started.</p>
+</div><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.compile_templates.html"
+                                  title='macro tera::compile_templates'>compile_templates</a></td>
+                           <td class='docblock-short'>
+                                <p>Compile templates or exits process</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.try_get_value.html"
+                                  title='macro tera::try_get_value'>try_get_value</a></td>
+                           <td class='docblock-short'>
+                                <p>Helper macro to get real values out of Value while retaining
+proper errors in filters</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Context.html"
+                                  title='struct tera::Context'>Context</a></td>
+                           <td class='docblock-short'>
+                                <p>The struct that holds the context of a template rendering.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Error.html"
+                                  title='struct tera::Error'>Error</a></td>
+                           <td class='docblock-short'>
+                                <p>The Error type.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Map.html"
+                                  title='struct tera::Map'>Map</a></td>
+                           <td class='docblock-short'>
+                                <p>Represents a JSON key/value type.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Number.html"
+                                  title='struct tera::Number'>Number</a></td>
+                           <td class='docblock-short'>
+                                <p>Represents a JSON number, whether integer or floating point.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Tera.html"
+                                  title='struct tera::Tera'>Tera</a></td>
+                           <td class='docblock-short'>
+                                <p>The main point of interaction in this library.</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ErrorKind.html"
+                                  title='enum tera::ErrorKind'>ErrorKind</a></td>
+                           <td class='docblock-short'>
+                                <p>The kind of an error.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Value.html"
+                                  title='enum tera::Value'>Value</a></td>
+                           <td class='docblock-short'>
+                                <p>Represents any valid JSON value.</p>
+
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.escape_html.html"
+                                  title='fn tera::escape_html'>escape_html</a></td>
+                           <td class='docblock-short'>
+                                <p>Escape HTML following <a href="https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet">OWASP</a></p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.from_value.html"
+                                  title='fn tera::from_value'>from_value</a></td>
+                           <td class='docblock-short'>
+                                <p>Interpret a <code>serde_json::Value</code> as an instance of type <code>T</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.to_value.html"
+                                  title='fn tera::to_value'>to_value</a></td>
+                           <td class='docblock-short'>
+                                <p>Convert a <code>T</code> into <code>serde_json::Value</code> which is an enum that can represent
+any valid JSON data.</p>
+
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.FilterFn.html"
+                                  title='type tera::FilterFn'>FilterFn</a></td>
+                           <td class='docblock-short'>
+                                <p>The filter function type definition</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.GlobalFn.html"
+                                  title='type tera::GlobalFn'>GlobalFn</a></td>
+                           <td class='docblock-short'>
+                                <p>The global function type definition</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.Result.html"
+                                  title='type tera::Result'>Result</a></td>
+                           <td class='docblock-short'>
+                                <p>Convenient wrapper around <code>std::Result</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.TesterFn.html"
+                                  title='type tera::TesterFn'>TesterFn</a></td>
+                           <td class='docblock-short'>
+                                <p>The tester function type definition</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "tera";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

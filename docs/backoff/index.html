@@ -1,0 +1,113 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `backoff` crate."><meta name="keywords" content="rust, rustlang, rust-lang, backoff"><title>backoff - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate backoff</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'backoff', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>backoff</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/backoff/lib.rs.html#1-69' title='goto source code'>[src]</a></span></h1><div class='docblock'><p><code>ExponentialBackoff</code> is a backoff implementation that increases the backoff
+period for each retry attempt using a randomization function that grows exponentially.</p>
+<p><a href="backoff/trait.Backoff.html#tymethod.next_backoff"><code>next_backoff</code></a> is calculated using the following formula:</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ<span class='tooltiptext'>This example is not tested</span></div></div><pre class="rust rust-example-rendered ignore">
+  <span class="ident">randomized</span> <span class="ident">interval</span> <span class="op">=</span>
+      <span class="ident">retry_interval</span> <span class="op">*</span> (<span class="ident">random</span> <span class="ident">value</span> <span class="kw">in</span> <span class="ident">range</span> [<span class="number">1</span> <span class="op">-</span> <span class="ident">randomization_factor</span>, <span class="number">1</span> <span class="op">+</span> <span class="ident">randomization_factor</span>])</pre>
+<p>In other words <a href="backoff/trait.Backoff.html#tymethod.next_backoff"><code>next_backoff</code></a> will range between the randomization factor
+percentage below and above the retry interval.</p>
+<p>For example, given the following parameters:</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ<span class='tooltiptext'>This example is not tested</span></div></div><pre class="rust rust-example-rendered ignore">
+<span class="ident">retry_interval</span> <span class="op">=</span> <span class="number">2</span>
+<span class="ident">randomization_factor</span> <span class="op">=</span> <span class="number">0.5</span>
+<span class="ident">multiplier</span> <span class="op">=</span> <span class="number">2</span></pre>
+<p>the actual backoff period used in the next retry attempt will range between 1 and 3 seconds,
+multiplied by the exponential, that is, between 2 and 6 seconds.</p>
+<p><strong>Note</strong>: <code>max_interval</code> caps the <code>retry_interval</code> and not the randomized interval.</p>
+<p>If the time elapsed since an <a href="type.ExponentialBackoff.html"><code>ExponentialBackoff</code></a> instance is created goes past the
+<code>max_elapsed_time</code>, then the method <a href="backoff/trait.Backoff.html#tymethod.next_backoff"><code>next_backoff</code></a> starts returning <code>None</code>.</p>
+<p>The elapsed time can be reset by calling <a href="backoff/trait.Backoff.html#tymethod.reset"><code>reset</code></a>.</p>
+<p>Example: Given the following default arguments, for 10 tries the sequence will be,
+and assuming we go over the <code>max_elapsed_time</code> on the 10th try:</p>
+<table><thead><tr><th>Request # </th><th> <code>retry_interval</code> (seconds) </th><th>  Randomized Interval (seconds)</th></tr></thead><tbody>
+<tr><td>1        </td><td>  0.5                     </td><td> [0.25,   0.75]</td></tr>
+<tr><td>2        </td><td>  0.75                    </td><td> [0.375,  1.125]</td></tr>
+<tr><td>3        </td><td>  1.125                   </td><td> [0.562,  1.687]</td></tr>
+<tr><td>4        </td><td>  1.687                   </td><td> [0.8435, 2.53]</td></tr>
+<tr><td>5        </td><td>  2.53                    </td><td> [1.265,  3.795]</td></tr>
+<tr><td>6        </td><td>  3.795                   </td><td> [1.897,  5.692]</td></tr>
+<tr><td>7        </td><td>  5.692                   </td><td> [2.846,  8.538]</td></tr>
+<tr><td>8        </td><td>  8.538                   </td><td> [4.269, 12.807]</td></tr>
+<tr><td>9        </td><td> 12.807                   </td><td> [6.403, 19.210]</td></tr>
+<tr><td>10        </td><td> 19.210                   </td><td> None</td></tr>
+</tbody></table>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="backoff/index.html"
+                                  title='mod backoff::backoff'>backoff</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="default/index.html"
+                                  title='mod backoff::default'>default</a></td>
+                           <td class='docblock-short'>
+                                <p>Constants for the exponential backoff policy.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="exponential/index.html"
+                                  title='mod backoff::exponential'>exponential</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SystemClock.html"
+                                  title='struct backoff::SystemClock'>SystemClock</a></td>
+                           <td class='docblock-short'>
+                                <p><code>SystemClock</code> uses the system's clock to get the current time.
+This Clock should be used for real use-cases.</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Error.html"
+                                  title='enum backoff::Error'>Error</a></td>
+                           <td class='docblock-short'>
+                                <p>Error is the error value in an operation's
+result.</p>
+
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Clock.html"
+                                  title='trait backoff::Clock'>Clock</a></td>
+                           <td class='docblock-short'>
+                                <p>Clock returns the current time.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Notify.html"
+                                  title='trait backoff::Notify'>Notify</a></td>
+                           <td class='docblock-short'>
+                                <p>Notify is called in <a href="trait.Operation.html#method.retry_notify"><code>retry_notify</code></a> in case of errors.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Operation.html"
+                                  title='trait backoff::Operation'>Operation</a></td>
+                           <td class='docblock-short'>
+                                <p>Operation is an operation that can be retried if it fails.</p>
+
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ExponentialBackoff.html"
+                                  title='type backoff::ExponentialBackoff'>ExponentialBackoff</a></td>
+                           <td class='docblock-short'>
+                                <p>Exponential backoff policy with system's clock.</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "backoff";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `RData` enum in crate `trust_dns_proto`."><meta name="keywords" content="rust, rustlang, rust-lang, RData"><title>trust_dns_proto::rr::record_data::RData - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc enum"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Enum RData</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#variants">Variants</a><div class="sidebar-links"><a href="#variant.A">A</a><a href="#variant.AAAA">AAAA</a><a href="#variant.CAA">CAA</a><a href="#variant.CNAME">CNAME</a><a href="#variant.MX">MX</a><a href="#variant.NULL">NULL</a><a href="#variant.NS">NS</a><a href="#variant.OPT">OPT</a><a href="#variant.PTR">PTR</a><a href="#variant.SOA">SOA</a><a href="#variant.SRV">SRV</a><a href="#variant.TLSA">TLSA</a><a href="#variant.TXT">TXT</a><a href="#variant.Unknown">Unknown</a><a href="#variant.ZERO">ZERO</a></div><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.read">read</a><a href="#method.emit">emit</a><a href="#method.to_record_type">to_record_type</a><a href="#method.to_ip_addr">to_ip_addr</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Debug">Debug</a><a href="#impl-PartialEq">PartialEq</a><a href="#impl-Clone">Clone</a><a href="#impl-Eq">Eq</a><a href="#impl-PartialOrd%3CRData%3E">PartialOrd&lt;RData&gt;</a><a href="#impl-Ord">Ord</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../../index.html'>trust_dns_proto</a>::<wbr><a href='../index.html'>rr</a>::<wbr><a href='index.html'>record_data</a></p><script>window.sidebarCurrent = {name: 'RData', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Enum <a href='../../index.html'>trust_dns_proto</a>::<wbr><a href='../index.html'>rr</a>::<wbr><a href='index.html'>record_data</a>::<wbr><a class="enum" href=''>RData</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#54-398' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust enum'>pub enum RData {
+    A(<a class="struct" href="https://doc.rust-lang.org/nightly/std/net/ip/struct.Ipv4Addr.html" title="struct std::net::ip::Ipv4Addr">Ipv4Addr</a>),
+    AAAA(<a class="struct" href="https://doc.rust-lang.org/nightly/std/net/ip/struct.Ipv6Addr.html" title="struct std::net::ip::Ipv6Addr">Ipv6Addr</a>),
+    CAA(<a class="struct" href="../../../trust_dns_proto/rr/rdata/caa/struct.CAA.html" title="struct trust_dns_proto::rr::rdata::caa::CAA">CAA</a>),
+    CNAME(<a class="struct" href="../../../trust_dns_proto/rr/struct.Name.html" title="struct trust_dns_proto::rr::Name">Name</a>),
+    MX(<a class="struct" href="../../../trust_dns_proto/rr/rdata/mx/struct.MX.html" title="struct trust_dns_proto::rr::rdata::mx::MX">MX</a>),
+    NULL(<a class="struct" href="../../../trust_dns_proto/rr/rdata/null/struct.NULL.html" title="struct trust_dns_proto::rr::rdata::null::NULL">NULL</a>),
+    NS(<a class="struct" href="../../../trust_dns_proto/rr/struct.Name.html" title="struct trust_dns_proto::rr::Name">Name</a>),
+    OPT(<a class="struct" href="../../../trust_dns_proto/rr/rdata/opt/struct.OPT.html" title="struct trust_dns_proto::rr::rdata::opt::OPT">OPT</a>),
+    PTR(<a class="struct" href="../../../trust_dns_proto/rr/struct.Name.html" title="struct trust_dns_proto::rr::Name">Name</a>),
+    SOA(<a class="struct" href="../../../trust_dns_proto/rr/rdata/soa/struct.SOA.html" title="struct trust_dns_proto::rr::rdata::soa::SOA">SOA</a>),
+    SRV(<a class="struct" href="../../../trust_dns_proto/rr/rdata/srv/struct.SRV.html" title="struct trust_dns_proto::rr::rdata::srv::SRV">SRV</a>),
+    TLSA(<a class="struct" href="../../../trust_dns_proto/rr/rdata/tlsa/struct.TLSA.html" title="struct trust_dns_proto::rr::rdata::tlsa::TLSA">TLSA</a>),
+    TXT(<a class="struct" href="../../../trust_dns_proto/rr/rdata/txt/struct.TXT.html" title="struct trust_dns_proto::rr::rdata::txt::TXT">TXT</a>),
+    Unknown {
+        code: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u16.html">u16</a>,
+        rdata: <a class="struct" href="../../../trust_dns_proto/rr/rdata/null/struct.NULL.html" title="struct trust_dns_proto::rr::rdata::null::NULL">NULL</a>,
+    },
+    ZERO,
+}</pre></div><div class='docblock'><p>Record data enum variants</p>
+<p><a href="https://tools.ietf.org/html/rfc1035">RFC 1035</a>, DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION, November 1987</p>
+<pre><code class="language-text">3.3. Standard RRs
+
+The following RR definitions are expected to occur, at least
+potentially, in all classes.  In particular, NS, SOA, CNAME, and PTR
+will be used in all classes, and have the same format in all classes.
+Because their RDATA format is known, all domain names in the RDATA
+section of these RRs may be compressed.
+
+&lt;domain-name&gt; is a domain name represented as a series of labels, and
+terminated by a label with zero length.  &lt;character-string&gt; is a single
+length octet followed by that number of characters.  &lt;character-string&gt;
+is treated as binary information, and can be up to 256 characters in
+length (including the length octet).
+</code></pre>
+</div><h2 id='variants' class='variants small-section-header'>
+                   Variants<a href='#variants' class='anchor'></a></h2>
+<span id="variant.A" class="variant small-section-header"><a href="#variant.A" class="anchor field"></a><span id='A.v' class='invisible'><code>A(<a class="struct" href="https://doc.rust-lang.org/nightly/std/net/ip/struct.Ipv4Addr.html" title="struct std::net::ip::Ipv4Addr">Ipv4Addr</a>)</code></span></span><div class='docblock'><pre><code class="language-text">-- RFC 1035 -- Domain Implementation and Specification    November 1987
+
+3.4. Internet specific RRs
+
+3.4.1. A RDATA format
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    ADDRESS                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+where:
+
+ADDRESS         A 32 bit Internet address.
+
+Hosts that have multiple Internet addresses will have multiple A
+records.
+
+A records cause no additional section processing.  The RDATA section of
+an A line in a master file is an Internet address expressed as four
+decimal numbers separated by dots without any imbedded spaces (e.g.,
+&quot;10.2.0.52&quot; or &quot;192.0.5.6&quot;).
+</code></pre>
+</div><span id="variant.AAAA" class="variant small-section-header"><a href="#variant.AAAA" class="anchor field"></a><span id='AAAA.v' class='invisible'><code>AAAA(<a class="struct" href="https://doc.rust-lang.org/nightly/std/net/ip/struct.Ipv6Addr.html" title="struct std::net::ip::Ipv6Addr">Ipv6Addr</a>)</code></span></span><div class='docblock'><pre><code class="language-text">-- RFC 1886 -- IPv6 DNS Extensions              December 1995
+
+2.2 AAAA data format
+
+   A 128 bit IPv6 address is encoded in the data portion of an AAAA
+   resource record in network byte order (high-order byte first).
+</code></pre>
+</div><span id="variant.CAA" class="variant small-section-header"><a href="#variant.CAA" class="anchor field"></a><span id='CAA.v' class='invisible'><code>CAA(<a class="struct" href="../../../trust_dns_proto/rr/rdata/caa/struct.CAA.html" title="struct trust_dns_proto::rr::rdata::caa::CAA">CAA</a>)</code></span></span><div class='docblock'><pre><code class="language-text">-- RFC 6844          Certification Authority Authorization     January 2013
+
+5.1.  Syntax
+
+A CAA RR contains a single property entry consisting of a tag-value
+pair.  Each tag represents a property of the CAA record.  The value
+of a CAA property is that specified in the corresponding value field.
+
+A domain name MAY have multiple CAA RRs associated with it and a
+given property MAY be specified more than once.
+
+The CAA data field contains one property entry.  A property entry
+consists of the following data fields:
+
++0-1-2-3-4-5-6-7-|0-1-2-3-4-5-6-7-|
+| Flags          | Tag Length = n |
++----------------+----------------+...+---------------+
+| Tag char 0     | Tag char 1     |...| Tag char n-1  |
++----------------+----------------+...+---------------+
++----------------+----------------+.....+----------------+
+| Value byte 0   | Value byte 1   |.....| Value byte m-1 |
++----------------+----------------+.....+----------------+
+Where n is the length specified in the Tag length field and m is the
+remaining octets in the Value field (m = d - n - 2) where d is the
+length of the RDATA section.
+</code></pre>
+</div><span id="variant.CNAME" class="variant small-section-header"><a href="#variant.CNAME" class="anchor field"></a><span id='CNAME.v' class='invisible'><code>CNAME(<a class="struct" href="../../../trust_dns_proto/rr/struct.Name.html" title="struct trust_dns_proto::rr::Name">Name</a>)</code></span></span><div class='docblock'><pre><code class="language-text">  3.3. Standard RRs
+
+The following RR definitions are expected to occur, at least
+potentially, in all classes.  In particular, NS, SOA, CNAME, and PTR
+will be used in all classes, and have the same format in all classes.
+Because their RDATA format is known, all domain names in the RDATA
+section of these RRs may be compressed.
+
+&lt;domain-name&gt; is a domain name represented as a series of labels, and
+terminated by a label with zero length.  &lt;character-string&gt; is a single
+length octet followed by that number of characters.  &lt;character-string&gt;
+is treated as binary information, and can be up to 256 characters in
+length (including the length octet).
+
+3.3.1. CNAME RDATA format
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                     CNAME                     /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+where:
+
+CNAME           A &lt;domain-name&gt; which specifies the canonical or primary
+                name for the owner.  The owner name is an alias.
+
+CNAME RRs cause no additional section processing, but name servers may
+choose to restart the query at the canonical name in certain cases.  See
+the description of name server logic in [RFC-1034] for details.
+</code></pre>
+</div><span id="variant.MX" class="variant small-section-header"><a href="#variant.MX" class="anchor field"></a><span id='MX.v' class='invisible'><code>MX(<a class="struct" href="../../../trust_dns_proto/rr/rdata/mx/struct.MX.html" title="struct trust_dns_proto::rr::rdata::mx::MX">MX</a>)</code></span></span><div class='docblock'><pre><code class="language-text">3.3.9. MX RDATA format
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                  PREFERENCE                   |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                   EXCHANGE                    /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+where:
+
+PREFERENCE      A 16 bit integer which specifies the preference given to
+                this RR among others at the same owner.  Lower values
+                are preferred.
+
+EXCHANGE        A &lt;domain-name&gt; which specifies a host willing to act as
+                a mail exchange for the owner name.
+
+MX records cause type A additional section processing for the host
+specified by EXCHANGE.  The use of MX RRs is explained in detail in
+[RFC-974].
+</code></pre>
+</div><span id="variant.NULL" class="variant small-section-header"><a href="#variant.NULL" class="anchor field"></a><span id='NULL.v' class='invisible'><code>NULL(<a class="struct" href="../../../trust_dns_proto/rr/rdata/null/struct.NULL.html" title="struct trust_dns_proto::rr::rdata::null::NULL">NULL</a>)</code></span></span><div class='docblock'><pre><code class="language-text">3.3.10. NULL RDATA format (EXPERIMENTAL)
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                  &lt;anything&gt;                   /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+Anything at all may be in the RDATA field so long as it is 65535 octets
+or less.
+
+NULL records cause no additional section processing.  NULL RRs are not
+allowed in master files.  NULLs are used as placeholders in some
+experimental extensions of the DNS.
+</code></pre>
+</div><span id="variant.NS" class="variant small-section-header"><a href="#variant.NS" class="anchor field"></a><span id='NS.v' class='invisible'><code>NS(<a class="struct" href="../../../trust_dns_proto/rr/struct.Name.html" title="struct trust_dns_proto::rr::Name">Name</a>)</code></span></span><div class='docblock'><pre><code class="language-text">3.3.11. NS RDATA format
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                   NSDNAME                     /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+where:
+
+NSDNAME         A &lt;domain-name&gt; which specifies a host which should be
+                authoritative for the specified class and domain.
+
+NS records cause both the usual additional section processing to locate
+a type A record, and, when used in a referral, a special search of the
+zone in which they reside for glue information.
+
+The NS RR states that the named host should be expected to have a zone
+starting at owner name of the specified class.  Note that the class may
+not indicate the protocol family which should be used to communicate
+with the host, although it is typically a strong hint.  For example,
+hosts which are name servers for either Internet (IN) or Hesiod (HS)
+class information are normally queried using IN class protocols.
+</code></pre>
+</div><span id="variant.OPT" class="variant small-section-header"><a href="#variant.OPT" class="anchor field"></a><span id='OPT.v' class='invisible'><code>OPT(<a class="struct" href="../../../trust_dns_proto/rr/rdata/opt/struct.OPT.html" title="struct trust_dns_proto::rr::rdata::opt::OPT">OPT</a>)</code></span></span><div class='docblock'><pre><code class="language-text">RFC 6891                   EDNS(0) Extensions                 April 2013
+6.1.2.  Wire Format
+
+       +------------+--------------+------------------------------+
+       | Field Name | Field Type   | Description                  |
+       +------------+--------------+------------------------------+
+       | NAME       | domain name  | MUST be 0 (root domain)      |
+       | TYPE       | u_int16_t    | OPT (41)                     |
+       | CLASS      | u_int16_t    | requestor's UDP payload size |
+       | TTL        | u_int32_t    | extended RCODE and flags     |
+       | RDLEN      | u_int16_t    | length of all RDATA          |
+       | RDATA      | octet stream | {attribute,value} pairs      |
+       +------------+--------------+------------------------------+
+
+The variable part of an OPT RR may contain zero or more options in
+   the RDATA.  Each option MUST be treated as a bit field.  Each option
+   is encoded as:
+
+                  +0 (MSB)                            +1 (LSB)
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+    0: |                          OPTION-CODE                          |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+    2: |                         OPTION-LENGTH                         |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+    4: |                                                               |
+       /                          OPTION-DATA                          /
+       /                                                               /
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+</code></pre>
+</div><span id="variant.PTR" class="variant small-section-header"><a href="#variant.PTR" class="anchor field"></a><span id='PTR.v' class='invisible'><code>PTR(<a class="struct" href="../../../trust_dns_proto/rr/struct.Name.html" title="struct trust_dns_proto::rr::Name">Name</a>)</code></span></span><div class='docblock'><pre><code class="language-text">3.3.12. PTR RDATA format
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                   PTRDNAME                    /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+where:
+
+PTRDNAME        A &lt;domain-name&gt; which points to some location in the
+                domain name space.
+
+PTR records cause no additional section processing.  These RRs are used
+in special domains to point to some other location in the domain space.
+These records are simple data, and don't imply any special processing
+similar to that performed by CNAME, which identifies aliases.  See the
+description of the IN-ADDR.ARPA domain for an example.
+</code></pre>
+</div><span id="variant.SOA" class="variant small-section-header"><a href="#variant.SOA" class="anchor field"></a><span id='SOA.v' class='invisible'><code>SOA(<a class="struct" href="../../../trust_dns_proto/rr/rdata/soa/struct.SOA.html" title="struct trust_dns_proto::rr::rdata::soa::SOA">SOA</a>)</code></span></span><div class='docblock'><pre><code class="language-text">3.3.13. SOA RDATA format
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                     MNAME                     /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                     RNAME                     /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    SERIAL                     |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    REFRESH                    |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                     RETRY                     |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    EXPIRE                     |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    MINIMUM                    |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+where:
+
+MNAME           The &lt;domain-name&gt; of the name server that was the
+                original or primary source of data for this zone.
+
+RNAME           A &lt;domain-name&gt; which specifies the mailbox of the
+                person responsible for this zone.
+
+                of the zone.  Zone transfers preserve this value.  This
+                value wraps and should be compared using sequence space
+                arithmetic.
+
+REFRESH         A 32 bit time interval before the zone should be
+                refreshed.
+
+RETRY           A 32 bit time interval that should elapse before a
+                failed refresh should be retried.
+
+EXPIRE          A 32 bit time value that specifies the upper limit on
+                the time interval that can elapse before the zone is no
+                longer authoritative.
+
+MINIMUM         The unsigned 32 bit minimum TTL field that should be
+                exported with any RR from this zone.
+
+SOA records cause no additional section processing.
+
+All times are in units of seconds.
+
+Most of these fields are pertinent only for name server maintenance
+operations.  However, MINIMUM is used in all query operations that
+retrieve RRs from a zone.  Whenever a RR is sent in a response to a
+query, the TTL field is set to the maximum of the TTL field from the RR
+and the MINIMUM field in the appropriate SOA.  Thus MINIMUM is a lower
+bound on the TTL field for all RRs in a zone.  Note that this use of
+MINIMUM should occur when the RRs are copied into the response and not
+when the zone is loaded from a master file or via a zone transfer.  The
+reason for this provison is to allow future dynamic update facilities to
+change the SOA RR with known semantics.
+</code></pre>
+</div><span id="variant.SRV" class="variant small-section-header"><a href="#variant.SRV" class="anchor field"></a><span id='SRV.v' class='invisible'><code>SRV(<a class="struct" href="../../../trust_dns_proto/rr/rdata/srv/struct.SRV.html" title="struct trust_dns_proto::rr::rdata::srv::SRV">SRV</a>)</code></span></span><div class='docblock'><pre><code class="language-text">RFC 2782                       DNS SRV RR                  February 2000
+
+The format of the SRV RR
+
+ _Service._Proto.Name TTL Class SRV Priority Weight Port Target
+</code></pre>
+</div><span id="variant.TLSA" class="variant small-section-header"><a href="#variant.TLSA" class="anchor field"></a><span id='TLSA.v' class='invisible'><code>TLSA(<a class="struct" href="../../../trust_dns_proto/rr/rdata/tlsa/struct.TLSA.html" title="struct trust_dns_proto::rr::rdata::tlsa::TLSA">TLSA</a>)</code></span></span><div class='docblock'><p><a href="https://tools.ietf.org/html/rfc6698#section-2.1">RFC 6698, DNS-Based Authentication for TLS</a></p>
+<pre><code class="language-text">                        1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Cert. Usage  |   Selector    | Matching Type |               /
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+               /
+   /                                                               /
+   /                 Certificate Association Data                  /
+   /                                                               /
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</code></pre>
+</div><span id="variant.TXT" class="variant small-section-header"><a href="#variant.TXT" class="anchor field"></a><span id='TXT.v' class='invisible'><code>TXT(<a class="struct" href="../../../trust_dns_proto/rr/rdata/txt/struct.TXT.html" title="struct trust_dns_proto::rr::rdata::txt::TXT">TXT</a>)</code></span></span><div class='docblock'><pre><code class="language-text">3.3.14. TXT RDATA format
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                   TXT-DATA                    /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+where:
+
+TXT-DATA        One or more &lt;character-string&gt;s.
+
+TXT RRs are used to hold descriptive text.  The semantics of the text
+depends on the domain where it is found.
+</code></pre>
+</div><span id="variant.Unknown" class="variant small-section-header"><a href="#variant.Unknown" class="anchor field"></a><span id='Unknown.v' class='invisible'><code>Unknown</code></span></span><div class='docblock'><p>Unknown RecordData is for record types not supported by TRust-DNS</p>
+</div><span class='docblock autohide sub-variant' id='variant.Unknown.fields'><h3 class='fields'>Fields of <code>Unknown</code></h3>
+
+                           <table><tr><td id='variant.Unknown.field.code'><span id='Unknown.v.code.v' class='invisible'><code>code:&nbsp;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u16.html">u16</a></code></span></td><td><div class='docblock'><p>RecordType code</p>
+</div></td></tr><tr><td id='variant.Unknown.field.rdata'><span id='Unknown.v.rdata.v' class='invisible'><code>rdata:&nbsp;<a class="struct" href="../../../trust_dns_proto/rr/rdata/null/struct.NULL.html" title="struct trust_dns_proto::rr::rdata::null::NULL">NULL</a></code></span></td><td><div class='docblock'><p>RData associated to the record</p>
+</div></td></tr></table></span><span id="variant.ZERO" class="variant small-section-header"><a href="#variant.ZERO" class="anchor field"></a><span id='ZERO.v' class='invisible'><code>ZERO</code></span></span><div class='docblock'><p>This corresponds to a record type of 0, unspecified</p>
+</div>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code><a href='#impl' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#400-575' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.read' class="method"><span id='read.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.read' class='fnname'>read</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;decoder: &amp;mut <a class="struct" href="../../../trust_dns_proto/serialize/binary/struct.BinDecoder.html" title="struct trust_dns_proto::serialize::binary::BinDecoder">BinDecoder</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;record_type: <a class="enum" href="../../../trust_dns_proto/rr/record_type/enum.RecordType.html" title="enum trust_dns_proto::rr::record_type::RecordType">RecordType</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;rdata_length: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u16.html">u16</a><br>) -&gt; <a class="type" href="../../../trust_dns_proto/error/type.ProtoResult.html" title="type trust_dns_proto::error::ProtoResult">ProtoResult</a>&lt;Self&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#414-500' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Read the RData from the given Decoder</p>
+</div><h4 id='method.emit' class="method"><span id='emit.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.emit' class='fnname'>emit</a>(&amp;self, encoder: &amp;mut <a class="struct" href="../../../trust_dns_proto/serialize/binary/struct.BinEncoder.html" title="struct trust_dns_proto::serialize::binary::BinEncoder">BinEncoder</a>) -&gt; <a class="type" href="../../../trust_dns_proto/error/type.ProtoResult.html" title="type trust_dns_proto::error::ProtoResult">ProtoResult</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#518-542' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p><a href="https://tools.ietf.org/html/rfc4034#section-6">RFC 4034</a>, DNSSEC Resource Records, March 2005</p>
+<pre><code class="language-text">6.2.  Canonical RR Form
+
+   For the purposes of DNS security, the canonical form of an RR is the
+   wire format of the RR where:
+
+   ...
+
+   3.  if the type of the RR is NS, MD, MF, CNAME, SOA, MB, MG, MR, PTR,
+       HINFO, MINFO, MX, HINFO, RP, AFSDB, RT, SIG, PX, NXT, NAPTR, KX,
+       SRV, DNAME, A6, RRSIG, or (rfc6840 removes NSEC), all uppercase
+       US-ASCII letters in the DNS names contained within the RDATA are replaced
+       by the corresponding lowercase US-ASCII letters;
+</code></pre>
+</div><h4 id='method.to_record_type' class="method"><span id='to_record_type.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.to_record_type' class='fnname'>to_record_type</a>(&amp;self) -&gt; <a class="enum" href="../../../trust_dns_proto/rr/record_type/enum.RecordType.html" title="enum trust_dns_proto::rr::record_type::RecordType">RecordType</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#545-565' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Converts this to a Recordtype</p>
+</div><h4 id='method.to_ip_addr' class="method"><span id='to_ip_addr.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.to_ip_addr' class='fnname'>to_ip_addr</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="enum" href="https://doc.rust-lang.org/nightly/std/net/ip/enum.IpAddr.html" title="enum std::net::ip::IpAddr">IpAddr</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#568-574' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>If this is an A or AAAA record type, then an IpAddr will be returned</p>
+</div></div>
+                <h2 id='implementations' class='small-section-header'>
+                  Trait Implementations<a href='#implementations' class='anchor'></a>
+                </h2>
+                <div id='implementations-list'><h3 id='impl-Debug' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code><a href='#impl-Debug' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#53' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#53' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
+</div></div><h3 id='impl-PartialEq' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html" title="trait core::cmp::PartialEq">PartialEq</a> for <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code><a href='#impl-PartialEq' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#53' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.eq' class="method"><span id='eq.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq' class='fnname'>eq</a>(&amp;self, other: &amp;<a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#53' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method tests for <code>self</code> and <code>other</code> values to be equal, and is used by <code>==</code>. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq">Read more</a></p>
+</div><h4 id='method.ne' class="method"><span id='ne.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, other: &amp;<a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#53' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method tests for <code>!=</code>.</p>
+</div></div><h3 id='impl-Clone' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> for <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code><a href='#impl-Clone' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#53' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.clone' class="method"><span id='clone.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#53' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
+</div><h4 id='method.clone_from' class="method"><span id='clone_from.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Self)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/clone.rs.html#130-132' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
+</div></div><h3 id='impl-Eq' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html" title="trait core::cmp::Eq">Eq</a> for <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code><a href='#impl-Eq' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#53' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-PartialOrd%3CRData%3E' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html" title="trait core::cmp::PartialOrd">PartialOrd</a>&lt;<a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a>&gt; for <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code><a href='#impl-PartialOrd%3CRData%3E' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#577-581' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.partial_cmp' class="method"><span id='partial_cmp.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#tymethod.partial_cmp' class='fnname'>partial_cmp</a>(&amp;self, other: &amp;<a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="enum" href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html" title="enum core::cmp::Ordering">Ordering</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#578-580' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method returns an ordering between <code>self</code> and <code>other</code> values if one exists. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#tymethod.partial_cmp">Read more</a></p>
+</div><h4 id='method.lt' class="method"><span id='lt.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.lt' class='fnname'>lt</a>(&amp;self, other: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Rhs) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/cmp.rs.html#657-662' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method tests less than (for <code>self</code> and <code>other</code>) and is used by the <code>&lt;</code> operator. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.lt">Read more</a></p>
+</div><h4 id='method.le' class="method"><span id='le.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.le' class='fnname'>le</a>(&amp;self, other: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Rhs) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/cmp.rs.html#679-684' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method tests less than or equal to (for <code>self</code> and <code>other</code>) and is used by the <code>&lt;=</code> operator. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.le">Read more</a></p>
+</div><h4 id='method.gt' class="method"><span id='gt.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.gt' class='fnname'>gt</a>(&amp;self, other: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Rhs) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/cmp.rs.html#700-705' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method tests greater than (for <code>self</code> and <code>other</code>) and is used by the <code>&gt;</code> operator. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.gt">Read more</a></p>
+</div><h4 id='method.ge' class="method"><span id='ge.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.ge' class='fnname'>ge</a>(&amp;self, other: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Rhs) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/cmp.rs.html#722-727' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method tests greater than or equal to (for <code>self</code> and <code>other</code>) and is used by the <code>&gt;=</code> operator. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.ge">Read more</a></p>
+</div></div><h3 id='impl-Ord' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html" title="trait core::cmp::Ord">Ord</a> for <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code><a href='#impl-Ord' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#583-607' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.cmp' class="method"><span id='cmp.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html#tymethod.cmp' class='fnname'>cmp</a>(&amp;self, other: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html" title="enum core::cmp::Ordering">Ordering</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/trust_dns_proto/rr/record_data.rs.html#601-606' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method returns an <code>Ordering</code> between <code>self</code> and <code>other</code>. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html#tymethod.cmp">Read more</a></p>
+</div><h4 id='method.max' class="method"><span id='max.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html#method.max' class='fnname'>max</a>(self, other: Self) -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.21.0'>1.21.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/cmp.rs.html#469-472' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Compares and returns the maximum of two values. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html#method.max">Read more</a></p>
+</div><h4 id='method.min' class="method"><span id='min.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html#method.min' class='fnname'>min</a>(self, other: Self) -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.21.0'>1.21.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/cmp.rs.html#485-488' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Compares and returns the minimum of two values. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html#method.min">Read more</a></p>
+</div></div></div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="enum" href="../../../trust_dns_proto/rr/record_data/enum.RData.html" title="enum trust_dns_proto::rr::record_data::RData">RData</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../";window.currentCrate = "trust_dns_proto";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

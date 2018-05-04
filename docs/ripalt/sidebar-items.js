@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["api","API Handlers"],["app","Application Handlers"],["db",""],["handlers",""],["models","Data models"],["settings",""],["state",""],["template","Template system"],["tracker",""],["util","Utility functions for ripalt"]]});

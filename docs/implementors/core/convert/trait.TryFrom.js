@@ -1,0 +1,10 @@
+(function() {var implementors = {};
+implementors["ripalt"] = [{text:"impl&lt;'req&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/convert/trait.TryFrom.html\" title=\"trait core::convert::TryFrom\">TryFrom</a>&lt;&amp;'req <a class=\"struct\" href=\"actix_web/httprequest/struct.HttpRequest.html\" title=\"struct actix_web::httprequest::HttpRequest\">HttpRequest</a>&lt;<a class=\"struct\" href=\"ripalt/state/struct.State.html\" title=\"struct ripalt::state::State\">State</a>&gt;&gt; for <a class=\"struct\" href=\"ripalt/handlers/chat/struct.LoadChatMessagesMsg.html\" title=\"struct ripalt::handlers::chat::LoadChatMessagesMsg\">LoadChatMessagesMsg</a>",synthetic:false,types:["ripalt::handlers::chat::LoadChatMessagesMsg"]},{text:"impl&lt;'req&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/convert/trait.TryFrom.html\" title=\"trait core::convert::TryFrom\">TryFrom</a>&lt;&amp;'req mut <a class=\"struct\" href=\"actix_web/httprequest/struct.HttpRequest.html\" title=\"struct actix_web::httprequest::HttpRequest\">HttpRequest</a>&lt;<a class=\"struct\" href=\"ripalt/state/struct.State.html\" title=\"struct ripalt::state::State\">State</a>&gt;&gt; for <a class=\"struct\" href=\"ripalt/handlers/struct.UserSubjectMsg.html\" title=\"struct ripalt::handlers::UserSubjectMsg\">UserSubjectMsg</a>",synthetic:false,types:["ripalt::handlers::UserSubjectMsg"]},{text:"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/convert/trait.TryFrom.html\" title=\"trait core::convert::TryFrom\">TryFrom</a>&lt;<a class=\"primitive\" href=\"https://doc.rust-lang.org/nightly/std/primitive.i16.html\">i16</a>&gt; for <a class=\"enum\" href=\"ripalt/models/chat/enum.ChatRoom.html\" title=\"enum ripalt::models::chat::ChatRoom\">ChatRoom</a>",synthetic:false,types:["ripalt::models::chat::ChatRoom"]},];
+
+            if (window.register_implementors) {
+                window.register_implementors(implementors);
+            } else {
+                window.pending_implementors = implementors;
+            }
+        
+})()

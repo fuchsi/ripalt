@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","The error used when managing connections with `r2d2`."]],"struct":[["ConnectionManager","An r2d2 connection manager for use with Diesel."]],"type":[["PoolError","A re-export of [`r2d2::Error`], which is only used by methods on [`r2d2::Pool`]."]]});

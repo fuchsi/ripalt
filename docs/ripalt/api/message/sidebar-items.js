@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["delete","Delete one or more messages"],["mark_read","Mark one or more messages as read"],["message","Fetch a single message"],["messages","Fetch messages"],["send","Send a new message to a user"],["unread","Fetch only unread messages."]],"struct":[["MessageListMsg","Message list payload"],["NewMessage","New message payload"]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ChunkedReadFile","A helper created from a `std::fs::File` which reads the file chunk-by-chunk on a `CpuPool`."],["Directory","A directory; responds with the generated directory listing."],["NamedFile","A file with an associated name; responds with the Content-Type based on the file extension."],["StaticFiles","Static files handling"]]});

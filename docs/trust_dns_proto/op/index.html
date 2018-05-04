@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `op` mod in crate `trust_dns_proto`."><meta name="keywords" content="rust, rustlang, rust-lang, op"><title>trust_dns_proto::op - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Module op</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li></ul></div><p class='location'><a href='../index.html'>trust_dns_proto</a></p><script>window.sidebarCurrent = {name: 'op', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>trust_dns_proto</a>::<wbr><a class="mod" href=''>op</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/trust_dns_proto/op/mod.rs.html#17-33' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Operations to send with a <code>Client</code> or server, e.g. <code>Query</code>, <code>Message</code>, or <code>UpdateMessage</code> can
+be used to gether to either query or update resource records sets.</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use self::header::<a class="struct" href="../../trust_dns_proto/op/header/struct.Header.html" title="struct trust_dns_proto::op::header::Header">Header</a>;</code></td></tr><tr><td><code>pub use self::header::<a class="enum" href="../../trust_dns_proto/op/header/enum.MessageType.html" title="enum trust_dns_proto::op::header::MessageType">MessageType</a>;</code></td></tr><tr><td><code>pub use self::message::<a class="trait" href="../../trust_dns_proto/op/message/trait.EncodableMessage.html" title="trait trust_dns_proto::op::message::EncodableMessage">EncodableMessage</a>;</code></td></tr><tr><td><code>pub use self::message::<a class="struct" href="../../trust_dns_proto/op/message/struct.Message.html" title="struct trust_dns_proto::op::message::Message">Message</a>;</code></td></tr><tr><td><code>pub use self::message::<a class="trait" href="../../trust_dns_proto/op/message/trait.MessageFinalizer.html" title="trait trust_dns_proto::op::message::MessageFinalizer">MessageFinalizer</a>;</code></td></tr><tr><td><code>pub use self::message::<a class="struct" href="../../trust_dns_proto/op/message/struct.NoopMessageFinalizer.html" title="struct trust_dns_proto::op::message::NoopMessageFinalizer">NoopMessageFinalizer</a>;</code></td></tr><tr><td><code>pub use self::op_code::<a class="enum" href="../../trust_dns_proto/op/op_code/enum.OpCode.html" title="enum trust_dns_proto::op::op_code::OpCode">OpCode</a>;</code></td></tr><tr><td><code>pub use self::query::<a class="struct" href="../../trust_dns_proto/op/query/struct.Query.html" title="struct trust_dns_proto::op::query::Query">Query</a>;</code></td></tr><tr><td><code>pub use self::response_code::<a class="enum" href="../../trust_dns_proto/op/response_code/enum.ResponseCode.html" title="enum trust_dns_proto::op::response_code::ResponseCode">ResponseCode</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="header/index.html"
+                                  title='mod trust_dns_proto::op::header'>header</a></td>
+                           <td class='docblock-short'>
+                                <p>Message metadata</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="message/index.html"
+                                  title='mod trust_dns_proto::op::message'>message</a></td>
+                           <td class='docblock-short'>
+                                <p>Basic protocol message for DNS</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="op_code/index.html"
+                                  title='mod trust_dns_proto::op::op_code'>op_code</a></td>
+                           <td class='docblock-short'>
+                                <p>Operation code for queries, updates, and responses</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="query/index.html"
+                                  title='mod trust_dns_proto::op::query'>query</a></td>
+                           <td class='docblock-short'>
+                                <p>Query struct for looking up resource records</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="response_code/index.html"
+                                  title='mod trust_dns_proto::op::response_code'>response_code</a></td>
+                           <td class='docblock-short'>
+                                <p>All defined response codes in DNS</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Edns.html"
+                                  title='struct trust_dns_proto::op::Edns'>Edns</a></td>
+                           <td class='docblock-short'>
+                                <p>Edns implements the higher level concepts for working with extended dns as it is used to create or be
+created from OPT record data.</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "trust_dns_proto";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["RespValue","A single RESP value, this owns the data that is read/to-be written to Redis."]],"struct":[["RespCodec","Codec to read frames"]],"trait":[["FromResp","A trait to be implemented for every time which can be read from a RESP value."],["ToRespInteger",""],["ToRespString","A specific trait to convert into a `RespValue::BulkString`"]]});

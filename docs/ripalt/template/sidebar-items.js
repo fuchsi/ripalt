@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["init_tera","Initialize the Tera template system"],["template_file_watcher","Watcher function to detect changed templates"]],"struct":[["Template","Container for the rendered template data"]],"type":[["TemplateContainer",""],["TemplateSystem",""]]});

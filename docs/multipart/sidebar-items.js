@@ -1,0 +1,1 @@
+initSidebarItems({"macro":[["chain_result","Chain a series of results together, with or without previous results."]],"mod":[["mock","Mocked types for client-side and server-side APIs."],["server","The server-side abstraction for multipart requests. Enabled with the `server` feature."]]});

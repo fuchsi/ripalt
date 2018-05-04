@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["messages","Fetch chat messages"],["publish","Publish a new chat message"]],"struct":[["PublishMessage","Publish Message Payload"]]});

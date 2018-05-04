@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["connect","Connect to a Redis server and return paired Sink and Stream for reading and writing asynchronously."]],"struct":[["ClientConnection","A low-level client connection representing a sender and a receiver."]]});

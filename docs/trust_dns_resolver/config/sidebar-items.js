@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["LookupIpStrategy","The lookup ip strategy"],["Protocol","The protocol on which a NameServer should be communicated with"]],"struct":[["NameServerConfig","Configuration for the NameServer"],["ResolverConfig","Configuration for the upstream nameservers to use for resolution"],["ResolverOpts","Configuration for the Resolver"]]});

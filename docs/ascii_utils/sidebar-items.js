@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["AsciiError",""]],"fn":[["check_ascii_printable","Reports an error wheter the string has a non-ASCII character or any ASCII control character."]],"mod":[["table","Defines the ASCII control characters."]],"trait":[["Check","Defines the methods for ASCII operations on characters."]]});

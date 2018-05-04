@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","General purpose actix redis error"],["RespError",""],["RespValue","A single RESP value, this owns the data that is read/to-be written to Redis."]],"struct":[["Command","Command for send data to Redis"],["RedisActor","Redis comminucation actor"],["RedisSessionBackend","Use redis as session storage."]]});

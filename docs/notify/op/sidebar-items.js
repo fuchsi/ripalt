@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["CHMOD","Attributes changed"],["CLOSE_WRITE","File opened for writing was closed"],["CREATE","Created"],["REMOVE","Removed"],["RENAME","Renamed"],["RESCAN","Directories need to be rescanned"],["WRITE","Written"]],"struct":[["Op","Holds a set of bit flags representing the actions for the event."]]});

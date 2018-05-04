@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Visible",""]],"struct":[["DeleteTorrentMsg",""],["LoadCategoriesMsg",""],["LoadTorrentListMsg",""],["LoadTorrentMetaMsg",""],["LoadTorrentMsg",""],["LoadTorrentNfoMsg",""],["NewFile",""],["NewTorrentBuilder",""],["NewTorrentMsg",""],["TorrentListMsg",""],["UpdateTorrentMsg",""]]});

@@ -1,0 +1,133 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `buf_redux` crate."><meta name="keywords" content="rust, rustlang, rust-lang, buf_redux"><title>buf_redux - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate buf_redux</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'buf_redux', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>buf_redux</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/buf_redux/lib.rs.html#12-1099' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Drop-in replacements for buffered I/O types in <code>std::io</code>.</p>
+<p>These replacements retain the method names/signatures and implemented traits of their stdlib
+counterparts, making replacement as simple as swapping the import of the type:</p>
+<h4 id="bufreader" class="section-header"><a href="#bufreader"><code>BufReader</code>:</a></h4>
+<pre><code class="language-notest">- use std::io::BufReader;
++ use buf_redux::BufReader;
+</code></pre>
+<h4 id="bufwriter" class="section-header"><a href="#bufwriter"><code>BufWriter</code>:</a></h4>
+<pre><code class="language-notest">- use std::io::BufWriter;
++ use buf_redux::BufWriter;
+</code></pre>
+<h4 id="linewriter" class="section-header"><a href="#linewriter"><code>LineWriter</code>:</a></h4>
+<pre><code class="language-notest">- use std::io::LineWriter;
++ use buf_redux::LineWriter;
+</code></pre>
+<h3 id="more-direct-control" class="section-header"><a href="#more-direct-control">More Direct Control</a></h3>
+<p>All replacement types provide methods to:</p>
+<ul>
+<li>Increase the capacity of the buffer</li>
+<li>Get the number of available bytes as well as the total capacity of the buffer</li>
+<li>Consume the wrapper without losing data</li>
+</ul>
+<p><code>BufReader</code> provides methods to:</p>
+<ul>
+<li>Access the buffer through an <code>&amp;</code>-reference without performing I/O</li>
+<li>Force unconditional reads into the buffer</li>
+<li>Get a <code>Read</code> adapter which empties the buffer and then pulls from the inner reader directly</li>
+<li>Shuffle bytes down to the beginning of the buffer to make room for more reading</li>
+<li>Get inner reader and trimmed buffer with the remaining data</li>
+</ul>
+<p><code>BufWriter</code> and <code>LineWriter</code> provides methods to:</p>
+<ul>
+<li>Flush the buffer and unwrap the inner writer unconditionally.</li>
+<li>Get the inner writer and trimmed buffer with the unflushed data.</li>
+</ul>
+<h3 id="more-sensible-and-customizable-buffering-behavior" class="section-header"><a href="#more-sensible-and-customizable-buffering-behavior">More Sensible and Customizable Buffering Behavior</a></h3>
+<ul>
+<li>Tune the behavior of the buffer to your specific use-case using the types in the <a href="strategy/index.html"><code>strategy</code>
+module</a>:
+<ul>
+<li><code>BufReader</code> performs reads as dictated by the <a href="strategy/trait.ReadStrategy.html"><code>ReadStrategy</code> trait</a>.</li>
+<li><code>BufReader</code> moves bytes down to the beginning of the buffer, to make more room at the end, when deemed appropriate by the
+<a href="strategy/trait.MoveStrategy.html"><code>MoveStrategy</code> trait</a>.</li>
+<li><code>BufWriter</code> flushes bytes to the inner writer when full, or when deemed appropriate by
+the <a href="strategy/trait.FlushStrategy.html"><code>FlushStrategy</code> trait</a>.</li>
+</ul>
+</li>
+<li><code>Buffer</code> uses exact allocation instead of leaving it up to <code>Vec</code>, which allocates sizes in powers of two.
+<ul>
+<li>Vec's behavior is more efficient for frequent growth, but much too greedy for infrequent growth and custom capacities.</li>
+</ul>
+</li>
+</ul>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="strategy/index.html"
+                                  title='mod buf_redux::strategy'>strategy</a></td>
+                           <td class='docblock-short'>
+                                <p>Types which can be used to tune the behavior of <code>BufReader</code>.</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.BufReader.html"
+                                  title='struct buf_redux::BufReader'>BufReader</a></td>
+                           <td class='docblock-short'>
+                                <p>A drop-in replacement for <code>std::io::BufReader</code> with more functionality.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.BufWriter.html"
+                                  title='struct buf_redux::BufWriter'>BufWriter</a></td>
+                           <td class='docblock-short'>
+                                <p>A drop-in replacement for <code>std::io::BufWriter</code> with more functionality.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Buffer.html"
+                                  title='struct buf_redux::Buffer'>Buffer</a></td>
+                           <td class='docblock-short'>
+                                <p>A deque-like datastructure for managing bytes.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IntoInnerError.html"
+                                  title='struct buf_redux::IntoInnerError'>IntoInnerError</a></td>
+                           <td class='docblock-short'>
+                                <p>The error type for <code>BufWriter::into_inner()</code>,
+contains the <code>BufWriter</code> as well as the error that occurred.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.LineWriter.html"
+                                  title='struct buf_redux::LineWriter'>LineWriter</a></td>
+                           <td class='docblock-short'>
+                                <p>A drop-in replacement for <code>std::io::LineWriter</code> with more functionality.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Unbuffer.html"
+                                  title='struct buf_redux::Unbuffer'>Unbuffer</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>Read</code> adapter for a consumed <code>BufReader</code> which will empty bytes from the buffer before reading from
+<code>inner</code> directly. Frees the buffer when it has been emptied. </p>
+
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.TrustRead.html"
+                                  title='trait buf_redux::TrustRead'>TrustRead</a></td>
+                           <td class='docblock-short'>
+                                <p>A trait which <code>Buffer</code> can use to determine whether or not
+it is safe to elide zeroing of its buffer.</p>
+
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.copy_buf.html"
+                                  title='fn buf_redux::copy_buf'>copy_buf</a></td>
+                           <td class='docblock-short'>
+                                <p>Copy data between a <code>BufRead</code> and a <code>Write</code> without an intermediate buffer.</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "buf_redux";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

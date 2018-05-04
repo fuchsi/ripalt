@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Message","A message"],["MessageFolder","A message folder"],["NewMessage","A new message"],["NewMessageFolder","A new message folder"]]});

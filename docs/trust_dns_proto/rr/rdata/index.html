@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `rdata` mod in crate `trust_dns_proto`."><meta name="keywords" content="rust, rustlang, rust-lang, rdata"><title>trust_dns_proto::rr::rdata - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Module rdata</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li></ul></div><p class='location'><a href='../../index.html'>trust_dns_proto</a>::<wbr><a href='../index.html'>rr</a></p><script>window.sidebarCurrent = {name: 'rdata', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../../index.html'>trust_dns_proto</a>::<wbr><a href='../index.html'>rr</a>::<wbr><a class="mod" href=''>rdata</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/trust_dns_proto/rr/rdata/mod.rs.html#17-41' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>All record data structures and related serialization methods</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use self::caa::<a class="struct" href="../../../trust_dns_proto/rr/rdata/caa/struct.CAA.html" title="struct trust_dns_proto::rr::rdata::caa::CAA">CAA</a>;</code></td></tr><tr><td><code>pub use self::mx::<a class="struct" href="../../../trust_dns_proto/rr/rdata/mx/struct.MX.html" title="struct trust_dns_proto::rr::rdata::mx::MX">MX</a>;</code></td></tr><tr><td><code>pub use self::null::<a class="struct" href="../../../trust_dns_proto/rr/rdata/null/struct.NULL.html" title="struct trust_dns_proto::rr::rdata::null::NULL">NULL</a>;</code></td></tr><tr><td><code>pub use self::opt::<a class="struct" href="../../../trust_dns_proto/rr/rdata/opt/struct.OPT.html" title="struct trust_dns_proto::rr::rdata::opt::OPT">OPT</a>;</code></td></tr><tr><td><code>pub use self::srv::<a class="struct" href="../../../trust_dns_proto/rr/rdata/srv/struct.SRV.html" title="struct trust_dns_proto::rr::rdata::srv::SRV">SRV</a>;</code></td></tr><tr><td><code>pub use self::soa::<a class="struct" href="../../../trust_dns_proto/rr/rdata/soa/struct.SOA.html" title="struct trust_dns_proto::rr::rdata::soa::SOA">SOA</a>;</code></td></tr><tr><td><code>pub use self::tlsa::<a class="struct" href="../../../trust_dns_proto/rr/rdata/tlsa/struct.TLSA.html" title="struct trust_dns_proto::rr::rdata::tlsa::TLSA">TLSA</a>;</code></td></tr><tr><td><code>pub use self::txt::<a class="struct" href="../../../trust_dns_proto/rr/rdata/txt/struct.TXT.html" title="struct trust_dns_proto::rr::rdata::txt::TXT">TXT</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="a/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::a'>a</a></td>
+                           <td class='docblock-short'>
+                                <p>IPv4 address record data</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="aaaa/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::aaaa'>aaaa</a></td>
+                           <td class='docblock-short'>
+                                <p>IPv6 address record data</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="caa/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::caa'>caa</a></td>
+                           <td class='docblock-short'>
+                                <p>allows a DNS domain name holder to specify one or more Certification
+Authorities (CAs) authorized to issue certificates for that domain.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="mx/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::mx'>mx</a></td>
+                           <td class='docblock-short'>
+                                <p>mail exchange, email, record</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="name/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::name'>name</a></td>
+                           <td class='docblock-short'>
+                                <p>Record type for all cname like records.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="null/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::null'>null</a></td>
+                           <td class='docblock-short'>
+                                <p>null record type, generally not used except as an internal tool for representing null data</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="opt/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::opt'>opt</a></td>
+                           <td class='docblock-short'>
+                                <p>option record for passing protocol options between the client and server</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="soa/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::soa'>soa</a></td>
+                           <td class='docblock-short'>
+                                <p>start of authority record defining ownership and defaults for the zone</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="srv/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::srv'>srv</a></td>
+                           <td class='docblock-short'>
+                                <p>service records for identify port mapping for specific services on a host</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="tlsa/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::tlsa'>tlsa</a></td>
+                           <td class='docblock-short'>
+                                <p>TLSA records for storing TLS certificate validation information</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="txt/index.html"
+                                  title='mod trust_dns_proto::rr::rdata::txt'>txt</a></td>
+                           <td class='docblock-short'>
+                                <p>text records for storing arbitrary data</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../";window.currentCrate = "trust_dns_proto";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

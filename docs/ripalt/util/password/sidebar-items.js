@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["generate_passhash","Generate the argon2i hash for the given password and salt"],["verify","Verify that he given password is identical to the stored one"]]});

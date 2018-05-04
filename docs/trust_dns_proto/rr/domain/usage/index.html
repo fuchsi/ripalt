@@ -1,0 +1,125 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `usage` mod in crate `trust_dns_proto`."><meta name="keywords" content="rust, rustlang, rust-lang, usage"><title>trust_dns_proto::rr::domain::usage - Rust</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script src="../../../../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Module usage</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li></ul></div><p class='location'><a href='../../../index.html'>trust_dns_proto</a>::<wbr><a href='../../index.html'>rr</a>::<wbr><a href='../index.html'>domain</a></p><script>window.sidebarCurrent = {name: 'usage', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../../../index.html'>trust_dns_proto</a>::<wbr><a href='../../index.html'>rr</a>::<wbr><a href='../index.html'>domain</a>::<wbr><a class="mod" href=''>usage</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../../src/trust_dns_proto/rr/domain/usage.rs.html#8-412' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Reserved zone names.</p>
+<p>see <a href="https://tools.ietf.org/html/rfc6761">Special-Use Domain Names</a>, RFC 6761 February, 2013</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DEFAULT.html"
+                                  title='struct trust_dns_proto::rr::domain::usage::DEFAULT'>DEFAULT</a></td>
+                           <td class='docblock-short'>
+                                <p>Default Name usage, everything is normal...</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.INVALID.html"
+                                  title='struct trust_dns_proto::rr::domain::usage::INVALID'>INVALID</a></td>
+                           <td class='docblock-short'>
+                                <p>invalid. name usage</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IN_ADDR_ARPA.html"
+                                  title='struct trust_dns_proto::rr::domain::usage::IN_ADDR_ARPA'>IN_ADDR_ARPA</a></td>
+                           <td class='docblock-short'>
+                                <p>zone for ipv4 reverse addresses</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IN_ADDR_ARPA_127.html"
+                                  title='struct trust_dns_proto::rr::domain::usage::IN_ADDR_ARPA_127'>IN_ADDR_ARPA_127</a></td>
+                           <td class='docblock-short'>
+                                <p>127.in-addr.arpa. usage; 127/8 is reserved for loopback</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IP6_ARPA.html"
+                                  title='struct trust_dns_proto::rr::domain::usage::IP6_ARPA'>IP6_ARPA</a></td>
+                           <td class='docblock-short'>
+                                <p>zone for ipv6 reverse addresses</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IP6_ARPA_1.html"
+                                  title='struct trust_dns_proto::rr::domain::usage::IP6_ARPA_1'>IP6_ARPA_1</a></td>
+                           <td class='docblock-short'>
+                                <p>1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa. usage; 1/128 is the only address in ipv6 loopback</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.LOCALHOST.html"
+                                  title='struct trust_dns_proto::rr::domain::usage::LOCALHOST'>LOCALHOST</a></td>
+                           <td class='docblock-short'>
+                                <p>localhost. usage</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ZoneUsage.html"
+                                  title='struct trust_dns_proto::rr::domain::usage::ZoneUsage'>ZoneUsage</a></td>
+                           <td class='docblock-short'>
+                                <p>ZoneUsage represents information about how a name falling in a given zone should be treated</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.AppUsage.html"
+                                  title='enum trust_dns_proto::rr::domain::usage::AppUsage'>AppUsage</a></td>
+                           <td class='docblock-short'>
+                                <p>Application Software:</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.AuthUsage.html"
+                                  title='enum trust_dns_proto::rr::domain::usage::AuthUsage'>AuthUsage</a></td>
+                           <td class='docblock-short'>
+                                <p>Authoritative DNS Servers:</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.CacheUsage.html"
+                                  title='enum trust_dns_proto::rr::domain::usage::CacheUsage'>CacheUsage</a></td>
+                           <td class='docblock-short'>
+                                <p>Caching DNS Servers:</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.OpUsage.html"
+                                  title='enum trust_dns_proto::rr::domain::usage::OpUsage'>OpUsage</a></td>
+                           <td class='docblock-short'>
+                                <p>DNS Server Operators:</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.RegistryUsage.html"
+                                  title='enum trust_dns_proto::rr::domain::usage::RegistryUsage'>RegistryUsage</a></td>
+                           <td class='docblock-short'>
+                                <p>DNS Registries/Registrars:</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ResolverUsage.html"
+                                  title='enum trust_dns_proto::rr::domain::usage::ResolverUsage'>ResolverUsage</a></td>
+                           <td class='docblock-short'>
+                                <p>Name Resolution APIs and Libraries:</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.UserUsage.html"
+                                  title='enum trust_dns_proto::rr::domain::usage::UserUsage'>UserUsage</a></td>
+                           <td class='docblock-short'>
+                                <p>Users:</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../../";window.currentCrate = "trust_dns_proto";</script><script src="../../../../aliases.js"></script><script src="../../../../main.js"></script><script defer src="../../../../search-index.js"></script></body></html>

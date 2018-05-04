@@ -1,0 +1,565 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `brotli_sys` crate."><meta name="keywords" content="rust, rustlang, rust-lang, brotli_sys"><title>brotli_sys - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate brotli_sys</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#enums">Enums</a></li><li><a href="#constants">Constants</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'brotli_sys', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>brotli_sys</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/brotli_sys/lib.rs.html#1-169' title='goto source code'>[src]</a></span></h1><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.BrotliDecoderState.html"
+                                  title='enum brotli_sys::BrotliDecoderState'>BrotliDecoderState</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.BrotliEncoderState.html"
+                                  title='enum brotli_sys::BrotliEncoderState'>BrotliEncoderState</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_ALLOC_BLOCK_TYPE_TREES.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_ALLOC_BLOCK_TYPE_TREES'>BROTLI_DECODER_ERROR_ALLOC_BLOCK_TYPE_TREES</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_ALLOC_CONTEXT_MAP.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_ALLOC_CONTEXT_MAP'>BROTLI_DECODER_ERROR_ALLOC_CONTEXT_MAP</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_ALLOC_CONTEXT_MODES.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_ALLOC_CONTEXT_MODES'>BROTLI_DECODER_ERROR_ALLOC_CONTEXT_MODES</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_ALLOC_RING_BUFFER_1.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_ALLOC_RING_BUFFER_1'>BROTLI_DECODER_ERROR_ALLOC_RING_BUFFER_1</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_ALLOC_RING_BUFFER_2.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_ALLOC_RING_BUFFER_2'>BROTLI_DECODER_ERROR_ALLOC_RING_BUFFER_2</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_ALLOC_TREE_GROUPS.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_ALLOC_TREE_GROUPS'>BROTLI_DECODER_ERROR_ALLOC_TREE_GROUPS</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_BLOCK_LENGTH_1.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_BLOCK_LENGTH_1'>BROTLI_DECODER_ERROR_FORMAT_BLOCK_LENGTH_1</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_BLOCK_LENGTH_2.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_BLOCK_LENGTH_2'>BROTLI_DECODER_ERROR_FORMAT_BLOCK_LENGTH_2</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_CL_SPACE.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_CL_SPACE'>BROTLI_DECODER_ERROR_FORMAT_CL_SPACE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_CONTEXT_MAP_REPEAT.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_CONTEXT_MAP_REPEAT'>BROTLI_DECODER_ERROR_FORMAT_CONTEXT_MAP_REPEAT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_DICTIONARY.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_DICTIONARY'>BROTLI_DECODER_ERROR_FORMAT_DICTIONARY</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_EXUBERANT_META_NIBBLE.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_EXUBERANT_META_NIBBLE'>BROTLI_DECODER_ERROR_FORMAT_EXUBERANT_META_NIBBLE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_EXUBERANT_NIBBLE.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_EXUBERANT_NIBBLE'>BROTLI_DECODER_ERROR_FORMAT_EXUBERANT_NIBBLE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_HUFFMAN_SPACE.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_HUFFMAN_SPACE'>BROTLI_DECODER_ERROR_FORMAT_HUFFMAN_SPACE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_PADDING_1.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_PADDING_1'>BROTLI_DECODER_ERROR_FORMAT_PADDING_1</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_PADDING_2.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_PADDING_2'>BROTLI_DECODER_ERROR_FORMAT_PADDING_2</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_RESERVED.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_RESERVED'>BROTLI_DECODER_ERROR_FORMAT_RESERVED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_SIMPLE_HUFFMAN_ALPHABET.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_SIMPLE_HUFFMAN_ALPHABET'>BROTLI_DECODER_ERROR_FORMAT_SIMPLE_HUFFMAN_ALPHABET</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_SIMPLE_HUFFMAN_SAME.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_SIMPLE_HUFFMAN_SAME'>BROTLI_DECODER_ERROR_FORMAT_SIMPLE_HUFFMAN_SAME</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_TRANSFORM.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_TRANSFORM'>BROTLI_DECODER_ERROR_FORMAT_TRANSFORM</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_FORMAT_WINDOW_BITS.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_FORMAT_WINDOW_BITS'>BROTLI_DECODER_ERROR_FORMAT_WINDOW_BITS</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_INVALID_ARGUMENTS.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_INVALID_ARGUMENTS'>BROTLI_DECODER_ERROR_INVALID_ARGUMENTS</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_ERROR_UNREACHABLE.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_ERROR_UNREACHABLE'>BROTLI_DECODER_ERROR_UNREACHABLE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_NEEDS_MORE_INPUT.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_NEEDS_MORE_INPUT'>BROTLI_DECODER_NEEDS_MORE_INPUT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_NEEDS_MORE_OUTPUT.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_NEEDS_MORE_OUTPUT'>BROTLI_DECODER_NEEDS_MORE_OUTPUT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_NO_ERROR.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_NO_ERROR'>BROTLI_DECODER_NO_ERROR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_RESULT_ERROR.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_RESULT_ERROR'>BROTLI_DECODER_RESULT_ERROR</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT'>BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT'>BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_RESULT_SUCCESS.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_RESULT_SUCCESS'>BROTLI_DECODER_RESULT_SUCCESS</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DECODER_SUCCESS.html"
+                                  title='constant brotli_sys::BROTLI_DECODER_SUCCESS'>BROTLI_DECODER_SUCCESS</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DEFAULT_MODE.html"
+                                  title='constant brotli_sys::BROTLI_DEFAULT_MODE'>BROTLI_DEFAULT_MODE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DEFAULT_QUALITY.html"
+                                  title='constant brotli_sys::BROTLI_DEFAULT_QUALITY'>BROTLI_DEFAULT_QUALITY</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_DEFAULT_WINDOW.html"
+                                  title='constant brotli_sys::BROTLI_DEFAULT_WINDOW'>BROTLI_DEFAULT_WINDOW</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_MODE_FONT.html"
+                                  title='constant brotli_sys::BROTLI_MODE_FONT'>BROTLI_MODE_FONT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_MODE_GENERIC.html"
+                                  title='constant brotli_sys::BROTLI_MODE_GENERIC'>BROTLI_MODE_GENERIC</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_MODE_TEXT.html"
+                                  title='constant brotli_sys::BROTLI_MODE_TEXT'>BROTLI_MODE_TEXT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_OPERATION_EMIT_METADATA.html"
+                                  title='constant brotli_sys::BROTLI_OPERATION_EMIT_METADATA'>BROTLI_OPERATION_EMIT_METADATA</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_OPERATION_FINISH.html"
+                                  title='constant brotli_sys::BROTLI_OPERATION_FINISH'>BROTLI_OPERATION_FINISH</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_OPERATION_FLUSH.html"
+                                  title='constant brotli_sys::BROTLI_OPERATION_FLUSH'>BROTLI_OPERATION_FLUSH</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_OPERATION_PROCESS.html"
+                                  title='constant brotli_sys::BROTLI_OPERATION_PROCESS'>BROTLI_OPERATION_PROCESS</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_PARAM_DISABLE_LITERAL_CONTEXT_MODELING.html"
+                                  title='constant brotli_sys::BROTLI_PARAM_DISABLE_LITERAL_CONTEXT_MODELING'>BROTLI_PARAM_DISABLE_LITERAL_CONTEXT_MODELING</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_PARAM_LGBLOCK.html"
+                                  title='constant brotli_sys::BROTLI_PARAM_LGBLOCK'>BROTLI_PARAM_LGBLOCK</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_PARAM_LGWIN.html"
+                                  title='constant brotli_sys::BROTLI_PARAM_LGWIN'>BROTLI_PARAM_LGWIN</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_PARAM_MODE.html"
+                                  title='constant brotli_sys::BROTLI_PARAM_MODE'>BROTLI_PARAM_MODE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_PARAM_QUALITY.html"
+                                  title='constant brotli_sys::BROTLI_PARAM_QUALITY'>BROTLI_PARAM_QUALITY</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.BROTLI_PARAM_SIZE_HINT.html"
+                                  title='constant brotli_sys::BROTLI_PARAM_SIZE_HINT'>BROTLI_PARAM_SIZE_HINT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderCreateInstance.html"
+                                  title='fn brotli_sys::BrotliDecoderCreateInstance'>BrotliDecoderCreateInstance</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderDecompress.html"
+                                  title='fn brotli_sys::BrotliDecoderDecompress'>BrotliDecoderDecompress</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderDecompressStream.html"
+                                  title='fn brotli_sys::BrotliDecoderDecompressStream'>BrotliDecoderDecompressStream</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderDestroyInstance.html"
+                                  title='fn brotli_sys::BrotliDecoderDestroyInstance'>BrotliDecoderDestroyInstance</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderErrorString.html"
+                                  title='fn brotli_sys::BrotliDecoderErrorString'>BrotliDecoderErrorString</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderGetErrorCode.html"
+                                  title='fn brotli_sys::BrotliDecoderGetErrorCode'>BrotliDecoderGetErrorCode</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderHasMoreOutput.html"
+                                  title='fn brotli_sys::BrotliDecoderHasMoreOutput'>BrotliDecoderHasMoreOutput</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderIsFinished.html"
+                                  title='fn brotli_sys::BrotliDecoderIsFinished'>BrotliDecoderIsFinished</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderIsUsed.html"
+                                  title='fn brotli_sys::BrotliDecoderIsUsed'>BrotliDecoderIsUsed</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderSetCustomDictionary.html"
+                                  title='fn brotli_sys::BrotliDecoderSetCustomDictionary'>BrotliDecoderSetCustomDictionary</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderTakeOutput.html"
+                                  title='fn brotli_sys::BrotliDecoderTakeOutput'>BrotliDecoderTakeOutput</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliDecoderVersion.html"
+                                  title='fn brotli_sys::BrotliDecoderVersion'>BrotliDecoderVersion</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderCompress.html"
+                                  title='fn brotli_sys::BrotliEncoderCompress'>BrotliEncoderCompress</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderCompressStream.html"
+                                  title='fn brotli_sys::BrotliEncoderCompressStream'>BrotliEncoderCompressStream</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderCreateInstance.html"
+                                  title='fn brotli_sys::BrotliEncoderCreateInstance'>BrotliEncoderCreateInstance</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderDestroyInstance.html"
+                                  title='fn brotli_sys::BrotliEncoderDestroyInstance'>BrotliEncoderDestroyInstance</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderHasMoreOutput.html"
+                                  title='fn brotli_sys::BrotliEncoderHasMoreOutput'>BrotliEncoderHasMoreOutput</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderIsFinished.html"
+                                  title='fn brotli_sys::BrotliEncoderIsFinished'>BrotliEncoderIsFinished</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderMaxCompressedSize.html"
+                                  title='fn brotli_sys::BrotliEncoderMaxCompressedSize'>BrotliEncoderMaxCompressedSize</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderSetCustomDictionary.html"
+                                  title='fn brotli_sys::BrotliEncoderSetCustomDictionary'>BrotliEncoderSetCustomDictionary</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderSetParameter.html"
+                                  title='fn brotli_sys::BrotliEncoderSetParameter'>BrotliEncoderSetParameter</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderTakeOutput.html"
+                                  title='fn brotli_sys::BrotliEncoderTakeOutput'>BrotliEncoderTakeOutput</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.BrotliEncoderVersion.html"
+                                  title='fn brotli_sys::BrotliEncoderVersion'>BrotliEncoderVersion</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.BrotliDecoderErrorCode.html"
+                                  title='type brotli_sys::BrotliDecoderErrorCode'>BrotliDecoderErrorCode</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.BrotliDecoderResult.html"
+                                  title='type brotli_sys::BrotliDecoderResult'>BrotliDecoderResult</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.BrotliEncoderMode.html"
+                                  title='type brotli_sys::BrotliEncoderMode'>BrotliEncoderMode</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.BrotliEncoderOperation.html"
+                                  title='type brotli_sys::BrotliEncoderOperation'>BrotliEncoderOperation</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.BrotliEncoderParameter.html"
+                                  title='type brotli_sys::BrotliEncoderParameter'>BrotliEncoderParameter</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.__enum_ty_s.html"
+                                  title='type brotli_sys::__enum_ty_s'>__enum_ty_s</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.brotli_alloc_func.html"
+                                  title='type brotli_sys::brotli_alloc_func'>brotli_alloc_func</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.brotli_free_func.html"
+                                  title='type brotli_sys::brotli_free_func'>brotli_free_func</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "brotli_sys";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

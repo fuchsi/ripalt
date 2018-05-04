@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["paired_connect","The default starting point to use most default Redis functionality."]],"struct":[["PairedConnection",""]],"type":[["SendBox",""]]});

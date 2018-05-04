@@ -1,0 +1,157 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `pest` crate."><meta name="keywords" content="rust, rustlang, rust-lang, pest"><title>pest - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate pest</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'pest', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>pest</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/pest/lib.rs.html#10-87' title='goto source code'>[src]</a></span></h1><div class='docblock'><h1 id="pest-the-elegant-parser" class="section-header"><a href="#pest-the-elegant-parser">pest. The Elegant Parser</a></h1>
+<p>pest is a <a href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">PEG</a> parser built with
+<em>simplicity</em> and <em>speed</em> in mind.</p>
+<h2 id="parser" class="section-header"><a href="#parser">Parser</a></h2>
+<p>pest works mainly through a <code>trait</code>, <code>Parser</code>, which provides an interface to the parsing
+functionality. Since <code>Parser</code> is a <code>trait</code>, parsing needs to be defined either though the
+<code>#[derive(Parser)]</code> attribute, or manually through the <a href="struct.Position.html"><code>Position API</code></a>.
+The use of the <code>derive</code> is highly encouraged since this is the only way you can make use of
+pest's PEG grammar, while manual parser definition can be used where highly specific or
+efficient parsing is required.</p>
+<h2 id="deriveparser" class="section-header"><a href="#deriveparser"><code>#[derive(Parser)]</code></a></h2>
+<p>pest comes with a procedural macro crate--<code>pest_derive</code>--which needs to be included in
+<code>Cargo.toml</code> in order to enable the <code>derive</code>.</p>
+<pre><code class="language-toml">pest_derive = &quot;*&quot;
+</code></pre>
+<h2 id="pest-files" class="section-header"><a href="#pest-files"><code>.pest</code> files</a></h2>
+<p>Grammar definitions reside in custom <code>.pest</code> files located in the <code>src</code> directory. Their path is
+relative to <code>src</code> and is specified between the <code>derive</code> attribute and an empty <code>struct</code> that
+<code>Parser</code> will be derived on.</p>
+<p>Because of a limitation in procedural macros, there is no way for Cargo to know that a module
+needs to be recompiled based on the file that the procedural macro is opening. This leads to the
+case where modifying a <code>.pest</code> file without touching the file where the <code>derive</code> is does not
+recompile it if it already has a working binary in the cache. To avoid this issue, the grammar
+file can be included in a dummy <code>const</code> definition while debugging.</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ<span class='tooltiptext'>This example is not tested</span></div></div><pre class="rust rust-example-rendered ignore">
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
+<span class="kw">const</span> <span class="ident">_GRAMMAR</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;path/to/my_grammar.pest&quot;</span>); <span class="comment">// relative to this file</span>
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Parser</span>)]</span>
+<span class="attribute">#[<span class="ident">grammar</span> <span class="op">=</span> <span class="string">&quot;path/to/my_grammar.pest&quot;</span>]</span> <span class="comment">// relative to src</span>
+<span class="kw">struct</span> <span class="ident">MyParser</span>;</pre>
+<p>The grammar of <code>.pest</code> files is documented in the
+<a href="https://docs.rs/pest_derive/#Grammar"><code>pest_derive</code> crate</a>.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="iterators/index.html"
+                                  title='mod pest::iterators'>iterators</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>mod</code> containing iterators and constructs to aid in parser output manipulation.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="prec_climber/index.html"
+                                  title='mod pest::prec_climber'>prec_climber</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>mod</code> containing constructs useful in infix operator parsing with the precedence climbing
+method.</p>
+
+                           </td>
+                       </tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.fails_with.html"
+                                  title='macro pest::fails_with'>fails_with</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>macro</code> which facilitates grammar testing and debugging by comparing produced errors.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.parses_to.html"
+                                  title='macro pest::parses_to'>parses_to</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>macro</code> which facilitates grammar testing and debugging by comparing produced tokens.</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ParserState.html"
+                                  title='struct pest::ParserState'>ParserState</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>struct</code> which contains the complete state of a <code>Parser</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Position.html"
+                                  title='struct pest::Position'>Position</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>struct</code> containing a position that is tied to a <code>&amp;str</code> which provides useful methods to
+manually parse it. This leads to an API largely based on the standard <code>Result</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Span.html"
+                                  title='struct pest::Span'>Span</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>struct</code> of a span over a <code>&amp;str</code>. It is created from either
+<a href="struct.Position.html#method.span">two <code>Position</code>s</a> or from a
+<a href="../iterators/struct.Pair.html#method.span"><code>Pair</code></a>.</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Atomicity.html"
+                                  title='enum pest::Atomicity'>Atomicity</a></td>
+                           <td class='docblock-short'>
+                                <p>An <code>enum</code> specifying the current atomicity of a <code>ParserState</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Error.html"
+                                  title='enum pest::Error'>Error</a></td>
+                           <td class='docblock-short'>
+                                <p>An <code>enum</code> which defines possible errors.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Lookahead.html"
+                                  title='enum pest::Lookahead'>Lookahead</a></td>
+                           <td class='docblock-short'>
+                                <p>An <code>enum</code> specifying the current lookahead status of a <code>ParserState</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Token.html"
+                                  title='enum pest::Token'>Token</a></td>
+                           <td class='docblock-short'>
+                                <p>An <code>enum</code> representing tokens generated by a <code>Parser</code>.</p>
+
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Parser.html"
+                                  title='trait pest::Parser'>Parser</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>trait</code> that defines a <code>Parser</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.RuleType.html"
+                                  title='trait pest::RuleType'>RuleType</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>trait</code> which parser rules must implement.</p>
+
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.state.html"
+                                  title='fn pest::state'>state</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates a <code>ParserState</code> from a <code>&amp;str</code>, supplying it to a closure <code>f</code>.</p>
+
+                           </td>
+                       </tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../";window.currentCrate = "pest";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Permission","ACL permissions"]],"struct":[["Acl","The ACL Structure"],["PermissionMapping",""],["UserSubject",""]],"trait":[["Subject",""]]});
