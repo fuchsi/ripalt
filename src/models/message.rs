@@ -16,10 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! Message data models
+
 use super::*;
 use schema::{message_folders, messages};
 use diesel::pg::Pg;
 
+/// A message folder
 #[derive(Identifiable, Queryable, Insertable, Associations, Serialize)]
 #[belongs_to(User)]
 pub struct MessageFolder {
@@ -30,10 +33,12 @@ pub struct MessageFolder {
 }
 
 impl MessageFolder {
+    /// Find a `MessageFolder` by its ID.
     pub fn find(id: &Uuid, db: &PgConnection) -> Option<Self> {
         message_folders::table.find(id).first::<Self>(db).ok()
     }
 
+    /// Find a `MessageFolder` by its name for a user.
     pub fn find_by_name(name: &str, user_id: &Uuid, db: &PgConnection) -> Option<Self> {
         message_folders::table
             .filter(message_folders::dsl::name.eq(name))
@@ -43,6 +48,7 @@ impl MessageFolder {
     }
 }
 
+/// A new message folder
 #[derive(Identifiable, Insertable)]
 #[table_name = "message_folders"]
 pub struct NewMessageFolder<'a> {
@@ -53,6 +59,7 @@ pub struct NewMessageFolder<'a> {
 }
 
 impl<'a> NewMessageFolder<'a> {
+    /// Construct a new `NewMessageFolder` instance.
     pub fn new(user_id: &'a Uuid, name: &'a str, purge: i16) -> Self {
         NewMessageFolder {
             id: Uuid::new_v4(),
@@ -62,6 +69,7 @@ impl<'a> NewMessageFolder<'a> {
         }
     }
 
+    /// Save the message folder into the database.
     pub fn save(&self, db: &PgConnection) -> Result<usize> {
         self.insert_into(message_folders::table)
             .execute(db)
@@ -69,6 +77,7 @@ impl<'a> NewMessageFolder<'a> {
     }
 }
 
+/// A message
 #[derive(Identifiable, Queryable, Insertable, Associations, Serialize, Clone)]
 #[belongs_to(MessageFolder, foreign_key = "folder_id")]
 #[belongs_to(User, foreign_key = "receiver_id")]
@@ -84,16 +93,19 @@ pub struct Message {
 }
 
 impl Message {
+    /// Find a `Message` by its ID.
     pub fn find(id: &Uuid, db: &PgConnection) -> Option<Self> {
         messages::table.find(id).first::<Self>(db).ok()
     }
 
+    /// Fetch all messages in a folder.
     pub fn fetch_by_folder(folder_id: &Uuid, db: &PgConnection) -> Vec<Self> {
         Self::by_folder(folder_id)
             .load::<Self>(db)
             .unwrap_or_default()
     }
 
+    /// Fetch all **unread** messages in a folder.
     pub fn fetch_unread(folder_id: &Uuid, db: &PgConnection) -> Vec<Self> {
         Self::by_folder(folder_id)
             .filter(messages::is_read.eq(false))
@@ -107,6 +119,11 @@ impl Message {
             .order_by(messages::created_at.desc())
     }
 
+    /// Copy the message to another folder.
+    ///
+    /// # Returns
+    ///
+    /// The copied Message
     pub fn copy_to_folder(&self, sent_folder_id: &Uuid, db: &PgConnection) -> Result<Message> {
         let mut new_msg = self.clone();
         new_msg.id = Uuid::new_v4();
@@ -117,6 +134,7 @@ impl Message {
             .map_err(|e| format!("failed to copy message: {}", e).into())
     }
 
+    /// Delete this message
     pub fn delete(&self, db: &PgConnection) -> Result<usize> {
         diesel::delete(messages::table)
             .filter(messages::id.eq(&self.id))
@@ -124,6 +142,7 @@ impl Message {
             .map_err(|e| format!("failed to delete message: {}", e).into())
     }
 
+    /// Get the owning user
     pub fn owner(&self, folder: &MessageFolder) -> Uuid {
         match &folder.name[..] {
             "inbox" => self.receiver_id,
@@ -133,6 +152,7 @@ impl Message {
         }
     }
 
+    /// Mark this message as read
     pub fn mark_as_read(&mut self, db: &PgConnection) -> Result<usize> {
         if self.is_read {
             return Ok(0);
@@ -143,6 +163,7 @@ impl Message {
         Ok(res)
     }
 
+    /// Mark this message as unread
     pub fn mark_as_unread(&mut self, db: &PgConnection) -> Result<usize> {
         if !self.is_read {
             return Ok(0);
@@ -161,6 +182,7 @@ impl Message {
     }
 }
 
+/// A new message
 #[derive(Identifiable, Insertable, Clone)]
 #[table_name = "messages"]
 pub struct NewMessage<'a> {
@@ -173,6 +195,7 @@ pub struct NewMessage<'a> {
 }
 
 impl<'a> NewMessage<'a> {
+    /// Construct a new `NewMessage` instance.
     pub fn new(
         folder_id: &'a Uuid,
         sender_id: &'a Uuid,
@@ -190,6 +213,7 @@ impl<'a> NewMessage<'a> {
         }
     }
 
+    /// Save the message into the database.
     pub fn save(&self, db: &PgConnection) -> Result<Message> {
         self.insert_into(messages::table)
             .get_result::<Message>(db)

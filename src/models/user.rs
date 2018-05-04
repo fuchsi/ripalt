@@ -88,12 +88,12 @@ impl Default for User {
 }
 
 impl User {
-    /// Find an User by its id
+    /// Find an `User` by its ID
     pub fn find(id: &Uuid, db: &PgConnection) -> Option<User> {
         users::dsl::users.find(id).first::<User>(db).ok()
     }
 
-    /// Find an User by the username
+    /// Find an `User` by the username
     pub fn find_by_name(name: &str, db: &PgConnection) -> Option<User> {
         users::dsl::users
             .filter(users::dsl::name.eq(name))
@@ -101,7 +101,7 @@ impl User {
             .ok()
     }
 
-    /// Find an User by the email address
+    /// Find an `User` by the email address
     pub fn find_by_email(email: &str, db: &PgConnection) -> Option<User> {
         users::dsl::users
             .filter(users::dsl::email.eq(email))
@@ -109,7 +109,7 @@ impl User {
             .ok()
     }
 
-    /// Find an User by the passcode
+    /// Find an `User` by the passcode
     pub fn find_by_passcode(passcode: &[u8], db: &PgConnection) -> Option<User> {
         users::dsl::users
             .filter(users::dsl::passcode.eq(passcode))
@@ -136,7 +136,7 @@ impl User {
         password::verify(&self.password, password.as_bytes(), &self.salt)
     }
 
-    /// Create a new user
+    /// Create a new `User`
     pub fn create(
         db: &PgConnection,
         name: String,
@@ -162,7 +162,7 @@ impl User {
         user.insert(db)
     }
 
-    /// Insert the user into the database
+    /// Insert the `User` into the database
     fn insert(&self, db: &PgConnection) -> Result<User> {
         let res = self.insert_into(users::table).get_result(db);
 
@@ -172,6 +172,11 @@ impl User {
         }
     }
 
+    /// Create a new confirm id
+    ///
+    /// # Returns
+    ///
+    /// the confirm id
     pub fn create_confirm_id(&self, db: &PgConnection) -> Bytes {
         let bytes = rand::gen_random_bytes(16);
         let digest = digest::digest(&digest::SHA256, &bytes).as_ref().to_vec();
@@ -181,6 +186,7 @@ impl User {
         digest
     }
 
+    /// Save the `User` into the database
     pub fn save(&self, db: &PgConnection) -> Result<usize> {
         use schema::users::dsl;
         let query = diesel::update(users::table)
@@ -193,6 +199,7 @@ impl User {
         query.execute(db).chain_err(|| "user update failed")
     }
 
+    /// Update the `last_active` timestamp to now.
     pub fn update_last_active(&mut self, db: &PgConnection) -> Result<usize> {
         use schema::users::dsl;
         self.last_active = Some(Utc::now());
@@ -202,6 +209,7 @@ impl User {
             .execute(db).chain_err(|| "user update failed")
     }
 
+    /// Create the [**Message Folders**](../message/struct.MessageFolder.html)
     pub fn create_message_folders(&self, db: &PgConnection) -> Result<()> {
         let folders = vec!["inbox", "sent", "system"];
 
@@ -237,12 +245,7 @@ impl Serialize for User {
 
 pub trait HasUser {
     fn user_name(&self, db: &PgConnection) -> String {
-        use schema::users::dsl;
-        users::table
-            .select(users::name)
-            .filter(dsl::id.eq(self.user_id()))
-            .first(db)
-            .unwrap_or_else(|_| String::new())
+        username(self.user_id(), db).unwrap_or_default()
     }
 
     fn user_id(&self) -> &Uuid;
@@ -250,13 +253,8 @@ pub trait HasUser {
 
 pub trait MaybeHasUser {
     fn user_name(&self, db: &PgConnection) -> Option<String> {
-        use schema::users::dsl;
         match self.user_id() {
-            Some(uid) => users::table
-                .select(users::name)
-                .filter(dsl::id.eq(uid))
-                .first(db)
-                .ok(),
+            Some(user_id) => username(user_id, db),
             None => None,
         }
     }
@@ -264,6 +262,7 @@ pub trait MaybeHasUser {
     fn user_id(&self) -> &Option<Uuid>;
 }
 
+/// A User Property / Setting.
 #[derive(Queryable, Debug, Associations, Identifiable, Insertable, AsChangeset)]
 #[table_name = "user_properties"]
 #[belongs_to(User)]
@@ -277,6 +276,7 @@ pub struct Property {
 }
 
 impl Property {
+    /// Construct a new `Property` instance.
     pub fn new<T>(name: String, value: T, user_id: &Uuid) -> Self
     where
         T: Into<serde_json::Value>,
@@ -292,10 +292,12 @@ impl Property {
         }
     }
 
+    /// Save the `Property` into the database.
     pub fn save(&self, db: &PgConnection) -> QueryResult<usize> {
         self.insert_into(user_properties::table).execute(db)
     }
 
+    /// Find a `Property` by its name for a user.
     pub fn find(user_id: &Uuid, name: &str, db: &PgConnection) -> Option<Property>
     {
         use schema::user_properties::dsl;
@@ -307,7 +309,8 @@ impl Property {
             .ok()
     }
 
-    pub fn get_from_name_value<T>(name: &str, value: T, db: &PgConnection) -> Option<Property>
+    /// Find a `Property` by its name and value.
+    pub fn find_by_name_value<T>(name: &str, value: T, db: &PgConnection) -> Option<Property>
     where
         T: Into<serde_json::Value>,
     {
@@ -321,6 +324,7 @@ impl Property {
             .ok()
     }
 
+    /// Delete the `Property` from the database.
     pub fn delete(&self, db: &PgConnection) -> Result<usize> {
         use schema::user_properties::dsl;
         ::diesel::delete(user_properties::table)
@@ -330,6 +334,7 @@ impl Property {
     }
 }
 
+/// The User stats
 #[derive(Debug, Default, Serialize)]
 pub struct UserStatsMsg {
     pub id: Uuid,
@@ -356,18 +361,18 @@ pub struct UserProfileMsg {
 #[derive(Debug, Serialize, Queryable, Identifiable)]
 #[table_name = "user_transfer"]
 pub struct UserTransfer {
-    pub id: Uuid,
-    pub torrent_id: Uuid,
-    pub user_id: Uuid,
-    pub name: String,
-    pub is_seeder: bool,
-    pub size: i64,
-    pub seeder: i64,
-    pub leecher: i64,
-    pub bytes_uploaded: i64,
-    pub bytes_downloaded: i64,
-    pub total_uploaded: i64,
-    pub total_downloaded: i64,
+    id: Uuid,
+    torrent_id: Uuid,
+    user_id: Uuid,
+    name: String,
+    is_seeder: bool,
+    size: i64,
+    seeder: i64,
+    leecher: i64,
+    bytes_uploaded: i64,
+    bytes_downloaded: i64,
+    total_uploaded: i64,
+    total_downloaded: i64,
 }
 
 impl UserTransfer {
@@ -376,6 +381,10 @@ impl UserTransfer {
             .order_by(user_transfer::dsl::name.asc())
             .load::<UserTransfer>(db)
             .unwrap()
+    }
+
+    pub fn is_seeder(&self) -> bool {
+        self.is_seeder
     }
 }
 
@@ -463,6 +472,7 @@ impl UserUpload {
     }
 }
 
+/// Get the username for a user id
 pub fn username(id: &Uuid, db: &PgConnection) -> Option<String> {
     lazy_static! {
         static ref USERS: Mutex<HashMap<Uuid, String>> = Mutex::new(HashMap::new());

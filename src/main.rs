@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! Ripalt is a Anti-Leech-Torrent Tracker CMS based on [actix-web](https://github.com/actix/actix-web)
+//!
+
 #![recursion_limit = "1024"]
 #![feature(decl_macro, use_extern_macros, custom_derive, try_from)]
 // allow pass by value, since most request handlers don't consume HttpRequest
@@ -73,19 +76,19 @@ extern crate walkdir;
 #[macro_use]
 extern crate pretty_assertions;
 
-mod api;
-mod app;
+pub mod api;
+pub mod app;
 mod cleanup;
-mod db;
+pub mod db;
 mod error;
-mod handlers;
-mod models;
+pub mod handlers;
+pub mod models;
 mod schema;
-mod settings;
-mod state;
-mod template;
-mod tracker;
-mod util;
+pub mod settings;
+pub mod state;
+pub mod template;
+pub mod tracker;
+pub mod util;
 
 use std::sync::{mpsc, Arc, RwLock};
 use std::thread;
@@ -121,7 +124,7 @@ use state::{AclContainer, State};
 use template::Template;
 
 lazy_static! {
-    pub static ref SETTINGS: RwLock<Settings> = RwLock::new(Settings::new().unwrap());
+    pub(crate) static ref SETTINGS: RwLock<Settings> = RwLock::new(Settings::new().unwrap());
 }
 
 fn main() {

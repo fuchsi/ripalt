@@ -204,7 +204,7 @@ impl Handler<ConfirmMsg> for DbExecutor {
     fn handle(&mut self, msg: ConfirmMsg, _: &mut Self::Context) -> <Self as Handler<ConfirmMsg>>::Result {
         let conn = self.conn();
 
-        if let Some(property) = models::Property::get_from_name_value("confirm_id", msg.id, &conn) {
+        if let Some(property) = models::Property::find_by_name_value("confirm_id", msg.id, &conn) {
             if let Some(mut user) = models::User::find(&property.user_id, &conn) {
                 user.status = models::user::STATUS_ACTIVE;
                 user.ip_address = Some(msg.ip_address.into());
@@ -291,7 +291,7 @@ impl Handler<LoadUserProfileMsg> for DbExecutor {
                 let mut active_uploads: Vec<UserTransfer> = Vec::new();
                 let mut active_downloads: Vec<UserTransfer> = Vec::new();
                 for transfer in transfers {
-                    if transfer.is_seeder {
+                    if transfer.is_seeder() {
                         active_uploads.push(transfer);
                     } else {
                         active_downloads.push(transfer);

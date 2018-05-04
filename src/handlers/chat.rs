@@ -16,12 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! Chat Handlers
+
 use super::*;
 
 use api::identity::RequestIdentity;
-use models::chat::{ChatMessage, ChatMessageWithUser, ChatRoom, NewChatMessage};
+use models::chat::{ChatMessageWithUser, ChatRoom, NewChatMessage};
 use models::acl::Subject;
 
+/// Loads chat messages from the database backend
 pub struct LoadChatMessagesMsg {
     chat: ChatRoom,
     since: Option<DateTime<Utc>>,
@@ -30,6 +33,7 @@ pub struct LoadChatMessagesMsg {
 }
 
 impl LoadChatMessagesMsg {
+    /// Construct a new `LoadChatMessagesMsg` instance
     pub fn new(chat: ChatRoom, since: Option<DateTime<Utc>>, limit: i64, user: UserSubjectMsg) -> Self {
         LoadChatMessagesMsg{chat, since, limit, user}
     }
@@ -76,6 +80,7 @@ impl Handler<LoadChatMessagesMsg> for DbExecutor {
     }
 }
 
+/// Publishes a new chat message.
 pub struct PublishChatMessagesMsg {
     chat: ChatRoom,
     message: String,
@@ -83,6 +88,7 @@ pub struct PublishChatMessagesMsg {
 }
 
 impl PublishChatMessagesMsg {
+    /// Construct a new `PublishChatMessagesMsg` instance
     pub fn new<T: Into<ChatRoom>>(chat: T, message: String, user: UserSubjectMsg) -> Self {
         Self{
             chat: chat.into(),
@@ -93,11 +99,11 @@ impl PublishChatMessagesMsg {
 }
 
 impl Message for PublishChatMessagesMsg {
-    type Result = Result<ChatMessage>;
+    type Result = Result<ChatMessageWithUser>;
 }
 
 impl Handler<PublishChatMessagesMsg> for DbExecutor {
-    type Result = Result<ChatMessage>;
+    type Result = Result<ChatMessageWithUser>;
 
     fn handle(&mut self, msg: PublishChatMessagesMsg, _: &mut Self::Context) -> <Self as Handler<PublishChatMessagesMsg>>::Result {
         let conn = self.conn();
@@ -108,6 +114,9 @@ impl Handler<PublishChatMessagesMsg> for DbExecutor {
 
         let chat: i16 = msg.chat.into();
         let new_message = NewChatMessage::new(&msg.user.uid, &chat, &msg.message);
-        new_message.save(&conn)
+        let mut message = ChatMessageWithUser::from(new_message.save(&conn)?);
+        message.user_name = models::username(&message.user_id, &conn).unwrap();
+        message.user_group = *subj.group_id();
+        Ok(message)
     }
 }

@@ -16,6 +16,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! Request identity service for Actix applications.
+//!
+//! [**IdentityService**](struct.IdentityService.html) middleware can be
+//! used with different policies types to store identity information.
+//!
+//! By default, only the api identity policy is implemented. Other backend
+//! implementations can be added separately.
+//!
+//! [**ApiIdentityPolicy**](struct.ApiIdentityPolicy.html)
+//! uses the session or a JWT as identity storage.
+//!
+//! To access current request identity
+//! [**RequestIdentity**](trait.RequestIdentity.html) should be used.
+//! *HttpRequest* implements *RequestIdentity* trait.
+//!
+//! ```rust
+//! use actix_web::middleware::identity::RequestIdentity;
+//! use actix_web::*;
+//! use ripalt::api::identity::{ApiIdentityPolicy, IdentityService};
+//!
+//! fn index(req: HttpRequest) -> Result<String> {
+//!     // access request identity
+//!     if let Some(id) = req.identity() {
+//!         Ok(format!("Welcome! {}", id))
+//!     } else {
+//!         Ok("Welcome Anonymous!".to_owned())
+//!     }
+//! }
+//!
+//! fn main() {
+//!     let app = App::new().middleware(IdentityService::new(
+//!         // <- create identity middleware
+//!         ApiIdentityPolicy::new(&[0; 32])    // <- create api session backend
+//!     ));
+//! }
+//! ```
+
 use super::*;
 
 use actix_web::middleware::{Middleware, Response, Started};
@@ -33,7 +70,8 @@ pub trait IdentityPolicy<S>: Sized + 'static {
     fn from_request(&self, request: &mut HttpRequest<S>) -> Self::Future;
 }
 
-pub trait Identity {
+/// An identity
+pub trait Identity: 'static {
     fn identity(&self) -> Option<&str>;
 
     fn forget(&mut self);
@@ -49,6 +87,23 @@ pub trait Identity {
     }
 }
 
+/// The helper trait to obtain your identity from a request.
+///
+/// ```rust
+/// use actix_web::*;
+/// use ripalt::api::identity::RequestIdentity;
+///
+/// fn index(req: HttpRequest) -> Result<String> {
+///     // access request identity
+///     if let Some(id) = req.identity() {
+///         Ok(format!("Welcome! {}", id))
+///     } else {
+///         Ok("Welcome Anonymous!".to_owned())
+///     }
+/// }
+///
+/// # fn main() {}
+/// ```
 pub trait RequestIdentity {
     /// Return the claimed identity of the user associated request or
     /// ``None`` if no identity can be found associated with the request.
@@ -96,15 +151,14 @@ impl<S> RequestIdentity for HttpRequest<S> {
 /// ```rust
 /// # extern crate actix;
 /// # extern crate actix_web;
+/// # extern crate ripalt;
 /// use actix_web::App;
-/// use actix_web::middleware::identity::{IdentityService, CookieIdentityPolicy};
+/// use ripalt::api::identity::{IdentityService, ApiIdentityPolicy};
 ///
 /// fn main() {
 ///    let app = App::new().middleware(
 ///        IdentityService::new(                      // <- create identity middleware
-///            CookieIdentityPolicy::new(&[0; 32])    // <- create cookie session backend
-///               .name("auth-cookie")
-///               .secure(false))
+///            ApiIdentityPolicy::new(&[0; 32]))    // <- create api session backend
 ///    );
 /// }
 /// ```
@@ -153,11 +207,21 @@ impl<S: 'static, T: IdentityPolicy<S>> Middleware<S> for IdentityService<T> {
     }
 }
 
-
+/// The API identity policy
+///
+/// Uses either the Session or a JWT (JSON Web Token) for request identity storage.
+///
+/// The constructor takes a key as an argument. This is the private key for the JWTs - if this key is changed,
+/// all Tokens, which are signed with the old key are invalid.
 pub struct ApiIdentityPolicy(Rc<ApiIdentityInner>);
 
 impl ApiIdentityPolicy {
+    /// Construct a new `ApiIdentityPolicy` instance.
+    ///
+    /// # Panics
+    /// if the key is less than 32 bytes.
     pub fn new(key: &[u8]) -> ApiIdentityPolicy {
+        assert!(key.len() >= 32);
         ApiIdentityPolicy(Rc::new(ApiIdentityInner::new(key)))
     }
 }
@@ -176,12 +240,14 @@ impl<S> IdentityPolicy<S> for ApiIdentityPolicy {
     }
 }
 
+/// Identity that uses the Session or a JWT as identity storage.
 pub struct ApiIdentity {
     identity: Option<(Uuid, Uuid)>,
     str_identity: Option<String>
 }
 
 impl ApiIdentity {
+    /// Construct a new `ApiIdentity` instance.
     pub fn new(identity: Option<(Uuid, Uuid)>) -> ApiIdentity {
         let str_identity = identity.map(|s| s.0.to_string());
         ApiIdentity{identity, str_identity}
@@ -234,7 +300,8 @@ impl ApiIdentityInner {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+/// The claims for the JWT
+#[derive(Serialize, Deserialize)]
 pub struct Claims {
     iat: i64,
     user_id: Uuid,

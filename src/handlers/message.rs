@@ -16,11 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! Message Handlers
+
 use super::*;
 
 use models::message::{MessageFolder, NewMessage};
 use std::collections::HashMap;
 
+/// Response for all handlers which return a message
 #[derive(Serialize)]
 pub struct MessageResponse {
     pub id: Uuid,
@@ -37,6 +40,7 @@ pub struct MessageResponse {
 }
 
 impl MessageResponse {
+    #[doc(hidden)]
     pub fn set_user_names(&mut self, db: &PgConnection) {
         self.receiver_name = models::username(&self.receiver_id, db).unwrap();
         self.sender_name = match self.sender_id {
@@ -74,6 +78,7 @@ impl From<models::Message> for MessageResponse {
     }
 }
 
+/// Load messages from the database backend.
 pub struct LoadMessagesMsg {
     folder: String,
     only_unread: bool,
@@ -81,6 +86,7 @@ pub struct LoadMessagesMsg {
 }
 
 impl LoadMessagesMsg {
+    /// Construct a new `LoadMessagesMsg` instance.
     pub fn new(folder: String, only_unread: bool, user_id: Uuid) -> Self {
         LoadMessagesMsg {
             folder,
@@ -126,6 +132,7 @@ impl Handler<LoadMessagesMsg> for DbExecutor {
     }
 }
 
+/// Load a single message from the database backend.
 pub struct LoadMessageMsg {
     id: Uuid,
     user_id: Uuid,
@@ -133,10 +140,12 @@ pub struct LoadMessageMsg {
 }
 
 impl LoadMessageMsg {
+    /// Construct a new `LoadMessageMsg` instance.
     pub fn new(id: Uuid, user_id: Uuid) -> Self {
         LoadMessageMsg { id, user_id, mark_as_read: false }
     }
 
+    /// Set the `mark_as_read` flag. If it's `true` the message will be marked as read.
     pub fn mark_as_read(&mut self, mark: bool) {
         self.mark_as_read = mark;
     }
@@ -173,6 +182,7 @@ impl Handler<LoadMessageMsg> for DbExecutor {
     }
 }
 
+/// Publish a new message to the database backend.
 pub struct NewMessageMsg {
     receiver: String,
     subject: String,
@@ -182,6 +192,7 @@ pub struct NewMessageMsg {
 }
 
 impl NewMessageMsg {
+    /// Construct a new `NewMessageMsg` instance.
     pub fn new(msg: api::message::NewMessage, user_id: Uuid) -> Self {
         NewMessageMsg {
             user_id,
@@ -254,12 +265,14 @@ impl Handler<NewMessageMsg> for DbExecutor {
     }
 }
 
+/// Delete messages from the database backend.
 pub struct DeleteMessagesMsg {
     messages: Vec<Uuid>,
     user_id: Uuid,
 }
 
 impl DeleteMessagesMsg {
+    /// Construct a new `DeleteMessagesMsg` instance.
     pub fn new(messages: Vec<Uuid>, user_id: Uuid) -> Self {
         DeleteMessagesMsg { messages, user_id }
     }
@@ -304,6 +317,7 @@ impl Handler<DeleteMessagesMsg> for DbExecutor {
     }
 }
 
+/// Mark messages as read/unread.
 pub struct MarkMessagesMsg {
     messages: Vec<Uuid>,
     user_id: Uuid,
@@ -311,6 +325,7 @@ pub struct MarkMessagesMsg {
 }
 
 impl MarkMessagesMsg {
+    /// Construct a new `MarkMessagesMsg` instance
     pub fn new(messages: Vec<Uuid>, user_id: Uuid, mark_as_read: bool) -> Self {
         MarkMessagesMsg {
             messages,

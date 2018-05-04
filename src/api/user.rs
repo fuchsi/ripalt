@@ -16,12 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! User API
+
 use super::*;
 use handlers::user::LoadUserStatsMsg;
 use models::user::UserStatsMsg;
 use api::identity::RequestIdentity;
 use actix_web::AsyncResponder;
 
+/// Fetch the user stats
+///
+/// `GET /api/v1/user/stats/`
+///
+/// # Returns
+///
+/// If successful, `stats` returns the [**User Stats**](../../models/user/struct.UserStatsMsg.html)
+///
+/// # Errors
+///
+/// - `ErrorUnauthorized` if the client is not authorized.
+/// - `ErrorInternalServerError`
+///     - if the user does not exist.
+///     - if any error occurs when fetching the stats.
 pub fn stats(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     if let Some(user_id) = req.user_id() {
         req.state().db().send(LoadUserStatsMsg(user_id.to_owned()))

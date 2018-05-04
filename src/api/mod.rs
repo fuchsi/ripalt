@@ -16,16 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! API Handlers
+
 use super::*;
 
 use self::identity::{ApiIdentityPolicy, IdentityService};
 
-mod chat;
-pub(crate) mod identity;
-pub(crate) mod message;
-mod user;
+pub mod chat;
+pub mod identity;
+pub mod message;
+pub mod user;
 
-pub fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
+pub(crate) fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
     let settings = SETTINGS.read().unwrap();
     let jwt_secret = util::from_hex(&settings.jwt_secret).unwrap();
     let session_secret = util::from_hex(&settings.session_secret).unwrap();

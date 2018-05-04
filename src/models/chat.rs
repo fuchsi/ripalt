@@ -16,15 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! Chat models
+//!
+//! [**ChatRoom**](enum.Chatroom.html) is used to identify the chatroom.
+//!
+//! [**ChatMessage**](struct.ChatMessage.html) is the data struct, which represents a row in the database.
+//!
+//! [**ChatMessageWithUser**](struct.ChatMessageWithUser.html) is the same as `ChatMessage`, but with the user name and user group added.
+//!
+//! [**NewChatMessage**](struct.NewChatMessage.html) can be used to create new messages.
+
 use super::*;
 
 use schema::chat_messages;
 use schema::chat_messages::dsl as cm;
 use std::convert::TryFrom;
 
+/// The chatroom
+///
+/// Can be used with the [**UserSubject**](../../models/acl/struct.UserSubject.html) object to check the permissions of the user.
 #[derive(PartialEq)]
 pub enum ChatRoom {
+    /// Public (all registered users) chatroom.
+    /// When converted to `i16` it has the value `1`.
     Public,
+    /// Team (moderator+) only chatroom.
+    /// When converted to `i16` it has the value `2`.
     Team,
 }
 
@@ -67,31 +84,58 @@ impl ToString for ChatRoom {
     }
 }
 
+/// Chat message data structure
+///
+/// Each instance represents a row in the database.
 #[derive(Clone, Debug, Queryable, Identifiable, Insertable, Associations, Serialize)]
 #[table_name = "chat_messages"]
 #[belongs_to(User)]
 pub struct ChatMessage {
+    /// the unique message id
     pub id: Uuid,
+    /// user id
     pub user_id: Uuid,
+    /// chatroom. Can be converted to [**ChatRoom**](enum.Chatroom.html).
     pub chat: i16,
+    /// the actual message
     pub message: String,
+    /// timestamp when the message was created
     pub created_at: Timestamp,
 }
 
+/// Chat message data structure
+///
+/// is the same as `ChatMessage`, but with the user name and user group added.
+///
+/// Used whenever a chat message needs to be returned to the user.
 #[derive(Clone, Debug, Queryable, Identifiable, Associations, Serialize)]
 #[table_name = "chat_messages"]
 #[belongs_to(User)]
 pub struct ChatMessageWithUser {
+    /// the unique message id
     pub id: Uuid,
+    /// user id
     pub user_id: Uuid,
+    /// chatroom. Can be converted to [**ChatRoom**](enum.Chatroom.html).
     pub chat: i16,
+    /// the actual message
     pub message: String,
+    /// timestamp when the message was created
     pub created_at: Timestamp,
+    /// user name
     pub user_name: String,
+    /// user group
     pub user_group: Uuid,
 }
 
 impl ChatMessageWithUser {
+    /// Fetch all messages for a chatroom
+    ///
+    /// Filters by `chat`.
+    ///
+    /// If `since` is `Some` Timestamp, it only returns message newer than the timestamp.
+    ///
+    /// Returns at most `limit` messages
     pub fn messages_for_chat(chat: i16, since: Option<Timestamp>, limit: i64, db: &PgConnection) -> Vec<Self> {
         use schema::users;
         use schema::users::dsl as u;
@@ -126,6 +170,7 @@ impl From<ChatMessage> for ChatMessageWithUser {
     }
 }
 
+/// A new chat message
 #[derive(Insertable)]
 #[table_name = "chat_messages"]
 pub struct NewChatMessage<'a> {
@@ -136,6 +181,7 @@ pub struct NewChatMessage<'a> {
 }
 
 impl<'a> NewChatMessage<'a> {
+    /// Constructs a new `NewChatMessage` instance.
     pub fn new(user_id: &'a Uuid, chat: &'a i16, message: &'a str) -> NewChatMessage<'a> {
         let id = Uuid::new_v4();
         NewChatMessage {
@@ -146,6 +192,7 @@ impl<'a> NewChatMessage<'a> {
         }
     }
 
+    /// Save the message into the database.
     pub fn save(&self, db: &PgConnection) -> Result<ChatMessage> {
         self.insert_into(chat_messages::table)
             .get_result::<ChatMessage>(db)
