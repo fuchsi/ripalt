@@ -35,7 +35,6 @@ pub const STATUS_NEW: i16 = 0;
 #[allow(dead_code)]
 pub const STATUS_INACTIVE: i16 = 1;
 /// Active/normal users
-#[allow(dead_code)]
 pub const STATUS_ACTIVE: i16 = 2;
 /// Locked users
 #[allow(dead_code)]

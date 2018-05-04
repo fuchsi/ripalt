@@ -32,7 +32,7 @@ pub fn take_login(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     let cloned = req.clone();
     let form = match cloned.urlencoded::<LoginForm>().wait() {
         Ok(form) => form,
-        Err(e) => return Box::new(future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))))
+        Err(e) => return Box::new(FutErr(ErrorInternalServerError(format!("{}", e))))
     };
 
     let cloned = req.clone();
@@ -41,31 +41,30 @@ pub fn take_login(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .send(form.clone())
         .from_err()
         .and_then(move |r: Result<User>| {
-            let mut ctx = HashMap::new();
+            let mut ctx = Context::new();
             let mut fail = true;
 
             match r {
                 Ok(user) => {
-                    debug!("set session / user_id to: {:?}", user.id);
                     match req.session().set("user_id", user.id) {
                         Ok(_) => {},
-                        Err(e) => return Err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
+                        Err(e) => return Err(ErrorInternalServerError(format!("{}", e))),
                     };
                     match req.session().set("group_id", user.group_id) {
                         Ok(_) => {},
-                        Err(e) => return Err(actix_web::error::ErrorInternalServerError(format!("{}", e))),
+                        Err(e) => return Err(ErrorInternalServerError(format!("{}", e))),
                     };
                     fail = false;
                 },
                 Err(e) => {
-                    ctx.insert("error", format!("{}", e));
-                    ctx.insert("username", form.username);
+                    ctx.insert("error", &format!("{}", e));
+                    ctx.insert("username", &form.username);
                 }
             }
 
             if fail {
                 let tpl = req.state().template();
-                Template::render(&tpl, "login/login.html", ctx)
+                Template::render(&tpl, "login/login.html", &ctx)
             } else {
                 Ok(redirect("/"))
             }

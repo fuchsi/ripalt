@@ -69,6 +69,10 @@ impl Handler<LoginForm> for DbExecutor {
             None => bail!("User not found"),
         };
 
+        if user.status != models::user::STATUS_ACTIVE {
+            bail!("User not active");
+        }
+
         if user.verify_password(&msg.password) {
             Ok(user)
         } else {
