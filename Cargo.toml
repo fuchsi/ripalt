@@ -12,7 +12,7 @@ lto = true
 
 [dependencies]
 actix = "0.5.6"
-actix-web = "0.5.4"
+actix-web = "0.5.6"
 #actix-web = { path = "actix-web", version = "0.5.1" }
 actix-redis = "0.3.0"
 diesel = { version = "1.2.2", features = ["postgres", "extras", "32-column-tables"] }
@@ -21,33 +21,33 @@ r2d2-diesel = "1.0.0"
 r2d2 = "0.8.2"
 uuid = { version = "0.6.3", features = ["v4", "serde"] }
 dotenv = "0.11.0"
-serde = "1.0.41"
-serde_derive = "1.0.41"
-serde_json = "1.0.15"
+serde = "1.0.45"
+serde_derive = "1.0.45"
+serde_json = "1.0.17"
 chrono = { version = "0.4.2", features = ["serde"] }
 ipnetwork = "0.12.8"
 log = "0.4.1"
-env_logger = "0.5.8"
+env_logger = "0.5.9"
 error-chain = "0.11.0"
 argon2rs = "0.2.5"
 rand = "0.4.2"
 config = "0.8.0"
 lazy_static = "1.0.0"
 ring = "0.12.1"
-tera = "0.11.6"
+tera = "0.11.7"
 num_cpus = "1.8.0"
 walkdir = "2.1.4"
 notify = "4.0.3"
 futures = "~0.1.21"
 multipart = { version = "0.14.2", default-features = false, features = [ "server", "mock" ] }
-bytes = "0.4.6"
+bytes = "0.4.7"
 number_prefix = "0.2.8"
 codepage-437 = "0.1.0"
 serde_bencode = "0.2.0"
 data-encoding = "2.1.1"
 url = "1.7.0"
 jsonwebtoken = "4.0.1"
-regex = "0.2.10"
+regex = "1.0.0"
 fast_chemail = "0.9.5"
 markdown = { git = "https://github.com/fuchsi/markdown.rs.git", branch = "bootstrap" }
 image = "0.19.0"
@@ -57,5 +57,5 @@ tempfile = "3.0.1"
 pretty_assertions = "0.5.1"
 
 [build-dependencies]
-sass-rs = "0.2"
-walkdir = "2"
+sass-rs = "0.2.1"
+walkdir = "2.1.4"
