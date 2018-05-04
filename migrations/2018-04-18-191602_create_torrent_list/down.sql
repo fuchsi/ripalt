@@ -1,1 +1,0 @@
-DROP VIEW public.torrent_list;

@@ -1,1 +1,0 @@
-DROP TABLE public.torrent_nfos;

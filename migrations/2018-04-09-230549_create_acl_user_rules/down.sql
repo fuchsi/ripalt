@@ -1,1 +1,0 @@
-DROP TABLE public.acl_user_rules;
