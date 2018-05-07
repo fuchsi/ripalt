@@ -346,7 +346,7 @@ pub struct UserStatsMsg {
     pub downloads: i64,
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default)]
 pub struct UserProfileMsg {
     pub user: User,
     pub active_uploads: Vec<UserTransfer>,
@@ -439,7 +439,7 @@ impl Serialize for UserConnection {
         where
             S: Serializer
     {
-        let mut root = serializer.serialize_struct("user", 11)?;
+        let mut root = serializer.serialize_struct("user_connection", 4)?;
         root.serialize_field("id", &self.id)?;
         root.serialize_field("user_agent", &self.user_agent)?;
         root.serialize_field("ip_address", &self.ip_address.to_string())?;

@@ -31,25 +31,8 @@ use handlers::torrent::*;
 use handlers::UserSubjectMsg;
 use models::acl::Subject;
 use models::{torrent::{TorrentFile, TorrentImage},
-             Category,
              Torrent,
-             TorrentList,
              TorrentMsg};
-
-#[derive(Debug, Serialize)]
-struct ListContext {
-    categories: Vec<Category>,
-    list: Vec<TorrentList>,
-    total_count: i64,
-    count: i64,
-    page: i64,
-    pages: i64,
-    per_page: i64,
-    category: Option<Uuid>,
-    name: Option<String>,
-    visible: Option<String>,
-    timezone: i32,
-}
 
 #[derive(Debug, Deserialize)]
 pub struct ListForm {
@@ -124,37 +107,31 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             let count = msg.torrents.len() as i64;
             let pages = total_count / msg.request.per_page;
 
-            let ctx = ListContext {
-                categories,
-                list: msg.torrents,
-                total_count,
-                count,
-                page: msg.request.page,
-                pages,
-                per_page: msg.request.per_page,
-                name: msg.request.name,
-                visible: Some(msg.request.visible.to_string()),
-                category: msg.request.category,
-                timezone: msg.timezone,
-            };
-            let reg = &req.state().template();
-            Template::render(&reg, "torrent/list.html", &ctx)
+            let mut ctx = Context::new();
+            ctx.insert("categories", &categories);
+            ctx.insert("list", &msg.torrents);
+            ctx.insert("total_count", &total_count);
+            ctx.insert("count", &count);
+            ctx.insert("page", &msg.request.page);
+            ctx.insert("pages", &pages);
+            ctx.insert("per_page", &msg.request.per_page);
+            ctx.insert("name", &msg.request.name);
+            ctx.insert("visible", &msg.request.visible.to_string());
+            ctx.insert("category", &msg.request.category);
+            ctx.insert("timezone", &msg.timezone);
+
+            Template::render_with_user(&req, "torrent/list.html", &mut ctx)
         });
 
     fut_response.responder()
 }
 
 pub fn new(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
-    let mut ctx = HashMap::new();
-    ctx.insert("categories", categories(req.state()));
+    let categories = categories(req.state());
+    let mut ctx = Context::new();
+    ctx.insert("categories", &categories);
 
-    Template::render(&req.state().template(), "torrent/new.html", &ctx)
-}
-
-#[derive(Serialize)]
-struct UploadContext {
-    categories: Vec<Category>,
-    error: String,
+    Template::render_with_user(&req, "torrent/new.html", &mut ctx)
 }
 
 pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
@@ -202,24 +179,23 @@ pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespons
     let fut_response = fut_result.and_then(move |result: Result<models::Torrent>| match result {
         Ok(torrent) => sync_redirect(&format!("/torrent/{}", torrent.id)[..]),
         Err(e) => {
-            let ctx = UploadContext {
-                categories: categories(cloned.state()),
-                error: e.to_string(),
-            };
+            let categories = categories(cloned.state());
+            let mut ctx = Context::new();
+            ctx.insert("categories", &categories);
+            ctx.insert("error", &e.to_string());
 
-            Template::render(&cloned.state().template(), "torrent/new.html", &ctx)
+            Template::render_with_user(&cloned, "torrent/new.html", &mut ctx)
         }
     });
 
     let cloned = req.clone();
     let fut_response = fut_response.or_else(move |e| {
-        let ctx = UploadContext {
-            categories: categories(cloned.state()),
-            error: e.to_string(),
-        };
+        let categories = categories(cloned.state());
+        let mut ctx = Context::new();
+        ctx.insert("categories", &categories);
+        ctx.insert("error", &e.to_string());
 
-        let hbs = &cloned.state().template();
-        Template::render(hbs, "torrent/new.html", &ctx)
+        Template::render_with_user(&cloned, "torrent/new.html", &mut ctx)
     });
 
     Either::B(fut_response.responder())
@@ -363,6 +339,7 @@ struct ShowContext<'a> {
     may_edit: bool,
     may_delete: bool,
     timezone: i32,
+    current_user: Option<User>,
 }
 
 impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
@@ -408,23 +385,7 @@ impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
             may_edit: false,
             may_delete: false,
             timezone: tc.timezone,
-        }
-    }
-}
-
-#[derive(Debug, Serialize)]
-struct EditContext<'a> {
-    torrent: ShowTorrent<'a>,
-    may_delete: bool,
-    categories: Vec<Category>,
-}
-
-impl<'a> From<&'a TorrentMsg> for EditContext<'a> {
-    fn from(tc: &'a TorrentMsg) -> Self {
-        EditContext {
-            torrent: ShowTorrent::from(&tc.torrent),
-            may_delete: false,
-            categories: Vec::new(),
+            current_user: None,
         }
     }
 }
@@ -552,6 +513,7 @@ pub fn torrent(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
                     ctx.may_edit = subj.may_write(&tc.torrent);
                     ctx.may_delete = subj.may_delete(&tc.torrent);
+                    ctx.current_user = req.current_user();
                 }
                 Template::render(&req.state().template(), "torrent/show.html", &ctx)
             }
@@ -583,22 +545,27 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .from_err()
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
-                let mut ctx = EditContext::from(&tc);
-                ctx.categories = categories(&req.state());
+                let categories = categories(&req.state());
+                let torrent =  ShowTorrent::from(&tc.torrent);
+                let mut ctx = Context::new();
+                ctx.insert("torrent", &torrent);
+                ctx.insert("categories", &categories);
+
                 let may_edit = {
                     let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
-                    ctx.may_delete = subj.may_delete(&tc.torrent);
+                    let may_delete = subj.may_delete(&tc.torrent);
+                    ctx.insert("may_delete", &may_delete);
                     subj.may_write(&tc.torrent)
                 };
 
                 if may_edit {
-                    Template::render(&req.state().template(), "torrent/edit.html", &ctx)
+                    Template::render_with_user(&req, "torrent/edit.html", &mut ctx)
                 } else {
                     let mut ctx = Context::new();
                     ctx.insert("id", &id);
                     ctx.insert("title", &format!("Edit Torrent: {}", tc.torrent.name));
                     ctx.insert("message", "You are not allowed to edit this Torrent");
-                    Template::render(&req.state().template(), "torrent/denied.html", &ctx)
+                    Template::render_with_user(&req, "torrent/denied.html", &mut ctx)
                 }
             }
             Err(e) => {
@@ -679,7 +646,7 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                             .unwrap()
                             .to_string(),
                     );
-                    Template::render(&cloned.state().template(), "torrent/success.html", &ctx)
+                    Template::render_with_user(&cloned, "torrent/success.html", &mut ctx)
                 }
                 Err(e) => {
                     ctx.insert("error", &e.to_string());
@@ -692,7 +659,7 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                             .unwrap()
                             .to_string(),
                     );
-                    Template::render(&cloned.state().template(), "torrent/failed.html", &ctx)
+                    Template::render_with_user(&cloned, "torrent/failed.html", &mut ctx)
                 }
             }
         })
@@ -814,22 +781,30 @@ pub fn delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .from_err()
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
-                let mut ctx = EditContext::from(&tc);
-                let may_edit = {
+                let categories = categories(&req.state());
+                let torrent =  ShowTorrent::from(&tc.torrent);
+                let mut ctx = Context::new();
+                ctx.insert("torrent", &torrent);
+                ctx.insert("categories", &categories);
+
+                let (may_edit, may_delete) = {
                     let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
-                    subj.may_delete(&tc.torrent)
+                    (subj.may_write(&tc.torrent), subj.may_delete(&tc.torrent))
                 };
 
-                if may_edit {
-                    Template::render(&req.state().template(), "torrent/delete.html", &ctx)
+                ctx.insert("may_delete", &may_delete);
+                ctx.insert("may_edit", &may_edit);
+
+                if may_delete {
+                    Template::render_with_user(&req, "torrent/delete.html", &mut ctx)
                 } else {
                     let mut ctx = Context::new();
                     ctx.insert("id", &id);
                     ctx.insert("title", &format!("Delete Torrent: {}", tc.torrent.name));
                     ctx.insert("message", "You are not allowed to delete this Torrent");
-                    Template::render(&req.state().template(), "torrent/denied.html", &ctx)
+                    Template::render_with_user(&req, "torrent/denied.html", &mut ctx)
                 }
-            }
+            },
             Err(e) => {
                 info!("torrent '{}' not found: {}", id, e);
                 Err(ErrorNotFound(e.to_string()))
@@ -888,7 +863,7 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.insert("title", "Delete Torrent");
                     ctx.insert("sub_title", "Delete Succeeded");
                     ctx.insert("continue_link", "/torrents");
-                    Template::render(&cloned.state().template(), "torrent/success.html", &ctx)
+                    Template::render_with_user(&cloned, "torrent/success.html", &mut ctx)
                 }
                 Err(e) => {
                     ctx.insert("error", &e.to_string());
@@ -901,7 +876,7 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                             .unwrap()
                             .to_string(),
                     );
-                    Template::render(&cloned.state().template(), "torrent/failed.html", &ctx)
+                    Template::render_with_user(&cloned, "torrent/failed.html", &mut ctx)
                 }
             }
         })

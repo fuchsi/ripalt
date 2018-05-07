@@ -61,8 +61,7 @@ pub fn authenticated(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse
                     warn!("could not fetch active users: {}", e);
                 },
             }
-            let tpl = cloned.state().template();
-            Template::render(&tpl, "index/authenticated.html", &ctx)
+            Template::render_with_user(&cloned, "index/authenticated.html", &mut ctx)
         })
         .responder()
 }

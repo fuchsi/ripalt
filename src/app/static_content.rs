@@ -39,26 +39,14 @@ impl Into<UpdateStaticContentMsg> for ContentForm {
     }
 }
 
-#[derive(Serialize)]
-struct StaticContentContext {
-    id: String,
-    title: String,
-    content: String,
-    updated_at: DateTime<Utc>,
-    may_edit: bool,
-}
-
-impl From<Content> for StaticContentContext {
+impl From<Content> for Context {
     fn from(c: Content) -> Self {
-        let content = c.render();
-        let Content{id, title, content: _, content_type: _, created_at: _, updated_at} = c;
-        Self{
-            id,
-            title,
-            content,
-            updated_at,
-            may_edit: false,
-        }
+        let mut ctx = Context::new();
+        ctx.insert("id", &c.id);
+        ctx.insert("title", &c.title);
+        ctx.insert("updated_at", &c.updated_at);
+
+        ctx
     }
 }
 
@@ -76,9 +64,11 @@ fn view(mut req: HttpRequest<State>, id: String) -> FutureResponse<HttpResponse>
                 Ok(c) => {
                     let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
                     let may_edit = subj.may_write(&c);
-                    let mut ctx = StaticContentContext::from(c);
-                    ctx.may_edit = may_edit;
-                    Template::render(&req.state().template(), "static_content/view.html", &ctx)
+                    let content = c.render();
+                    let mut ctx = Context::from(c);
+                    ctx.insert("may_edit", &may_edit);
+                    ctx.insert("content", &content);
+                    Template::render_with_user(&req, "static_content/view.html", &mut ctx)
                 },
                 Err(e) => Ok(HttpResponse::InternalServerError().body(e.to_string())),
             }
@@ -116,10 +106,12 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                 Ok(c) => {
                     let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
                     let may_edit = subj.may_write(&c);
-                    let mut ctx = Context::new();
-                    ctx.insert("content", &c);
+                    let content = c.render();
+                    let mut ctx = Context::from(c);
+                    ctx.insert("may_edit", &may_edit);
+                    ctx.insert("content", &content);
                     if may_edit {
-                        Template::render(&req.state().template(), "static_content/edit.html", &ctx)
+                        Template::render_with_user(&req, "static_content/edit.html", &mut ctx)
                     } else {
                         sync_redirect("/")
                     }
@@ -155,9 +147,11 @@ pub fn update(mut req: HttpRequest<State>, data: Form<ContentForm>) -> FutureRes
             match result {
                 Ok(c) => {
                     let may_edit = true;
-                    let mut ctx = StaticContentContext::from(c);
-                    ctx.may_edit = may_edit;
-                    Template::render(&req.state().template(), "static_content/view.html", &ctx)
+                    let content = c.render();
+                    let mut ctx = Context::from(c);
+                    ctx.insert("may_edit", &may_edit);
+                    ctx.insert("content", &content);
+                    Template::render_with_user(&req, "static_content/view.html", &mut ctx)
                 },
                 Err(e) => {
                     let mut ctx = Context::new();
@@ -165,7 +159,7 @@ pub fn update(mut req: HttpRequest<State>, data: Form<ContentForm>) -> FutureRes
                     ctx.insert("back_link", &format!("/content/edit/{}", id));
                     ctx.insert("title", "Edit failed");
 
-                    Template::render(&req.state().template(), "static_content/edit_failed.html", &ctx)
+                    Template::render_with_user(&req, "static_content/edit_failed.html", &mut ctx)
                 },
             }
         })

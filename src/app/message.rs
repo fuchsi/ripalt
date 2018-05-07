@@ -46,7 +46,7 @@ pub fn messages(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                 let mut ctx = Context::new();
                 ctx.insert("messages", &messages);
                 ctx.insert("folder", &folder);
-                Template::render(&req.state().template(), "message/list.html", &ctx)
+                Template::render_with_user(&req, "message/list.html", &mut ctx)
             },
             Err(e) => Ok(HttpResponse::InternalServerError().body(e.to_string())),
         })
@@ -81,7 +81,7 @@ pub fn message(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             Ok(message) => {
                 let mut ctx = Context::new();
                 ctx.insert("message", &message);
-                Template::render(&req.state().template(), "message/show.html", &ctx)
+                Template::render_with_user(&req, "message/show.html", &mut ctx)
             },
             Err(e) => Ok(HttpResponse::InternalServerError().body(e.to_string())),
         })
@@ -93,7 +93,7 @@ pub fn new(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     if let Some(receiver) = req.query().get("receiver") {
         ctx.insert("receiver", &receiver);
     }
-    Template::render(&req.state().template(), "message/new.html", &ctx)
+    Template::render_with_user(&req, "message/new.html", &mut ctx)
 }
 
 pub fn reply(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
@@ -124,7 +124,7 @@ pub fn reply(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             Ok(message) => {
                 let mut ctx = Context::new();
                 ctx.insert("message", &message);
-                Template::render(&req.state().template(), "message/new.html", &ctx)
+                Template::render_with_user(&req, "message/new.html", &mut ctx)
             },
             Err(e) => Ok(HttpResponse::InternalServerError().body(e.to_string())),
         })

@@ -139,6 +139,22 @@
                 <span class="fas fa-inbox" aria-hidden="true"></span>
                 Team PM
             </a>
+            {% if current_user is defined %}
+                {% set allowed=is_allowed(user=current_user, ns="moderator_panel", perm="read") %}
+                {% if allowed %}
+                <a class="list-group-item collapsed" href="/moderator">
+                    <span class="fas fa-cogs" aria-hidden="true"></span>
+                    Moderator Panel
+                </a>
+            {% endif %}
+                {% set allowed=is_allowed(user=current_user, ns="admin_panel", perm="read") %}
+                {% if allowed %}
+                    <a class="list-group-item collapsed" href="/admin">
+                        <span class="fas fa-cogs" aria-hidden="true"></span>
+                        Admin Panel
+                    </a>
+                {% endif %}
+            {% endif %}
         </div>
     </div>
     <div class="col-md-10 col-sm-12 container pr-0 mb-5">

@@ -33,7 +33,18 @@ pub fn profile(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespon
         .from_err()
         .and_then(move |result: Result<UserProfileMsg>| {
             match result {
-                Ok(user) => Template::render(&cloned.state().template(), "user/profile.html", &user),
+                Ok(user) => {
+                    let mut ctx = Context::new();
+                    ctx.insert("user", &user.user);
+                    ctx.insert("active_uploads", &user.active_uploads);
+                    ctx.insert("active_downloads", &user.active_downloads);
+                    ctx.insert("uploads", &user.uploads);
+                    ctx.insert("completed", &user.completed);
+                    ctx.insert("connections", &user.connections);
+                    ctx.insert("timezone", &user.timezone);
+                    ctx.insert("may_view_passcode", &user.may_view_passcode);
+                    Template::render_with_user(&cloned, "user/profile.html", &mut ctx)
+                },
                 Err(e) => {
                     info!("user '{}' not found: {}", user_id, e);
                     Err(ErrorNotFound(e.to_string()))
@@ -63,8 +74,16 @@ pub fn view(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<
         .and_then(move |result: Result<UserProfileMsg>| {
             match result {
                 Ok(user) => {
-                    Template::render(&cloned.state().template(), "user/profile.html", &user)
-                        .map(|t| t.into())
+                    let mut ctx = Context::new();
+                    ctx.insert("user", &user.user);
+                    ctx.insert("active_uploads", &user.active_uploads);
+                    ctx.insert("active_downloads", &user.active_downloads);
+                    ctx.insert("uploads", &user.uploads);
+                    ctx.insert("completed", &user.completed);
+                    ctx.insert("connections", &user.connections);
+                    ctx.insert("timezone", &user.timezone);
+                    ctx.insert("may_view_passcode", &user.may_view_passcode);
+                    Template::render_with_user(&cloned, "user/profile.html", &mut ctx)
                 },
                 Err(e) => {
                     info!("user '{}' not found: {}", user_id, e);
