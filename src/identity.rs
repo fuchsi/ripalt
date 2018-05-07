@@ -349,11 +349,7 @@ impl<S> IdentityPolicy<S> for AppIdentityPolicy {
 
     fn from_request(&self, request: &mut HttpRequest<S>) -> Self::Future {
         let identity = self.0.load(request);
-        if identity.is_some() {
-            FutOk(AppIdentity::new(identity))
-        } else {
-            FutErr(actix_web::error::ErrorUnauthorized("unauthorized"))
-        }
+        FutOk(AppIdentity::new(identity))
     }
 }
 
