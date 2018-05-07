@@ -31,6 +31,7 @@ use tera::Context;
 use bytes::Bytes;
 use multipart::server::{save::SavedData, Entries, Multipart, SaveResult};
 use std::io::Cursor;
+use identity::{IdentityService, AppIdentityPolicy};
 
 mod index;
 mod login;
@@ -99,6 +100,7 @@ pub fn build(
             ErrorHandlers::new().handler(StatusCode::INTERNAL_SERVER_ERROR, app::server_error)
                 .handler(StatusCode::NOT_FOUND, app::server_error),
         )
+        .middleware(IdentityService::new(AppIdentityPolicy::new()))
         .handler("/static", StaticFiles::new("webroot/static/"))
         .handler("/timg", StaticFiles::new("webroot/timg"))
         .resource("/", |r| {

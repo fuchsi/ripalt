@@ -330,3 +330,79 @@ pub struct Claims {
     user_id: Uuid,
     group_id: Uuid,
 }
+
+/// The APP identity policy
+///
+/// Uses the Session for request identity storage.
+pub struct AppIdentityPolicy(Rc<AppIdentityInner>);
+
+impl AppIdentityPolicy {
+    /// Construct a new `AppIdentityPolicy` instance.
+    pub fn new() -> AppIdentityPolicy {
+        AppIdentityPolicy(Rc::new(AppIdentityInner::new()))
+    }
+}
+
+impl<S> IdentityPolicy<S> for AppIdentityPolicy {
+    type Identity = AppIdentity;
+    type Future = FutureResult<AppIdentity, actix_web::Error>;
+
+    fn from_request(&self, request: &mut HttpRequest<S>) -> Self::Future {
+        let identity = self.0.load(request);
+        if identity.is_some() {
+            FutOk(AppIdentity::new(identity))
+        } else {
+            FutErr(actix_web::error::ErrorUnauthorized("unauthorized"))
+        }
+    }
+}
+
+/// Identity that uses the Session or a JWT as identity storage.
+pub struct AppIdentity {
+    identity: Option<(Uuid, Uuid)>,
+    str_identity: Option<String>
+}
+
+impl AppIdentity {
+    /// Construct a new `ApiIdentity` instance.
+    pub fn new(identity: Option<(Uuid, Uuid)>) -> AppIdentity {
+        let str_identity = identity.map(|s| s.0.to_string());
+        AppIdentity{identity, str_identity}
+    }
+}
+
+impl Identity for AppIdentity {
+    fn identity(&self) -> Option<&str> {
+        self.str_identity.as_ref().map(|s| s.as_ref() )
+    }
+
+    fn remember(&mut self, _key: String) {
+        // do nothing
+    }
+
+    fn forget(&mut self) {
+        self.identity = None;
+    }
+
+    fn write(&mut self, resp: HttpResponse) -> AwResult<Response, AwError> {
+        // do nothing
+        Ok(Response::Done(resp))
+    }
+
+    fn credentials(&self) -> Option<(&Uuid, &Uuid)> {
+        self.identity.as_ref().map(|s| (&s.0, &s.1) )
+    }
+}
+
+
+struct AppIdentityInner;
+
+impl AppIdentityInner {
+    fn new() -> AppIdentityInner {
+        AppIdentityInner { }
+    }
+
+    fn load<S>(&self, req: &mut HttpRequest<S>) -> Option<(Uuid, Uuid)> {
+        session_creds(req)
+    }
+}

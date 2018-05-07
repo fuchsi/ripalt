@@ -26,6 +26,9 @@ use fast_chemail;
 use std::collections::HashMap;
 use chrono::Duration;
 
+/// Load User Message
+///
+/// RequireUserMsg(user_id, update_last_active)
 pub struct RequireUserMsg(pub Uuid, pub bool);
 
 impl Message for RequireUserMsg {

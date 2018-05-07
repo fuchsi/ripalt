@@ -26,7 +26,7 @@ use super::*;
 
 use actix_web::AsyncResponder;
 use actix_web::Json;
-use api::identity::RequestIdentity;
+use identity::RequestIdentity;
 use handlers::chat::{LoadChatMessagesMsg, PublishChatMessagesMsg};
 use handlers::UserSubjectMsg;
 use models::chat::{ChatMessageWithUser, ChatRoom};

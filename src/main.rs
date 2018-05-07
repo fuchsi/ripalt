@@ -82,6 +82,7 @@ mod cleanup;
 pub mod db;
 mod error;
 pub mod handlers;
+pub mod identity;
 pub mod models;
 mod schema;
 pub mod settings;
@@ -122,6 +123,7 @@ use models::acl::{Acl, Permission, UserSubject};
 use settings::Settings;
 use state::{AclContainer, State};
 use template::Template;
+use identity::RequestIdentity;
 
 lazy_static! {
     pub(crate) static ref SETTINGS: RwLock<Settings> = RwLock::new(Settings::new().unwrap());
@@ -232,4 +234,25 @@ fn session_creds<S>(req: &mut actix_web::HttpRequest<S>) -> Option<(Uuid, Uuid)>
     };
 
     Some((user_id, group_id))
+}
+
+trait RequestUser {
+    fn current_user(&self) -> Option<models::User>;
+}
+
+impl RequestUser for HttpRequest<State> {
+    fn current_user(&self) -> Option<models::User> {
+        if let Some(user_id) = self.user_id() {
+            let req_user = RequireUserMsg(*user_id, true);
+            match self.state().db().send(req_user).wait() {
+                Ok(user) => user.ok(),
+                Err(e) => {
+                    warn!("failed to load user: {}", e);
+                    None
+                },
+            }
+        } else {
+            None
+        }
+    }
 }

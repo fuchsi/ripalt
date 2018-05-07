@@ -21,7 +21,7 @@
 use super::*;
 use handlers::user::LoadUserStatsMsg;
 use models::user::UserStatsMsg;
-use api::identity::RequestIdentity;
+use identity::RequestIdentity;
 use actix_web::AsyncResponder;
 
 /// Fetch the user stats

@@ -20,7 +20,7 @@
 
 use super::*;
 
-use api::identity::RequestIdentity;
+use identity::RequestIdentity;
 use models::chat::{ChatMessageWithUser, ChatRoom, NewChatMessage};
 use models::acl::Subject;
 

@@ -20,10 +20,9 @@
 
 use super::*;
 
-use self::identity::{ApiIdentityPolicy, IdentityService};
+use identity::{ApiIdentityPolicy, IdentityService};
 
 pub mod chat;
-pub mod identity;
 pub mod message;
 pub mod user;
 

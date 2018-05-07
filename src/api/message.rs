@@ -24,7 +24,7 @@ use super::*;
 
 use actix_web::AsyncResponder;
 use actix_web::Json;
-use api::identity::RequestIdentity;
+use identity::RequestIdentity;
 use handlers::message::{DeleteMessagesMsg, LoadMessageMsg, LoadMessagesMsg, MarkMessagesMsg, NewMessageMsg};
 
 /// New message payload
