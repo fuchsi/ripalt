@@ -146,6 +146,19 @@ impl Template {
             .body(tpl.body);
         Ok(resp)
     }
+
+    /// Render a registered template and add the current user to the context
+    ///
+    /// The current user is added as `current_user`
+    ///
+    /// render returns a `Result`, which is suitable to be returned by a handler function.
+    /// If the template fails to render, `Error` is set to `ErrorInternalServerError`
+    pub fn render_with_user(req: &HttpRequest<State>, name: &str, ctx: &mut tera::Context) -> actix_web::Result<HttpResponse>
+    {
+        let user = req.current_user();
+        ctx.insert("current_user", &user);
+        Self::render(&req.state().template(), name, ctx)
+    }
 }
 
 impl Default for Template {
