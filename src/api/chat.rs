@@ -129,7 +129,7 @@ pub fn publish(req: HttpRequest<State>, data: Json<PublishMessage>) -> FutureRes
     let (user_id, group_id) = credentials.take().unwrap();
 
     let PublishMessage { chat, message } = data.into_inner();
-    let user = UserSubjectMsg::new(*user_id, *group_id, req.state().acl_arc());
+    let user = UserSubjectMsg::new(*user_id, *group_id, req.state().acl().clone());
     let chat = match ChatRoom::try_from(chat) {
         Ok(chat) => chat,
         Err(e) => return Box::new(FutErr(ErrorBadRequest(e.to_string()))),

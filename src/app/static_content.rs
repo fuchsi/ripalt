@@ -74,7 +74,7 @@ fn view(mut req: HttpRequest<State>, id: String) -> FutureResponse<HttpResponse>
         .and_then(move |result| {
             match result {
                 Ok(c) => {
-                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
+                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
                     let may_edit = subj.may_write(&c);
                     let mut ctx = StaticContentContext::from(c);
                     ctx.may_edit = may_edit;
@@ -114,7 +114,7 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .and_then(move |result| {
             match result {
                 Ok(c) => {
-                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
+                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
                     let may_edit = subj.may_write(&c);
                     let mut ctx = Context::new();
                     ctx.insert("content", &c);
@@ -147,7 +147,7 @@ pub fn update(mut req: HttpRequest<State>, data: Form<ContentForm>) -> FutureRes
 
     let data = data.into_inner();
     let mut msg: UpdateStaticContentMsg = data.into();
-    let subj = UserSubjectMsg::new(user_id, group_id, req.state().acl_arc());
+    let subj = UserSubjectMsg::new(user_id, group_id, req.state().acl().clone());
     msg.set_acl(subj);
     req.clone().state().db().send(msg)
         .from_err()

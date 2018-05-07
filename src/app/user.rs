@@ -29,7 +29,7 @@ pub fn profile(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespon
     };
 
     let cloned = req.clone();
-    let fut = req.state().db().send(LoadUserProfileMsg(user_id, user_id, req.state().acl_arc()))
+    let fut = req.state().db().send(LoadUserProfileMsg(user_id, user_id, req.state().acl().clone()))
         .from_err()
         .and_then(move |result: Result<UserProfileMsg>| {
             match result {
@@ -58,7 +58,7 @@ pub fn view(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<
     };
 
     let cloned = req.clone();
-    let fut = req.state().db().send(LoadUserProfileMsg(user_id, cur_user_id, req.state().acl_arc()))
+    let fut = req.state().db().send(LoadUserProfileMsg(user_id, cur_user_id, req.state().acl().clone()))
         .from_err()
         .and_then(move |result: Result<UserProfileMsg>| {
             match result {

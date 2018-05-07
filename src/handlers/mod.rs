@@ -25,7 +25,7 @@ pub mod static_content;
 pub mod torrent;
 pub mod user;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct UserSubjectMsg {
     uid: Uuid,
     gid: Uuid,
@@ -46,13 +46,12 @@ impl<'req> TryFrom<&'req mut HttpRequest<State>> for UserSubjectMsg {
             Some((u, g)) => (u, g),
             None => bail!("session credentials not available"),
         };
-        let acl = req.state().acl_arc();
-        Ok(Self::new(uid, gid, acl))
+        Ok(Self::new(uid, gid, req.state().acl().clone()))
     }
 }
 
 impl<'a> From<&'a UserSubjectMsg> for UserSubject<'a> {
     fn from(msg: &UserSubjectMsg) -> UserSubject {
-        UserSubject::new(&msg.uid, &msg.gid, Arc::clone(&msg.acl))
+        UserSubject::new(&msg.uid, &msg.gid, &msg.acl)
     }
 }

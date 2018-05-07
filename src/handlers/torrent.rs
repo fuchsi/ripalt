@@ -204,7 +204,6 @@ impl<'a> TorrentImage<'a> {
     }
 }
 
-#[derive(Debug)]
 pub struct UpdateTorrentMsg {
     pub id: Uuid,
     pub name: String,

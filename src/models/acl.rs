@@ -313,11 +313,11 @@ pub trait Subject<T> {
 pub struct UserSubject<'a> {
     user_id: &'a Uuid,
     group_id: &'a Uuid,
-    acl: AclContainer,
+    acl: &'a AclContainer,
 }
 
 impl<'a> UserSubject<'a> {
-    pub fn new(user_id: &'a Uuid, group_id: &'a Uuid, acl: AclContainer) -> UserSubject<'a> {
+    pub fn new(user_id: &'a Uuid, group_id: &'a Uuid, acl: &'a AclContainer) -> UserSubject<'a> {
         UserSubject {
             user_id,
             group_id,
@@ -325,8 +325,8 @@ impl<'a> UserSubject<'a> {
         }
     }
 
-    fn acl(&self) -> std::sync::RwLockReadGuard<Acl> {
-        self.acl.read().unwrap()
+    fn acl(&self) -> &AclContainer {
+        &self.acl
     }
 
     pub fn user_id(&self) -> &Uuid {

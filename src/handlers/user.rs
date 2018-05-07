@@ -288,7 +288,7 @@ impl Handler<LoadUserProfileMsg> for DbExecutor {
         let db: &PgConnection = &self.conn();
         match models::User::find(&msg.0, db) {
             Some(user) => {
-                let acl = msg.2.read().unwrap();
+                let acl = msg.2;
 
                 let mut transfers = UserTransfer::find_for_user(&user.id, &db);
                 let mut active_uploads: Vec<UserTransfer> = Vec::new();

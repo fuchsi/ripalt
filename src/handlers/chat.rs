@@ -35,7 +35,7 @@ pub struct LoadChatMessagesMsg {
 impl LoadChatMessagesMsg {
     /// Construct a new `LoadChatMessagesMsg` instance
     pub fn new(chat: ChatRoom, since: Option<DateTime<Utc>>, limit: i64, user: UserSubjectMsg) -> Self {
-        LoadChatMessagesMsg{chat, since, limit, user}
+        Self{chat, since, limit, user}
     }
 }
 
@@ -56,7 +56,7 @@ impl<'req> TryFrom<&'req HttpRequest<State>> for LoadChatMessagesMsg {
         let limit: i64 = req.query().get("limit").unwrap_or_else(|| "50").parse()?;
         let mut identity = req.credentials();
         let (user_id, group_id) = identity.take().unwrap();
-        let user = UserSubjectMsg::new(*user_id, *group_id, req.state().acl_arc());
+        let user = UserSubjectMsg::new(*user_id, *group_id, req.state().acl().clone());
 
         Ok(LoadChatMessagesMsg::new(chat, since, limit, user))
     }

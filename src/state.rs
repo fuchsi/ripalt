@@ -25,12 +25,61 @@ use models::acl::Acl;
 use template::TemplateContainer;
 use template::TemplateSystem;
 
-pub type AclContainer = Arc<RwLock<Acl>>;
+//pub type AclContainer = Arc<RwLock<Acl>>;
+
+#[derive(Clone)]
+pub struct AclContainer {
+    inner: Arc<RwLock<Acl>>
+}
+
+impl AclContainer {
+    pub fn new(acl: Arc<RwLock<Acl>>) -> Self {
+        Self{inner: acl}
+    }
+
+    pub fn new_empty() -> Self {
+        Self{inner: Arc::new(RwLock::new(Acl::new()))}
+    }
+
+    pub fn set_acl(&mut self, acl: Arc<RwLock<Acl>>) {
+        self.inner = acl;
+    }
+
+    /// Reload the ACL structure from the database
+    ///
+    /// # Panics
+    ///
+    /// This function panics if the underlying database shits the bed.
+    #[allow(dead_code)]
+    pub fn reload(&mut self, db: &PgConnection) {
+        self.inner.write().unwrap().reload(db)
+    }
+
+    /// Check if the `user` is allowed to do `perm` in namespace `ns`
+    ///
+    /// `user` - the user to test
+    ///
+    /// `ns` - acl namespace
+    ///
+    /// `perm` - permission to test
+    pub fn is_allowed(&self, uid: &Uuid, gid: &Uuid, ns: &str, perm: &Permission) -> bool {
+        self.inner.read().unwrap().is_allowed(uid, gid, ns, perm)
+    }
+
+    /// Check if the `group` is allowed to do `perm` in namespace `ns`
+    ///
+    /// if no explicit rule for the group is found check the parent group(s) recursively until an
+    /// explicit rule is found.
+    /// If no rule is found the function returns `false`
+    pub fn is_group_allowed(&self, gid: &Uuid, ns: &str, perm: &Permission) -> bool {
+        self.inner.read().unwrap().is_group_allowed(gid, ns, perm)
+    }
+}
 
 /// State represents the shared state for the application
 pub struct State {
     db: Addr<Syn, DbExecutor>,
-    acl: Arc<RwLock<Acl>>,
+    acl: AclContainer,
     template: Option<TemplateContainer>,
 }
 
@@ -39,7 +88,7 @@ impl State {
     pub fn new(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> Self {
         State {
             db,
-            acl,
+            acl: AclContainer::new(acl),
             template: None,
         }
     }
@@ -55,13 +104,8 @@ impl State {
     }
 
     /// Get the ACL object
-    pub fn acl_arc(&self) -> Arc<RwLock<Acl>> {
-        self.acl.clone()
-    }
-
-    #[allow(dead_code)]
-    pub fn acl(&self) -> RwLockReadGuard<Acl> {
-        self.acl.read().unwrap()
+    pub fn acl(&self) -> &AclContainer {
+        &self.acl
     }
 
     /// Get the Template object

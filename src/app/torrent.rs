@@ -549,7 +549,7 @@ pub fn torrent(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             Ok(tc) => {
                 let mut ctx = ShowContext::from(&tc);
                 {
-                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
+                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
                     ctx.may_edit = subj.may_write(&tc.torrent);
                     ctx.may_delete = subj.may_delete(&tc.torrent);
                 }
@@ -586,7 +586,7 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                 let mut ctx = EditContext::from(&tc);
                 ctx.categories = categories(&req.state());
                 let may_edit = {
-                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
+                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
                     ctx.may_delete = subj.may_delete(&tc.torrent);
                     subj.may_write(&tc.torrent)
                 };
@@ -622,7 +622,6 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
     };
 
-    let acl = req.state().acl_arc();
     let cloned = req.clone();
     let fut_prepare = req.clone()
         .body()
@@ -637,7 +636,7 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             // in a new temporary directory under the OS temporary directory.
             match multipart.save().temp() {
                 SaveResult::Full(entries) => {
-                    let torrent = UpdateTorrentMsg::new(id, UserSubjectMsg::new(user_id, group_id, acl));
+                    let torrent = UpdateTorrentMsg::new(id, UserSubjectMsg::new(user_id, group_id, cloned.state().acl().clone()));
                     process_update(&entries, torrent)
                 },
                 SaveResult::Partial(_, reason) => {
@@ -817,7 +816,7 @@ pub fn delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             Ok(tc) => {
                 let mut ctx = EditContext::from(&tc);
                 let may_edit = {
-                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
+                    let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
                     subj.may_delete(&tc.torrent)
                 };
 
@@ -858,9 +857,9 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
     };
 
-    let acl = req.state().acl_arc();
     let fut_prepare = req.clone().urlencoded::<DeleteForm>().from_err();
 
+    let acl = req.state().acl().clone();
     let fut_process = fut_prepare.and_then(move |form| {
         let DeleteForm { id, reason } = form;
         let user = UserSubjectMsg::new(user_id, group_id, acl);

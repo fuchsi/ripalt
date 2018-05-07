@@ -40,7 +40,7 @@ pub fn authenticated(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse
     let mut ctx = Context::new();
 
     // Chat
-    let subj = UserSubject::new(&user_id, &group_id, req.state().acl_arc());
+    let subj = UserSubject::new(&user_id, &group_id, req.state().acl());
     let mut chatrooms = vec![Chat{id: ChatRoom::Public.to_string(), nid: ChatRoom::Public.into(), name: "Shoutbox".to_string(), active: true}];
     if subj.may_read(&ChatRoom::Team) {
         chatrooms.push(Chat{id: ChatRoom::Team.to_string(), nid: ChatRoom::Team.into(), name: "Teambox".to_string(), active: false});
