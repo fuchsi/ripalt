@@ -74,7 +74,12 @@ pub trait IdentityPolicy<S>: Sized + 'static {
 pub trait Identity: 'static {
     fn identity(&self) -> Option<&str>;
 
+    fn remember(&mut self, key: String);
+
     fn forget(&mut self);
+
+    /// Write session to storage backend.
+    fn write(&mut self, resp: HttpResponse) -> AwResult<Response>;
 
     fn credentials(&self) -> Option<(&Uuid, &Uuid)>;
 
@@ -109,6 +114,9 @@ pub trait RequestIdentity {
     /// ``None`` if no identity can be found associated with the request.
     fn identity(&self) -> Option<&str>;
 
+    /// Remember identity.
+    fn remember(&mut self, identity: String);
+
     /// This method is used to 'forget' the current identity on subsequent
     /// requests.
     fn forget(&mut self);
@@ -130,6 +138,12 @@ impl<S> RequestIdentity for HttpRequest<S> {
             return id.0.identity();
         }
         None
+    }
+
+    fn remember(&mut self, identity: String) {
+        if let Some(id) = self.extensions_mut().get_mut::<IdentityBox>() {
+            return id.0.remember(identity);
+        }
     }
 
     fn forget(&mut self) {
@@ -259,8 +273,17 @@ impl Identity for ApiIdentity {
         self.str_identity.as_ref().map(|s| s.as_ref() )
     }
 
+    fn remember(&mut self, _key: String) {
+        // do nothing
+    }
+
     fn forget(&mut self) {
         self.identity = None;
+    }
+
+    fn write(&mut self, resp: HttpResponse) -> AwResult<Response, AwError> {
+        // do nothing
+        Ok(Response::Done(resp))
     }
 
     fn credentials(&self) -> Option<(&Uuid, &Uuid)> {
