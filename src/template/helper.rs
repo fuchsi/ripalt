@@ -165,7 +165,7 @@ pub fn is_allowed(acl: AclContainer) -> GlobalFn {
             },
             None => bail!("no namespace"),
         };
-        let perm = match args.get("ns") {
+        let perm = match args.get("perm") {
             Some(val) => match from_value::<String>(val.clone()) {
                 Ok(v) => v,
                 Err(e) => bail!("invalid permission: {}", e),
