@@ -25,8 +25,6 @@ use models::acl::Acl;
 use template::TemplateContainer;
 use template::TemplateSystem;
 
-//pub type AclContainer = Arc<RwLock<Acl>>;
-
 #[derive(Clone)]
 pub struct AclContainer {
     inner: Arc<RwLock<Acl>>

@@ -143,7 +143,7 @@ fn main() {
 
     // Create a new Tera object and wrap it in some thread safe boxes
     // RwLock is needed for the file watcher below, to reload templates when they are changed.
-    let tpl = template::init_tera();
+    let tpl = template::init_tera(Arc::clone(&acl));
 
     // If debug mode is enabled, start a file watcher in order to reload the templates
     let mut tpl_handle = None;

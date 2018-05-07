@@ -22,9 +22,10 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 use markdown;
-use tera::{Result, Value};
+use tera::{Result, Value, from_value};
 
 use util;
+use tera::GlobalFn;
 
 pub fn data_size(value: Value, _: HashMap<String, Value>) -> Result<Value> {
     match value {
@@ -113,4 +114,66 @@ pub fn quote(value: Value, _: HashMap<String, Value>) -> Result<Value> {
         )),
         _ => bail!("quote: not a string"),
     }
+}
+
+pub fn is_allowed(acl: AclContainer) -> GlobalFn {
+    Box::new(move |args| -> Result<Value> {
+        let (user_id, group_id) = match args.get("user") {
+            Some(val) => match val {
+                Value::Object(user) => {
+                    let user_id = match user.get("id") {
+                        Some(val) => match from_value::<Uuid>(val.clone()) {
+                            Ok(id) => id,
+                            Err(e) => bail!("invalid user id: {}", e),
+                        },
+                        None => bail!("no user id"),
+                    };
+                    let group_id = match user.get("group_id") {
+                        Some(val) => match from_value::<Uuid>(val.clone()) {
+                            Ok(id) => id,
+                            Err(e) => bail!("invalid group id: {}", e),
+                        },
+                        None => bail!("no group id"),
+                    };
+                    (user_id, group_id)
+                },
+                _ => bail!("invalid user object"),
+            },
+            None => {
+                let user_id = match args.get("user_id") {
+                    Some(val) => match from_value::<Uuid>(val.clone()) {
+                        Ok(id) => id,
+                        Err(e) => bail!("invalid user id: {}", e),
+                    },
+                    None => bail!("no user id"),
+                };
+                let group_id = match args.get("group_id") {
+                    Some(val) => match from_value::<Uuid>(val.clone()) {
+                        Ok(id) => id,
+                        Err(e) => bail!("invalid group id: {}", e),
+                    },
+                    None => bail!("no group id"),
+                };
+                (user_id, group_id)
+            },
+        };
+
+        let ns = match args.get("ns") {
+            Some(val) => match from_value::<String>(val.clone()) {
+                Ok(v) => v,
+                Err(e) => bail!("invalid namespace: {}", e),
+            },
+            None => bail!("no namespace"),
+        };
+        let perm = match args.get("ns") {
+            Some(val) => match from_value::<String>(val.clone()) {
+                Ok(v) => v,
+                Err(e) => bail!("invalid permission: {}", e),
+            },
+            None => "read".to_string(),
+        };
+        let perm = Permission::from(perm);
+
+        Ok(Value::Bool(acl.is_allowed(&user_id, &group_id, &ns, &perm)))
+    })
 }

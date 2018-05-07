@@ -25,7 +25,7 @@ use super::*;
 use std::sync::{mpsc, Arc, RwLock};
 use std::time::Duration;
 
-use tera::Tera;
+use tera::{Context, Tera};
 
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Serialize;
@@ -36,7 +36,7 @@ pub type TemplateSystem = Tera;
 mod helper;
 
 /// Initialize the Tera template system
-pub fn init_tera() -> TemplateContainer {
+pub fn init_tera(acl: Arc<RwLock<Acl>>) -> TemplateContainer {
     let mut tera = match Tera::new("templates/**/*") {
         Ok(t) => t,
         Err(e) => {
@@ -46,11 +46,14 @@ pub fn init_tera() -> TemplateContainer {
         }
     };
 
+    let acl_container = AclContainer::new(acl);
+
     tera.register_filter("data_size", helper::data_size);
     tera.register_filter("format_date", helper::format_date);
     tera.register_filter("duration", helper::duration);
     tera.register_filter("markdown", helper::markdown);
     tera.register_filter("quote", helper::quote);
+    tera.register_global_function("is_allowed", helper::is_allowed(acl_container.clone()));
 
     Arc::new(RwLock::new(tera))
 }
@@ -153,7 +156,7 @@ impl Template {
     ///
     /// render returns a `Result`, which is suitable to be returned by a handler function.
     /// If the template fails to render, `Error` is set to `ErrorInternalServerError`
-    pub fn render_with_user(req: &HttpRequest<State>, name: &str, ctx: &mut tera::Context) -> actix_web::Result<HttpResponse>
+    pub fn render_with_user(req: &HttpRequest<State>, name: &str, ctx: &mut Context) -> actix_web::Result<HttpResponse>
     {
         let user = req.current_user();
         ctx.insert("current_user", &user);

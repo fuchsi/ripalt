@@ -32,6 +32,31 @@ pub enum Permission {
     Delete,
 }
 
+impl ToString for Permission {
+    fn to_string(&self) -> String {
+        match self {
+            &Permission::None => "none".to_string(),
+            &Permission::Read => "read".to_string(),
+            &Permission::Write => "write".to_string(),
+            &Permission::Create => "create".to_string(),
+            &Permission::Delete => "delete".to_string(),
+        }
+    }
+}
+
+impl From<String> for Permission {
+    fn from(s: String) -> Self {
+        match &s[..] {
+            "none" => Permission::None,
+            "read" => Permission::Read,
+            "write" => Permission::Write,
+            "create" => Permission::Create,
+            "delete" => Permission::Delete,
+            _ => Permission::None,
+        }
+    }
+}
+
 trait Rule {
     /// Check if the rule permits the action `perm`
     fn is_allowed(&self, perm: &Permission) -> bool {
