@@ -134,7 +134,7 @@ pub fn new(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     Template::render_with_user(&req, "torrent/new.html", &mut ctx)
 }
 
-pub fn create(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
+pub fn create(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
     let user_id = match req.session().get::<Uuid>("user_id").unwrap_or(None) {
         Some(user_id) => user_id,
         None => return Either::A(redirect("/login")),
@@ -883,7 +883,7 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .responder()
 }
 
-pub fn download(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
+pub fn download(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
     let id = match req.match_info().query::<String>("id") {
         Ok(id) => match Uuid::parse_str(&id[..]) {
             Ok(id) => id,

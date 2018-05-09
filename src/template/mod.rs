@@ -185,9 +185,9 @@ impl Responder for Template {
     type Item = HttpResponse;
     type Error = actix_web::Error;
 
-    fn respond_to(
+    fn respond_to<S: 'static>(
         self,
-        _req: HttpRequest<()>,
+        _req: &HttpRequest<S>,
     ) -> actix_web::Result<<Self as Responder>::Item, <Self as Responder>::Error> {
         Ok(self.into())
     }

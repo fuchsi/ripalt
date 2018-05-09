@@ -80,7 +80,7 @@ pub fn take_signup(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .responder()
 }
 
-pub fn confirm(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
+pub fn confirm(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     let id = match req.match_info().query("id") {
         Ok(id) => id,
         Err(e) => return Box::new(future::err(actix_web::error::ErrorInternalServerError(format!("{}", e))))

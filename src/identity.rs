@@ -134,7 +134,7 @@ pub trait RequestIdentity {
 
 impl<S> RequestIdentity for HttpRequest<S> {
     fn identity(&self) -> Option<&str> {
-        if let Some(id) = self.extensions_ro().get::<IdentityBox>() {
+        if let Some(id) = self.extensions().get::<IdentityBox>() {
             return id.0.identity();
         }
         None
@@ -153,7 +153,7 @@ impl<S> RequestIdentity for HttpRequest<S> {
     }
 
     fn credentials(&self) -> Option<(&Uuid, &Uuid)> {
-        if let Some(id) = self.extensions_ro().get::<IdentityBox>() {
+        if let Some(id) = self.extensions().get::<IdentityBox>() {
             return id.0.credentials();
         }
         None
@@ -202,7 +202,7 @@ impl<S: 'static, T: IdentityPolicy<S>> Middleware<S> for IdentityService<T> {
             .from_request(&mut req)
             .then(move |res| match res {
                 Ok(id) => {
-                    req.extensions().insert(IdentityBox(Box::new(id)));
+                    req.extensions_mut().insert(IdentityBox(Box::new(id)));
                     FutOk(None)
                 }
                 Err(err) => FutErr(err),
@@ -213,7 +213,7 @@ impl<S: 'static, T: IdentityPolicy<S>> Middleware<S> for IdentityService<T> {
     fn response(
         &self, req: &mut HttpRequest<S>, resp: HttpResponse
     ) -> AwResult<Response> {
-        if let Some(_id) = req.extensions().remove::<IdentityBox>() {
+        if let Some(_id) = req.extensions_mut().remove::<IdentityBox>() {
             Ok(Response::Done(resp))
         } else {
             Ok(Response::Done(resp))

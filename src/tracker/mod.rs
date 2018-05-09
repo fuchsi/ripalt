@@ -332,9 +332,9 @@ impl<T: ResponseData + Serialize> Responder for BencodeResponse<T> {
     type Item = HttpResponse;
     type Error = Error;
 
-    fn respond_to(
+    fn respond_to<S: 'static>(
         self,
-        _req: HttpRequest<()>,
+        _req: &HttpRequest<S>,
     ) -> std::result::Result<<Self as Responder>::Item, <Self as Responder>::Error> {
         let bencode = serde_bencode::to_bytes(&self.data)?;
 

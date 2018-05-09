@@ -23,6 +23,7 @@
 use super::*;
 
 use actix_web::AsyncResponder;
+use actix_web::FromRequest;
 use actix_web::Json;
 use identity::RequestIdentity;
 use handlers::message::{DeleteMessagesMsg, LoadMessageMsg, LoadMessagesMsg, MarkMessagesMsg, NewMessageMsg};
@@ -77,9 +78,14 @@ pub fn messages(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     }
     let (user_id, _) = credentials.take().unwrap();
 
-    let folder = req.query().get("folder").unwrap_or_else(|| "inbox");
-    let unread = req.query().get("unread").unwrap_or_else(|| "0") == "1";
-    let loadmsg = LoadMessagesMsg::new(folder.to_string(), unread, *user_id);
+    let mut query = match Query::<HashMap<String, String>>::extract(&req) {
+        Ok(q) => q,
+        Err(e) => return Box::new(FutErr(ErrorInternalServerError(e))),
+    };
+
+    let folder = query.remove("folder").unwrap_or_else(|| "inbox".to_string() );
+    let unread = query.remove("unread").unwrap_or_else(|| "0".to_string()) == "1";
+    let loadmsg = LoadMessagesMsg::new(folder, unread, *user_id);
 
     req.state()
         .db()
@@ -120,8 +126,13 @@ pub fn unread(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     }
     let (user_id, _) = credentials.take().unwrap();
 
-    let folder = req.query().get("folder").unwrap_or_else(|| "inbox");
-    let loadmsg = LoadMessagesMsg::new(folder.to_string(), true, *user_id);
+    let mut query = match Query::<HashMap<String, String>>::extract(&req) {
+        Ok(q) => q,
+        Err(e) => return Box::new(FutErr(ErrorInternalServerError(e))),
+    };
+
+    let folder = query.remove("folder").unwrap_or_else(|| "inbox".to_string());
+    let loadmsg = LoadMessagesMsg::new(folder, true, *user_id);
 
     req.state()
         .db()
@@ -163,7 +174,12 @@ pub fn message(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     }
     let (user_id, _) = credentials.take().unwrap();
 
-    let mut id = req.query().get("id");
+    let query = match Query::<HashMap<String, String>>::extract(&req) {
+        Ok(q) => q,
+        Err(e) => return Box::new(FutErr(ErrorInternalServerError(e))),
+    };
+
+    let mut id = query.get("id");
     if id.is_none() {
         return Box::new(FutErr(ErrorBadRequest("no message id")));
     }

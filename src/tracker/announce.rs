@@ -18,6 +18,7 @@
 
 use super::*;
 
+use actix_web::FromRequest;
 use actix_web::HttpMessage;
 
 use chrono::prelude::*;
@@ -81,10 +82,7 @@ impl<S> TryFrom<HttpRequest<S>> for AnnounceRequest {
     type Error = Error;
 
     fn try_from(req: HttpRequest<S>) -> Result<Self> {
-        trace!("Request: {:#?}", req);
-        trace!("uri: {:#?}", req.uri());
         let query_str = req.uri().query().ok_or_else(|| "no query")?;
-        trace!("query: {:#?}", query_str);
         let iter = query_str.split('&');
         let mut query_parts: HashMap<&str, &str> = HashMap::new();
         for part in iter {
@@ -94,7 +92,6 @@ impl<S> TryFrom<HttpRequest<S>> for AnnounceRequest {
                 query_parts.insert(key, value);
             }
         }
-        trace!("query_parts: {:#?}", query_parts);
 
         let default_numwant = SETTINGS
             .read()
@@ -102,17 +99,15 @@ impl<S> TryFrom<HttpRequest<S>> for AnnounceRequest {
             .tracker
             .default_numwant;
 
-        let q = req.query();
-        trace!("info hash from query: {:#?}", q.get("info_hash"));
+        let query = Query::<HashMap<String, String>>::extract(&req)
+            .map_err(|e| format!("failed to extract query: {}", e))?;
         let info_hash = query_parts
             .get("info_hash")
             .ok_or_else(|| "info_hash not in query")?
             .as_bytes();
-        trace!("info_hash len={}: {:?}", info_hash.len(), info_hash);
         let info_hash = percent_decode(info_hash)
             .if_any()
             .ok_or_else(|| "malformed info hash")?;
-        trace!("info_hash len={}: {:?}", info_hash.len(), info_hash);
 
         let peer_id = query_parts
             .get("peer_id")
@@ -120,26 +115,26 @@ impl<S> TryFrom<HttpRequest<S>> for AnnounceRequest {
             .as_bytes();
         let peer_id = percent_decode(peer_id).if_any().unwrap_or_else(|| peer_id.to_vec());
 
-        let port = q.get("port")
+        let port = query.get("port")
             .ok_or_else(|| "port not in query")?
             .parse::<u16>()?;
-        let uploaded = q.get("uploaded")
+        let uploaded = query.get("uploaded")
             .ok_or_else(|| "uploaded not in query")?
             .parse::<u64>()?;
-        let downloaded = q.get("downloaded")
+        let downloaded = query.get("downloaded")
             .ok_or_else(|| "downloaded not in query")?
             .parse::<u64>()?;
-        let left = q.get("left")
+        let left = query.get("left")
             .ok_or_else(|| "left not in query")?
             .parse::<u64>()?;
-        let compact = q.get("compact").map(|v| v == "1").unwrap_or_else(|| false);
-        let no_peer_id = q.get("no_peer_id")
+        let compact = query.get("compact").map(|v| v == "1").unwrap_or_else(|| false);
+        let no_peer_id = query.get("no_peer_id")
             .map(|v| v == "1")
             .unwrap_or_else(|| false);
-        let event = q.get("event")
+        let event = query.get("event")
             .map(|v| v.parse::<Event>())
             .unwrap_or_else(|| Ok(Event::None))?;
-        let numwant = q.get("numwant")
+        let numwant = query.get("numwant")
             .map(|v| v.parse::<u16>())
             .unwrap_or_else(|| Ok(default_numwant))?;
         let key = query_parts.get("peer_id").map(|key| {
@@ -163,13 +158,13 @@ impl<S> TryFrom<HttpRequest<S>> for AnnounceRequest {
             .to_str()?
             .to_owned();
 
-        let support_crypto = q.get("supportcrypto")
+        let support_crypto = query.get("supportcrypto")
             .map(|v| v == "1")
             .unwrap_or_else(|| false);
-        let require_crypto = q.get("requirecrypto")
+        let require_crypto = query.get("requirecrypto")
             .map(|v| v == "1")
             .unwrap_or_else(|| false);
-        let crypto_port = q.get("cryptoport").map(|p| p.parse::<u16>().unwrap_or(0));
+        let crypto_port = query.get("cryptoport").map(|p| p.parse::<u16>().unwrap_or(0));
 
         Ok(AnnounceRequest {
             info_hash,

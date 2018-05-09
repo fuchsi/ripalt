@@ -28,7 +28,7 @@ pub fn login(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     Template::render(&req.state().template(), "login/login.html", &ctx)
 }
 
-pub fn take_login(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
+pub fn take_login(req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     let cloned = req.clone();
     let form = match cloned.urlencoded::<LoginForm>().wait() {
         Ok(form) => form,
@@ -72,7 +72,7 @@ pub fn take_login(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .responder()
 }
 
-pub fn logout(mut req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
+pub fn logout(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     req.session().clear();
     let t: Vec<&str> = vec![];
     let url = req.url_for("index", &t).unwrap();

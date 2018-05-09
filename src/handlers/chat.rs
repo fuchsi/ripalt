@@ -20,6 +20,7 @@
 
 use super::*;
 
+use actix_web::FromRequest;
 use identity::RequestIdentity;
 use models::chat::{ChatMessageWithUser, ChatRoom, NewChatMessage};
 use models::acl::Subject;
@@ -43,9 +44,14 @@ impl<'req> TryFrom<&'req HttpRequest<State>> for LoadChatMessagesMsg {
     type Error = Error;
 
     fn try_from(req: &HttpRequest<State>) -> Result<Self> {
-        let chat: i16 = req.query().get("chat").unwrap_or_else(|| "1").parse()?;
+        let query = Query::<HashMap<String, String>>::extract(&req)
+            .map_err(|e| format!("failed to extract query: {}", e))?;
+
+        let default_chat = "1".to_string();
+        let default_limit = "50".to_string();
+        let chat: i16 = query.get("chat").unwrap_or_else(|| &default_chat).parse()?;
         let chat = ChatRoom::try_from(chat)?;
-        let since = match req.query().get("since") {
+        let since = match query.get("since") {
             Some(s) => {
                 let ts: i64 = s.parse()?;
                 Some(Utc.timestamp(ts, 0))
@@ -53,7 +59,7 @@ impl<'req> TryFrom<&'req HttpRequest<State>> for LoadChatMessagesMsg {
             None => None,
         };
 
-        let limit: i64 = req.query().get("limit").unwrap_or_else(|| "50").parse()?;
+        let limit: i64 = query.get("limit").unwrap_or_else(|| &default_limit).parse()?;
         let mut identity = req.credentials();
         let (user_id, group_id) = identity.take().unwrap();
         let user = UserSubjectMsg::new(*user_id, *group_id, req.state().acl().clone());

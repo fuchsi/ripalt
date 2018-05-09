@@ -22,7 +22,7 @@ use handlers::user::LoadUserProfileMsg;
 use models::user::UserProfileMsg;
 use actix_web::AsyncResponder;
 
-pub fn profile(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
+pub fn profile(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
     let user_id = match req.session().get::<Uuid>("user_id").unwrap_or(None) {
         Some(user_id) => user_id,
         None => return Either::A(redirect("/login")),
@@ -55,7 +55,7 @@ pub fn profile(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureRespon
     Either::B(fut.responder())
 }
 
-pub fn view(mut req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
+pub fn view(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpResponse>> {
     let user_id = match req.match_info().get("id"){
         Some(user_id) => match Uuid::parse_str(user_id) {
             Ok(user_id) => user_id,

@@ -18,6 +18,7 @@
 
 use super::*;
 use actix_web::AsyncResponder;
+use actix_web::FromRequest;
 use handlers::message::{LoadMessageMsg, LoadMessagesMsg};
 
 #[derive(Deserialize)]
@@ -90,7 +91,8 @@ pub fn message(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
 
 pub fn new(req: HttpRequest<State>) -> SyncResponse<HttpResponse> {
     let mut ctx = Context::new();
-    if let Some(receiver) = req.query().get("receiver") {
+    let query = Query::<HashMap<String, String>>::extract(&req)?;
+    if let Some(receiver) = query.get("receiver") {
         ctx.insert("receiver", &receiver);
     }
     Template::render_with_user(&req, "message/new.html", &mut ctx)
