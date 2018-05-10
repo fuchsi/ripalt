@@ -97,8 +97,8 @@ use std::thread;
 
 use actix::prelude::*;
 use actix_web::error::{ErrorBadRequest, ErrorForbidden, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
-use actix_web::middleware::{csrf, DefaultHeaders, ErrorHandlers, Logger, };
 use actix_web::middleware::session::{CookieSessionBackend, RequestSession, SessionStorage};
+use actix_web::middleware::{csrf, DefaultHeaders, ErrorHandlers, Logger};
 use actix_web::{fs::StaticFiles,
                 http::{header, Method, NormalizePath, StatusCode},
                 server::HttpServer,
@@ -121,11 +121,11 @@ use uuid::Uuid;
 use db::{DbConn, DbExecutor};
 use error::*;
 use handlers::user::RequireUserMsg;
+use identity::RequestIdentity;
 use models::acl::{Acl, Permission, UserSubject};
 use settings::Settings;
 use state::{AclContainer, State};
 use template::Template;
-use identity::RequestIdentity;
 
 lazy_static! {
     pub(crate) static ref SETTINGS: RwLock<Settings> = RwLock::new(Settings::new().unwrap());
@@ -208,19 +208,16 @@ fn require_user() -> RequireUserMsg {
 
 impl actix_web::pred::Predicate<State> for RequireUserMsg {
     fn check(&self, req: &mut actix_web::HttpRequest<State>) -> bool {
-        match req.session().get::<uuid::Uuid>("user_id") {
-            Ok(user_id) => match user_id {
-                Some(user_id) => {
-                    let require_user = RequireUserMsg(user_id, true);
-                    let user = req.state().db().send(require_user).wait().unwrap();
-                    match user {
-                        Ok(_) => true,
-                        Err(_) => false,
-                    }
+        match req.user_id() {
+            Some(user_id) => {
+                let require_user = RequireUserMsg(*user_id, true);
+                let user = req.state().db().send(require_user).wait().unwrap();
+                match user {
+                    Ok(_) => true,
+                    Err(_) => false,
                 }
-                None => false,
-            },
-            Err(_) => false,
+            }
+            None => false,
         }
     }
 }
@@ -251,7 +248,7 @@ impl RequestUser for HttpRequest<State> {
                 Err(e) => {
                     warn!("failed to load user: {}", e);
                     None
-                },
+                }
             }
         } else {
             None

@@ -26,12 +26,12 @@ use std::fmt::Write;
 use models::User;
 
 use actix_web::HttpMessage;
-use template::TemplateContainer;
-use tera::Context;
 use bytes::Bytes;
+use identity::{AppIdentityPolicy, IdentityService};
 use multipart::server::{save::SavedData, Entries, Multipart, SaveResult};
 use std::io::Cursor;
-use identity::{IdentityService, AppIdentityPolicy};
+use template::TemplateContainer;
+use tera::Context;
 
 mod index;
 mod login;
@@ -55,26 +55,14 @@ fn redirect(loc: &str) -> HttpResponse {
         .finish()
 }
 
-pub fn build(
-    db: Addr<Syn, DbExecutor>,
-    tpl: TemplateContainer,
-    acl: Arc<RwLock<Acl>>,
-) -> App<State> {
+pub fn build(db: Addr<Syn, DbExecutor>, tpl: TemplateContainer, acl: Arc<RwLock<Acl>>) -> App<State> {
     let settings = SETTINGS.read().unwrap();
     //    let redis = env::var("REDIS").unwrap_or(String::from("127.0.0.1::6379"));
     let session_secret = util::from_hex(&settings.session_secret).unwrap();
     let session_name = &settings.session_name[..];
     let session_secure = &settings.https;
-    let listen = format!(
-        "http{}://{}",
-        if settings.https { "s" } else { "" },
-        settings.bind
-    );
-    let domain = format!(
-        "http{}://{}",
-        if settings.https { "s" } else { "" },
-        settings.domain
-    );
+    let listen = format!("http{}://{}", if settings.https { "s" } else { "" }, settings.bind);
+    let domain = format!("http{}://{}", if settings.https { "s" } else { "" }, settings.domain);
 
     let mut state = State::new(db, acl);
     state.set_template(tpl);
@@ -210,13 +198,8 @@ pub fn not_found(req: HttpRequest<State>) -> HttpResponse {
     h.handle(req.clone())
 }
 
-pub fn server_error(
-    req: &mut HttpRequest<State>,
-    resp: HttpResponse,
-) -> SyncResponse<actix_web::middleware::Response> {
-    Ok(actix_web::middleware::Response::Done(render_error(
-        req, resp,
-    )))
+pub fn server_error(req: &mut HttpRequest<State>, resp: HttpResponse) -> SyncResponse<actix_web::middleware::Response> {
+    Ok(actix_web::middleware::Response::Done(render_error(req, resp)))
 }
 
 fn render_error(req: &HttpRequest<State>, resp: HttpResponse) -> HttpResponse {
@@ -237,21 +220,20 @@ fn render_error(req: &HttpRequest<State>, resp: HttpResponse) -> HttpResponse {
                     if let Ok(str) = String::from_utf8(bytes.to_vec()) {
                         context.insert("error", str);
                     }
-                },
+                }
                 actix_web::Binary::SharedString(str) => {
                     context.insert("error", str.to_string());
-                },
-                _ => {},
+                }
+                _ => {}
             },
-            _ => {},
+            _ => {}
         }
         "error/5xx.html"
     } else {
         "error/4xx.html"
     };
 
-    let mut new_resp: HttpResponse = match Template::render(&req.state().template(), tpl, &context)
-    {
+    let mut new_resp: HttpResponse = match Template::render(&req.state().template(), tpl, &context) {
         Ok(r) => r.into(),
         Err(e) => {
             return resp.into_builder()

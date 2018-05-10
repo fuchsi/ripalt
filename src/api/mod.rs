@@ -61,14 +61,20 @@ pub(crate) fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<Sta
             &jwt_secret,
         )))
         .prefix("/api/v1")
-        .resource("/user/stats", |r| r.method(Method::GET).a(user::stats))
-        .resource("/chat/messages", |r| r.method(Method::GET).a(chat::messages))
-        .resource("/chat/publish", |r| r.method(Method::POST).with2(chat::publish))
-        .resource("/message/messages", |r| r.method(Method::GET).a(message::messages))
-        .resource("/message/unread", |r| r.method(Method::GET).a(message::unread))
-        .resource("/message/read", |r| r.method(Method::GET).a(message::message))
-        .resource("/message/send", |r| r.method(Method::POST).with2(message::send))
-        .resource("/message/delete", |r| r.method(Method::POST).with2(message::delete))
-        .resource("/message/mark_read", |r| r.method(Method::POST).with2(message::mark_read))
+        .scope("/user", |scope| {
+            scope.route("/stats", Method::GET, user::stats)
+        })
+        .scope("/chat", |scope| {
+            scope.route("/messages", Method::GET, chat::messages)
+            .resource("/publish", |r| r.method(Method::POST).with2(chat::publish))
+        })
+        .scope("/message", |scope| {
+            scope.route("/messages", Method::GET, message::messages)
+            .route("/unread", Method::GET, message::unread)
+            .route("/read", Method::GET, message::message)
+            .resource("/send", |r| r.method(Method::POST).with2(message::send))
+            .resource("/delete", |r| r.method(Method::POST).with2(message::delete))
+            .resource("/mark_read", |r| r.method(Method::POST).with2(message::mark_read))
+        })
         .default_resource(|r| r.method(Method::GET).h(NormalizePath::default()))
 }
