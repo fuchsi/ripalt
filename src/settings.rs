@@ -35,6 +35,7 @@ pub struct User {
     pub default_delete_message_on_reply: bool,
     pub default_save_message_in_sent: bool,
     pub default_accept_messages: String,
+    pub avatar_thumbnail_width: u32,
 }
 
 #[derive(Debug, Deserialize)]

@@ -113,7 +113,7 @@ impl Message {
             .unwrap_or_default()
     }
 
-    fn by_folder<'a>(folder_id: &'a Uuid) -> messages::BoxedQuery<'a, Pg> {
+    fn by_folder(folder_id: &Uuid) -> messages::BoxedQuery<Pg> {
         messages::table.into_boxed()
             .filter(messages::folder_id.eq(folder_id))
             .order_by(messages::created_at.desc())

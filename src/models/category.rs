@@ -36,6 +36,15 @@ impl Category {
 
         dsl::categories.find(id).first::<Category>(db).ok()
     }
+
+    pub fn all(db: &PgConnection) -> Vec<Self> {
+        use self::categories::dsl;
+
+        dsl::categories
+            .order(dsl::name.asc())
+            .load::<Self>(db)
+            .unwrap_or_default()
+    }
 }
 
 impl Default for Category {

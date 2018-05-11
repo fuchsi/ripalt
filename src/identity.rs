@@ -314,7 +314,7 @@ impl ApiIdentityInner {
                         Ok(c) => c,
                         Err(_) => return None,
                     };
-                    let Claims {iat: _, user_id, group_id } = token_data.claims;
+                    let Claims {user_id, group_id, .. } = token_data.claims;
                     return Some((user_id, group_id));
                 }
             }
@@ -340,6 +340,12 @@ impl AppIdentityPolicy {
     /// Construct a new `AppIdentityPolicy` instance.
     pub fn new() -> AppIdentityPolicy {
         AppIdentityPolicy(Rc::new(AppIdentityInner::new()))
+    }
+}
+
+impl Default for identity::AppIdentityPolicy {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

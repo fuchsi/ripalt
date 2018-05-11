@@ -1,0 +1,140 @@
+{% extends "layouts/base_authenticated.html" %}
+{% block content %}
+    <div class="col-md-12 mt-4">
+        <div class="card bg-dark">
+            <div class="card-header">
+                <h5>Settings</h5>
+                <ul class="nav nav-tabs card-header-tabs" id="profile-details-tab" role="tablist">
+                    <li class="nav-item">
+                        <a href="#settings-site" class="nav-link active" id="site-tab" data-toggle="tab" role="tab"
+                           aria-controls="settings-site" aria-selected="false">Site Settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#settings-message" class="nav-link" id="message-tab" data-toggle="tab" role="tab"
+                           aria-controls="settings-message" aria-selected="true">Message Settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#settings-profile" class="nav-link" id="profile-tab" data-toggle="tab" role="tab"
+                           aria-controls="settings-profile" aria-selected="false">Profile</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <form action="/user/settings" method="post" enctype="multipart/form-data">
+                    <div class="tab-content" id="settings-details-content">
+                        <div class="tab-pane active" id="settings-site" role="tabpanel" aria-labelledby="site-tab">
+                            <div class="form-row">
+                                <div class="form-group col-md-2">
+                                    <label for="site-timezone">Timezone:</label>
+                                    <select class="form-control" id="site-timezone" name="timezone">
+                                        {% for timezone in timezones %}
+                                            <option value="{{ timezone.value }}"
+                                                    {% if timezone.value == properties.timezone.value | default(value=defaults.timezone) %}selected{% endif %}>{{ timezone.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-2">
+                                    <label for="site-torrents-per-page">Torrents per page:</label>
+                                    <input type="number" class="form-control" name="torrents_per_page"
+                                           id="site-torrents-per-page"
+                                           value="{{ properties.torrents_per_page.value | default(value=defaults.torrents_per_page) }}"
+                                           min="1" max="500">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <p>Default categories:</p>
+                                    {% for category in categories %}
+                                        <div class="custom-control custom-checkbox custom-control-inline">
+                                            <input type="checkbox" class="custom-control-input" name="default_categories"
+                                                   value="{{ category.id }}" id="site-default-categories-{{ category.name | slugify }}"
+                                                   {% if properties.default_categories.value is containing(category.id) %}checked{% endif %}>
+                                            <label for="site-default-categories-{{ category.name | slugify }}" class="custom-control-label">{{ category.name }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="settings-message" role="tabpanel" aria-labelledby="message-tab">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <p>Accept messages from:</p>
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input type="radio" class="custom-control-input" name="accept_messages"
+                                               value="all" id="message-accept-all"
+                                               {% if properties.accept_messages.value | default(value=defaults.accept_messages) == "all" %}checked{% endif %}>
+                                        <label for="message-accept-all" class="custom-control-label">Everyone</label>
+                                    </div>
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input type="radio" class="custom-control-input" name="accept_messages"
+                                               value="friends" id="message-accept-friends"
+                                               {% if properties.accept_messages.value | default(value=defaults.accept_messages) == "friends" %}checked{% endif %}>
+                                        <label for="message-accept-friends" class="custom-control-label">Friends only</label>
+                                    </div>
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input type="radio" class="custom-control-input" name="accept_messages"
+                                               value="team" id="message-accept-team"
+                                               {% if properties.accept_messages.value | default(value=defaults.accept_messages) == "team" %}checked{% endif %}>
+                                        <label for="message-accept-team" class="custom-control-label">Team only</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label>Messages:</label>
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" name="delete_message_on_reply"
+                                               value="true" id="message-delete_message_on_reply"
+                                               {% if properties.delete_message_on_reply.value | default(value=defaults.delete_message_on_reply) == true %}checked{% endif %}>
+                                        <label for="message-delete_message_on_reply" class="custom-control-label">Delete original message on reply</label>
+                                    </div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" name="save_message_in_sent"
+                                               value="true" id="message-save_message_in_sent"
+                                               {% if properties.save_message_in_sent.value | default(value=defaults.save_message_in_sent) == true %}checked{% endif %}>
+                                        <label for="message-save_message_in_sent" class="custom-control-label">Save a copy of the message in sent</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="settings-profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label>Avatar:</label>
+                                    <div class="custom-file">
+                                        <input type="file" id="profile-avatar" class="custom-file-input" name="profile_avatar" accept="image/*">
+                                        <label for="profile-avatar" class="custom-file-label">Choose File</label>
+                                    </div>
+                                </div>
+                                {% if profile.avatar %}
+                                    <div class="form-group col-md-4">
+                                        <img src="/static/aimg/{{ user.id }}/t{{ profile.avatar }}" class="img-thumbnail img-avatar">
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="profile-flair">Flair:</label>
+                                    <input type="text" class="form-control" name="profile_flair" id="profile-flair" value="{{ profile.flair }}">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="profile-about">About:</label>
+                                    <textarea class="form-control" rows="10" name="profile_about" id="profile-about">{{ profile.about }}</textarea>
+                                    <small id="upload_description-help-block" class="form-text text-muted">
+                                        Markdown is supported
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><span class="fa fa-save"></span> Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block title %}Settings{% endblock %}

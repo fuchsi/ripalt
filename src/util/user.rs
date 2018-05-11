@@ -1,4 +1,4 @@
-/*     
+/*
  * ripalt
  * Copyright (C) 2018 Daniel Müller
  *
@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use uuid::Uuid;
 use diesel::PgConnection;
 use models::user::Property;
+use uuid::Uuid;
 
 use SETTINGS;
 
 pub fn user_timezone(user_id: &Uuid, db: &PgConnection) -> i32 {
     if let Some(prop) = Property::find(user_id, "timezone", db) {
-        if let Some(number) = prop.value.as_i64() {
+        if let Some(number) = prop.value().as_i64() {
             return number as i32;
         }
     }

@@ -22,10 +22,10 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 use markdown;
-use tera::{Result, Value, from_value};
+use tera::{from_value, Result, Value};
 
-use util;
 use tera::GlobalFn;
+use util;
 
 pub fn data_size(value: Value, _: HashMap<String, Value>) -> Result<Value> {
     match value {
@@ -55,7 +55,7 @@ pub fn format_date(value: Value, args: HashMap<String, Value>) -> Result<Value> 
 
     if let Some(Value::Number(timezone)) = args.get("timezone") {
         if let Some(timezone) = timezone.as_i64() {
-            let local = date.with_timezone(&FixedOffset::east(timezone as i32 * 3600));
+            let local = date.with_timezone(&FixedOffset::east(timezone as i32));
             return Ok(Value::String(local.format(FORMAT_STRING).to_string()));
         }
     }
@@ -136,7 +136,7 @@ pub fn is_allowed(acl: AclContainer) -> GlobalFn {
                         None => bail!("no group id"),
                     };
                     (user_id, group_id)
-                },
+                }
                 _ => bail!("invalid user object"),
             },
             None => {
@@ -155,7 +155,7 @@ pub fn is_allowed(acl: AclContainer) -> GlobalFn {
                     None => bail!("no group id"),
                 };
                 (user_id, group_id)
-            },
+            }
         };
 
         let ns = match args.get("ns") {

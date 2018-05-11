@@ -68,28 +68,27 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     let fut_form;
     {
         let req = req.clone();
-        fut_form = req.urlencoded::<ListForm>()
-            .then(move |result| match result {
-                Ok(form) => {
-                    let visible = form.visible();
-                    let ListForm {
-                        name,
-                        mut category,
-                        page,
-                        ..
-                    } = form;
-                    torrent_list.name(name);
-                    if let Ok(category) = Uuid::parse_str(&category[..]) {
-                        torrent_list.category(category);
-                    }
-                    torrent_list.visible(visible);
-                    torrent_list.page(page, page_size);
-
-                    Ok(torrent_list)
+        fut_form = req.urlencoded::<ListForm>().then(move |result| match result {
+            Ok(form) => {
+                let visible = form.visible();
+                let ListForm {
+                    name,
+                    mut category,
+                    page,
+                    ..
+                } = form;
+                torrent_list.name(name);
+                if let Ok(category) = Uuid::parse_str(&category[..]) {
+                    torrent_list.category(category);
                 }
-                // return the "default" torrent_list, if the form could not be parsed (ie is not present/not a post request)
-                Err(_) => Ok(torrent_list),
-            });
+                torrent_list.visible(visible);
+                torrent_list.page(page, page_size);
+
+                Ok(torrent_list)
+            }
+            // return the "default" torrent_list, if the form could not be parsed (ie is not present/not a post request)
+            Err(_) => Ok(torrent_list),
+        });
     }
 
     let fut_db;
@@ -98,30 +97,28 @@ pub fn list(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         fut_db = fut_form.and_then(move |torrent_list| req.state().db().send(torrent_list))
     }
 
-    let fut_response = fut_db
-        .from_err()
-        .and_then(move |result: Result<TorrentListMsg>| {
-            let msg = result.unwrap_or_else(|_| TorrentListMsg::default());
-            let categories = categories(req.state());
-            let total_count = msg.count;
-            let count = msg.torrents.len() as i64;
-            let pages = total_count / msg.request.per_page;
+    let fut_response = fut_db.from_err().and_then(move |result: Result<TorrentListMsg>| {
+        let msg = result.unwrap_or_else(|_| TorrentListMsg::default());
+        let categories = categories(req.state());
+        let total_count = msg.count;
+        let count = msg.torrents.len() as i64;
+        let pages = total_count / msg.request.per_page;
 
-            let mut ctx = Context::new();
-            ctx.insert("categories", &categories);
-            ctx.insert("list", &msg.torrents);
-            ctx.insert("total_count", &total_count);
-            ctx.insert("count", &count);
-            ctx.insert("page", &msg.request.page);
-            ctx.insert("pages", &pages);
-            ctx.insert("per_page", &msg.request.per_page);
-            ctx.insert("name", &msg.request.name);
-            ctx.insert("visible", &msg.request.visible.to_string());
-            ctx.insert("category", &msg.request.category);
-            ctx.insert("timezone", &msg.timezone);
+        let mut ctx = Context::new();
+        ctx.insert("categories", &categories);
+        ctx.insert("list", &msg.torrents);
+        ctx.insert("total_count", &total_count);
+        ctx.insert("count", &count);
+        ctx.insert("page", &msg.request.page);
+        ctx.insert("pages", &pages);
+        ctx.insert("per_page", &msg.request.per_page);
+        ctx.insert("name", &msg.request.name);
+        ctx.insert("visible", &msg.request.visible.to_string());
+        ctx.insert("category", &msg.request.category);
+        ctx.insert("timezone", &msg.timezone);
 
-            Template::render_with_user(&req, "torrent/list.html", &mut ctx)
-        });
+        Template::render_with_user(&req, "torrent/list.html", &mut ctx)
+    });
 
     fut_response.responder()
 }
@@ -172,7 +169,7 @@ pub fn create(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<Ht
             .state()
             .db()
             .send(torrent)
-            .map_err(|error| ErrorInternalServerError(error))
+            .map_err(ErrorInternalServerError)
     });
 
     let cloned = req.clone();
@@ -225,8 +222,16 @@ fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
     }
     key = String::from("nfo_file");
     let nfo = &entries.fields[&key][0];
-    let use_nfo_as_description = &entries.fields.get(&"nfo_as_description".to_string())
-        .map(|v| if let SavedData::Text(ref v) = v[0].data { v == "1"} else { false } )
+    let use_nfo_as_description = &entries
+        .fields
+        .get(&"nfo_as_description".to_string())
+        .map(|v| {
+            if let SavedData::Text(ref v) = v[0].data {
+                v == "1"
+            } else {
+                false
+            }
+        })
         .unwrap_or_default();
     match nfo.headers.content_type {
         Some(ref c) if c.type_() == "text" => match nfo.data {
@@ -354,10 +359,7 @@ impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
             } else {
                 if peer.bytes_left != tc.torrent.size {
                     let downloaded = tc.torrent.size - peer.bytes_left;
-                    p.complete_ratio = format!(
-                        "{:.2}%",
-                        (downloaded as f64 / tc.torrent.size as f64) * 100.0
-                    )
+                    p.complete_ratio = format!("{:.2}%", (downloaded as f64 / tc.torrent.size as f64) * 100.0)
                 }
                 leecher.push(p);
             }
@@ -425,10 +427,7 @@ impl<'a> From<&'a models::Peer> for ShowPeer<'a> {
         };
         let ratio = match peer.bytes_downloaded {
             0 => String::from("0.000"),
-            _ => format!(
-                "{:.3}",
-                (peer.bytes_uploaded as f64 / peer.bytes_downloaded as f64)
-            ),
+            _ => format!("{:.3}", (peer.bytes_uploaded as f64 / peer.bytes_downloaded as f64)),
         };
         let complete_ratio = String::new();
 
@@ -546,7 +545,7 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
                 let categories = categories(&req.state());
-                let torrent =  ShowTorrent::from(&tc.torrent);
+                let torrent = ShowTorrent::from(&tc.torrent);
                 let mut ctx = Context::new();
                 ctx.insert("torrent", &torrent);
                 ctx.insert("categories", &categories);
@@ -641,10 +640,7 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.insert("sub_title", "Edit Succeeded");
                     ctx.insert(
                         "continue_link",
-                        &cloned
-                            .url_for("torrent#read", &[id.to_string()])
-                            .unwrap()
-                            .to_string(),
+                        &cloned.url_for("torrent#read", &[id.to_string()]).unwrap().to_string(),
                     );
                     Template::render_with_user(&cloned, "torrent/success.html", &mut ctx)
                 }
@@ -654,10 +650,7 @@ pub fn update(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.insert("sub_title", "Edit Failed");
                     ctx.insert(
                         "back_link",
-                        &cloned
-                            .url_for("torrent#edit", &[id.to_string()])
-                            .unwrap()
-                            .to_string(),
+                        &cloned.url_for("torrent#edit", &[id.to_string()]).unwrap().to_string(),
                     );
                     Template::render_with_user(&cloned, "torrent/failed.html", &mut ctx)
                 }
@@ -782,7 +775,7 @@ pub fn delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
                 let categories = categories(&req.state());
-                let torrent =  ShowTorrent::from(&tc.torrent);
+                let torrent = ShowTorrent::from(&tc.torrent);
                 let mut ctx = Context::new();
                 ctx.insert("torrent", &torrent);
                 ctx.insert("categories", &categories);
@@ -804,7 +797,7 @@ pub fn delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.insert("message", "You are not allowed to delete this Torrent");
                     Template::render_with_user(&req, "torrent/denied.html", &mut ctx)
                 }
-            },
+            }
             Err(e) => {
                 info!("torrent '{}' not found: {}", id, e);
                 Err(ErrorNotFound(e.to_string()))
@@ -847,7 +840,7 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
             .state()
             .db()
             .send(torrent)
-            .map_err(|error| ErrorInternalServerError(error))
+            .map_err(ErrorInternalServerError)
     });
 
     let cloned = req.clone();
@@ -871,10 +864,7 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
                     ctx.insert("sub_title", "Delete Failed");
                     ctx.insert(
                         "back_link",
-                        &cloned
-                            .url_for("torrent#read", &[id.to_string()])
-                            .unwrap()
-                            .to_string(),
+                        &cloned.url_for("torrent#read", &[id.to_string()]).unwrap().to_string(),
                     );
                     Template::render_with_user(&cloned, "torrent/failed.html", &mut ctx)
                 }
@@ -897,29 +887,27 @@ pub fn download(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<
         .db()
         .send(LoadTorrentMetaMsg { id, uid })
         .from_err()
-        .and_then(
-            move |result: Result<(String, Vec<u8>, Vec<u8>)>| match result {
-                Ok((name, meta_file, passcode)) => {
-                    let announce_url = &SETTINGS.read().unwrap().tracker.announce_url[..];
-                    let comment = &SETTINGS.read().unwrap().tracker.comment[..];
-                    let announce_url = format!("{}/{}", announce_url, util::to_hex(&passcode));
-                    let meta_file = util::torrent::rewrite(&meta_file, &announce_url[..], comment)
-                        .map_err(|e| actix_web::error::ErrorInternalServerError(format!("{}", e)))?;
+        .and_then(move |result: Result<(String, Vec<u8>, Vec<u8>)>| match result {
+            Ok((name, meta_file, passcode)) => {
+                let announce_url = &SETTINGS.read().unwrap().tracker.announce_url[..];
+                let comment = &SETTINGS.read().unwrap().tracker.comment[..];
+                let announce_url = format!("{}/{}", announce_url, util::to_hex(&passcode));
+                let meta_file = util::torrent::rewrite(&meta_file, &announce_url[..], comment)
+                    .map_err(|e| actix_web::error::ErrorInternalServerError(format!("{}", e)))?;
 
-                    Ok(HttpResponse::build(StatusCode::OK)
-                        .header(header::CONTENT_TYPE, "application/x-bittorent")
-                        .header(
-                            header::CONTENT_DISPOSITION,
-                            format!("attachment; filename=\"{}\"", name),
-                        )
-                        .body(meta_file))
-                }
-                Err(e) => {
-                    info!("torrent '{}' not found: {}", id, e);
-                    Err(ErrorNotFound(e.to_string()))
-                }
-            },
-        );
+                Ok(HttpResponse::build(StatusCode::OK)
+                    .header(header::CONTENT_TYPE, "application/x-bittorent")
+                    .header(
+                        header::CONTENT_DISPOSITION,
+                        format!("attachment; filename=\"{}\"", name),
+                    )
+                    .body(meta_file))
+            }
+            Err(e) => {
+                info!("torrent '{}' not found: {}", id, e);
+                Err(ErrorNotFound(e.to_string()))
+            }
+        });
 
     Either::B(fut_response.responder())
 }
@@ -952,12 +940,4 @@ pub fn nfo(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<HttpR
         });
 
     Either::B(fut_response.responder())
-}
-
-fn categories(s: &State) -> Vec<models::Category> {
-    if let Ok(categories) = s.db().send(LoadCategoriesMsg {}).wait() {
-        categories.unwrap_or_else(|_| vec![])
-    } else {
-        vec![]
-    }
 }

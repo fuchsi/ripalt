@@ -78,8 +78,8 @@ impl PartialEq<i16> for ChatRoom {
 impl ToString for ChatRoom {
     fn to_string(&self) -> String {
         match self {
-            &ChatRoom::Public => "public".to_string(),
-            &ChatRoom::Team => "team".to_string(),
+            ChatRoom::Public => "public".to_string(),
+            ChatRoom::Team => "team".to_string(),
         }
     }
 }

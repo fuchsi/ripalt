@@ -22,7 +22,6 @@ use super::*;
 
 use diesel;
 use diesel::pg::upsert::on_constraint;
-use serde_json;
 
 use SETTINGS;
 

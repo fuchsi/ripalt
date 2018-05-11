@@ -21,12 +21,13 @@
 use super::schema::*;
 use super::*;
 use ipnetwork::IpNetwork;
-use ring::digest;
-use serde::{Serialize, Serializer, ser::SerializeStruct};
-use util::{self, password, rand};
 use models::message::NewMessageFolder;
+use ring::digest;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
+use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Mutex;
+use util::{self, password, rand};
 
 /// New users
 #[allow(dead_code)]
@@ -137,13 +138,7 @@ impl User {
     }
 
     /// Create a new `User`
-    pub fn create(
-        db: &PgConnection,
-        name: String,
-        email: String,
-        password: &str,
-        group: &Group,
-    ) -> Result<User> {
+    pub fn create(db: &PgConnection, name: String, email: String, password: &str, group: &Group) -> Result<User> {
         let mut user = User::default();
         let passcode_len = match SETTINGS.read() {
             Ok(s) => s.user.passcode_length,
@@ -189,13 +184,8 @@ impl User {
     /// Save the `User` into the database
     pub fn save(&self, db: &PgConnection) -> Result<usize> {
         use schema::users::dsl;
-        let query = diesel::update(users::table)
-            .set(self)
-            .filter(dsl::id.eq(&self.id));
-        trace!(
-            "query: {}",
-            diesel::debug_query::<diesel::pg::Pg, _>(&query)
-        );
+        let query = diesel::update(users::table).set(self).filter(dsl::id.eq(&self.id));
+        trace!("query: {}", diesel::debug_query::<diesel::pg::Pg, _>(&query));
         query.execute(db).chain_err(|| "user update failed")
     }
 
@@ -206,7 +196,8 @@ impl User {
         diesel::update(users::table)
             .set(dsl::last_active.eq(&self.last_active))
             .filter(dsl::id.eq(&self.id))
-            .execute(db).chain_err(|| "user update failed")
+            .execute(db)
+            .chain_err(|| "user update failed")
     }
 
     /// Create the [**Message Folders**](../message/struct.MessageFolder.html)
@@ -219,12 +210,29 @@ impl User {
 
         Ok(())
     }
+
+    pub fn create_profile(&self, db: &PgConnection) -> Result<usize> {
+        let profile = UserProfile {
+            id: self.id,
+            ..Default::default()
+        };
+        profile.save(db)
+    }
+
+    pub fn profile(&self, db: &PgConnection) -> UserProfile {
+        UserProfile::belonging_to(self)
+            .first::<UserProfile>(db)
+            .unwrap_or_else(|_| UserProfile {
+                id: self.id,
+                ..Default::default()
+            })
+    }
 }
 
 impl Serialize for User {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-        where
-            S: Serializer
+    where
+        S: Serializer,
     {
         let mut root = serializer.serialize_struct("user", 11)?;
         root.serialize_field("id", &self.id)?;
@@ -263,25 +271,25 @@ pub trait MaybeHasUser {
 }
 
 /// A User Property / Setting.
-#[derive(Queryable, Debug, Associations, Identifiable, Insertable, AsChangeset)]
+#[derive(Queryable, Debug, Associations, Identifiable, Insertable, AsChangeset, Serialize, Clone)]
 #[table_name = "user_properties"]
 #[belongs_to(User)]
 pub struct Property {
-    pub id: Uuid,
-    pub user_id: Uuid,
-    pub name: String,
-    pub value: serde_json::Value,
-    pub created_at: Timestamp,
-    pub updated_at: Timestamp,
+    id: Uuid,
+    user_id: Uuid,
+    name: String,
+    value: Value,
+    created_at: Timestamp,
+    updated_at: Timestamp,
 }
 
 impl Property {
     /// Construct a new `Property` instance.
     pub fn new<T>(name: String, value: T, user_id: &Uuid) -> Self
     where
-        T: Into<serde_json::Value>,
+        T: Serialize,
     {
-        let value: serde_json::Value = value.into();
+        let value = serde_json::to_value(value).unwrap();
         Property {
             id: Uuid::new_v4(),
             name,
@@ -293,13 +301,17 @@ impl Property {
     }
 
     /// Save the `Property` into the database.
-    pub fn save(&self, db: &PgConnection) -> QueryResult<usize> {
-        self.insert_into(user_properties::table).execute(db)
+    pub fn save(&self, db: &PgConnection) -> Result<usize> {
+        self.insert_into(user_properties::table)
+            .on_conflict(on_constraint("user_properties_user_id_name_key"))
+            .do_update()
+            .set(UpdateProperty::from(self))
+            .execute(db)
+            .map_err(|e| format!("failed to save property: {}", e).into())
     }
 
     /// Find a `Property` by its name for a user.
-    pub fn find(user_id: &Uuid, name: &str, db: &PgConnection) -> Option<Property>
-    {
+    pub fn find(user_id: &Uuid, name: &str, db: &PgConnection) -> Option<Property> {
         use schema::user_properties::dsl;
 
         dsl::user_properties
@@ -312,10 +324,13 @@ impl Property {
     /// Find a `Property` by its name and value.
     pub fn find_by_name_value<T>(name: &str, value: T, db: &PgConnection) -> Option<Property>
     where
-        T: Into<serde_json::Value>,
+        T: Serialize,
     {
         use schema::user_properties::dsl;
-        let json: serde_json::Value = value.into();
+        let json = match serde_json::to_value(value) {
+            Ok(value) => value,
+            Err(_) => return None,
+        };
 
         dsl::user_properties
             .filter(dsl::name.eq(name))
@@ -331,6 +346,52 @@ impl Property {
             .filter(dsl::id.eq(self.id))
             .execute(db)
             .chain_err(|| "delete property failed")
+    }
+
+    /// Fetch all properties for an user
+    pub fn fetch_for_user(id: &Uuid, db: &PgConnection) -> Vec<Property> {
+        use schema::user_properties::dsl as p;
+        user_properties::table
+            .filter(p::user_id.eq(id))
+            .order_by(p::name.asc())
+            .load::<Property>(db)
+            .unwrap()
+    }
+
+    pub fn user_id(&self) -> &Uuid {
+        &self.user_id
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn value(&self) -> &Value {
+        &self.value
+    }
+
+    pub fn set_value<T: Serialize>(&mut self, value: T) {
+        if let Ok(value) = serde_json::to_value(value) {
+            self.value = value;
+        }
+    }
+}
+
+#[derive(AsChangeset)]
+#[table_name = "user_properties"]
+struct UpdateProperty<'prop> {
+    user_id: &'prop Uuid,
+    name: &'prop str,
+    value: &'prop Value,
+}
+
+impl<'prop> From<&'prop Property> for UpdateProperty<'prop> {
+    fn from(p: &'prop Property) -> Self {
+        Self {
+            user_id: &p.user_id,
+            name: &p.name[..],
+            value: &p.value,
+        }
     }
 }
 
@@ -376,8 +437,9 @@ pub struct UserTransfer {
 }
 
 impl UserTransfer {
-    pub fn find_for_user(user_id: &Uuid, db: &PgConnection) -> Vec<UserTransfer> {
-        user_transfer::table.filter(user_transfer::dsl::user_id.eq(user_id))
+    pub fn fetch_for_user(user_id: &Uuid, db: &PgConnection) -> Vec<UserTransfer> {
+        user_transfer::table
+            .filter(user_transfer::dsl::user_id.eq(user_id))
             .order_by(user_transfer::dsl::name.asc())
             .load::<UserTransfer>(db)
             .unwrap()
@@ -406,8 +468,9 @@ pub struct CompletedTorrent {
 }
 
 impl CompletedTorrent {
-    pub fn find_for_user(user_id: &Uuid, db: &PgConnection) -> Vec<CompletedTorrent> {
-        completed_torrents::table.filter(completed_torrents::dsl::user_id.eq(user_id))
+    pub fn fetch_for_user(user_id: &Uuid, db: &PgConnection) -> Vec<CompletedTorrent> {
+        completed_torrents::table
+            .filter(completed_torrents::dsl::user_id.eq(user_id))
             .order_by(completed_torrents::dsl::name.asc())
             .load::<CompletedTorrent>(db)
             .unwrap()
@@ -423,7 +486,7 @@ pub struct UserConnection {
 }
 
 impl UserConnection {
-    pub fn find_for_user(id: &Uuid, db: &PgConnection) -> Vec<UserConnection> {
+    pub fn fetch_for_user(id: &Uuid, db: &PgConnection) -> Vec<UserConnection> {
         use schema::peers::dsl as p;
         peers::table
             .select((p::id, p::user_agent, p::ip_address, p::port))
@@ -436,8 +499,8 @@ impl UserConnection {
 
 impl Serialize for UserConnection {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-        where
-            S: Serializer
+    where
+        S: Serializer,
     {
         let mut root = serializer.serialize_struct("user_connection", 4)?;
         root.serialize_field("id", &self.id)?;
@@ -460,10 +523,18 @@ pub struct UserUpload {
 }
 
 impl UserUpload {
-    pub fn find_for_user(user_id: &Uuid, db: &PgConnection) -> Vec<UserUpload> {
+    pub fn fetch_for_user(user_id: &Uuid, db: &PgConnection) -> Vec<UserUpload> {
         use schema::torrent_list::dsl as tl;
         torrent_list::table
-            .select((tl::id, tl::user_id, tl::name, tl::size, tl::seeder, tl::leecher, tl::created_at))
+            .select((
+                tl::id,
+                tl::user_id,
+                tl::name,
+                tl::size,
+                tl::seeder,
+                tl::leecher,
+                tl::created_at,
+            ))
             .distinct()
             .filter(tl::user_id.eq(user_id))
             .order_by(tl::created_at.desc())
@@ -483,15 +554,74 @@ pub fn username(id: &Uuid, db: &PgConnection) -> Option<String> {
         return Some(name.to_owned());
     }
 
-    let name: diesel::QueryResult<String> = users::table.select(users::name)
-        .filter(users::id.eq(id))
-        .first(db);
+    let name: diesel::QueryResult<String> = users::table.select(users::name).filter(users::id.eq(id)).first(db);
 
     match name {
         Ok(name) => {
             users.insert(*id, name.clone());
             Some(name)
-        },
+        }
         Err(_) => None,
+    }
+}
+
+#[derive(Default)]
+pub struct UserSettingsMsg {
+    pub user: User,
+    pub profile: UserProfile,
+    pub properties: HashMap<String, Property>,
+    pub categories: Vec<Category>,
+}
+
+impl UserSettingsMsg {
+    pub fn new(user: User, profile: UserProfile, properties: Vec<Property>, categories: Vec<Category>) -> Self {
+        let mut prop_map = HashMap::new();
+        for prop in properties {
+            prop_map.insert(prop.name.clone(), prop);
+        }
+        Self {
+            user,
+            profile,
+            properties: prop_map,
+            categories,
+        }
+    }
+}
+
+#[derive(Default, Serialize, Identifiable, Queryable, Insertable, Associations)]
+#[belongs_to(User, foreign_key = "id")]
+pub struct UserProfile {
+    pub id: Uuid,
+    pub avatar: Option<String>,
+    pub flair: Option<String>,
+    pub about: Option<String>,
+}
+
+impl UserProfile {
+    pub fn save(&self, db: &PgConnection) -> Result<usize> {
+        self.insert_into(user_profiles::table)
+            .on_conflict(on_constraint("user_profiles_pkey"))
+            .do_update()
+            .set(UpdateUserProfile::from(self))
+            .execute(db)
+            .map_err(|e| format!("failed to save profile: {}", e).into())
+    }
+}
+
+#[derive(AsChangeset)]
+#[table_name = "user_profiles"]
+struct UpdateUserProfile<'profile> {
+    avatar: Option<&'profile String>,
+    flair: Option<&'profile String>,
+    about: Option<&'profile String>,
+}
+
+impl<'profile> From<&'profile UserProfile> for UpdateUserProfile<'profile> {
+    fn from(p: &'profile UserProfile) -> Self {
+        Self {
+            avatar: p.avatar.as_ref(),
+            flair: p.flair.as_ref(),
+            about: p.about.as_ref(),
+        }
     }
 }

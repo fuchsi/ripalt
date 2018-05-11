@@ -22,8 +22,10 @@ use super::*;
 
 use std::collections::HashMap;
 use std::fmt::Write;
+use std::cmp::Ordering;
 
 use models::User;
+use handlers::torrent::LoadCategoriesMsg;
 
 use actix_web::HttpMessage;
 use bytes::Bytes;
@@ -155,6 +157,11 @@ pub fn build(db: Addr<Syn, DbExecutor>, tpl: TemplateContainer, acl: Arc<RwLock<
             r.name("user#profile");
             r.method(Method::GET).filter(require_user()).f(app::user::profile);
         })
+        .resource("/user/settings", |r| {
+            r.name("user#settings");
+            r.method(Method::GET).filter(require_user()).a(app::user::settings);
+            r.method(Method::POST).filter(require_user()).a(app::user::update_settings);
+        })
         .resource("/user/{id}", |r| {
             r.name("user#profile");
             r.method(Method::GET).filter(require_user()).f(app::user::view);
@@ -214,8 +221,8 @@ fn render_error(req: &HttpRequest<State>, resp: HttpResponse) -> HttpResponse {
     context.insert("error", "Internal Server Error".to_string());
 
     let tpl = if resp.status().is_server_error() {
-        match resp.body() {
-            actix_web::Body::Binary(b) => match b {
+        if let actix_web::Body::Binary(b) = resp.body() {
+            match b {
                 actix_web::Binary::Bytes(bytes) => {
                     if let Ok(str) = String::from_utf8(bytes.to_vec()) {
                         context.insert("error", str);
@@ -225,8 +232,7 @@ fn render_error(req: &HttpRequest<State>, resp: HttpResponse) -> HttpResponse {
                     context.insert("error", str.to_string());
                 }
                 _ => {}
-            },
-            _ => {}
+            }
         }
         "error/5xx.html"
     } else {
@@ -234,7 +240,7 @@ fn render_error(req: &HttpRequest<State>, resp: HttpResponse) -> HttpResponse {
     };
 
     let mut new_resp: HttpResponse = match Template::render(&req.state().template(), tpl, &context) {
-        Ok(r) => r.into(),
+        Ok(r) => r,
         Err(e) => {
             return resp.into_builder()
                 .header(header::CONTENT_TYPE, "text/plain")
@@ -280,4 +286,95 @@ impl multipart::server::HttpRequest for MultipartRequest {
     fn body(self) -> <Self as multipart::server::HttpRequest>::Body {
         Cursor::new(self.body)
     }
+}
+
+pub fn categories(s: &State) -> Vec<models::Category> {
+    if let Ok(categories) = s.db().send(LoadCategoriesMsg {}).wait() {
+        categories.unwrap_or_else(|_| vec![])
+    } else {
+        vec![]
+    }
+}
+
+#[derive(Serialize, Eq)]
+pub struct Timezone {
+    pub name: String,
+    pub value: i32,
+}
+
+impl PartialEq for Timezone {
+    fn eq(&self, other: &Timezone) -> bool {
+        self.value == other.value
+    }
+}
+
+impl PartialOrd for Timezone {
+    fn partial_cmp(&self, other: &Timezone) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Timezone {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.value.cmp(&other.value)
+    }
+}
+
+impl Timezone {
+    pub fn new(name: String, value: i32) -> Self {
+        Self { name, value }
+    }
+}
+
+pub fn timezones() -> Vec<Timezone> {
+    let mut timezones = Vec::with_capacity(37);
+    let mut negative = true;
+    timezones.push(Timezone::new("UTC".to_string(), 0));
+
+    fn timezone(offset: i32) -> Timezone {
+        let offset_h = offset / 3600;
+        let mut offset_m = (offset % 3600) / 60;
+        if offset_m < 0 {
+            offset_m = -offset_m;
+        }
+        Timezone::new(format!("UTC{:+0}:{:02}", offset_h, offset_m), offset)
+    }
+
+    for _ in 0..2 {
+        for offset in 1..13 {
+            let offset = if negative { offset * -3600 } else { offset * 3600 };
+            timezones.push(timezone(offset));
+        }
+        negative = false;
+    }
+    // additional timezones
+    timezones.push(timezone(-34200)); // -9:30 MIT
+    timezones.push(timezone(-12600)); // -3:30 NST
+    timezones.push(timezone(12600)); // +3:30 IRST
+    timezones.push(timezone(16200)); // +4:30 AFT / IRDT
+    timezones.push(timezone(19800)); // +5:30 Indian Standard Time / Sri Lanka Time
+    timezones.push(timezone(20700)); // +5:45 NPT
+    timezones.push(timezone(23400)); // +6:30 MMT / CCT
+    timezones.push(timezone(34200)); // +9:30 ACST
+    timezones.push(timezone(37800)); // +10:30 ACDT
+    timezones.push(timezone(45900)); // +12:45
+    timezones.push(timezone(46800)); // +13 PHOT / TOT / NZDT
+    timezones.push(timezone(49500)); // +13:45
+    timezones.push(timezone(50400)); // +14
+
+    timezones.sort();
+
+    timezones
+}
+
+pub fn default_settings() -> Context {
+    let mut defaults = Context::new();
+    let settings = SETTINGS.read().unwrap();
+    defaults.insert("timezone", &settings.user.default_timezone);
+    defaults.insert("torrents_per_page", &settings.user.default_torrents_per_page);
+    defaults.insert("accept_messages", &settings.user.default_accept_messages);
+    defaults.insert("delete_message_on_reply", &settings.user.default_delete_message_on_reply);
+    defaults.insert("save_message_in_sent", &settings.user.default_save_message_in_sent);
+
+    defaults
 }

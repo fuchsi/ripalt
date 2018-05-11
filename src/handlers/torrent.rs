@@ -150,7 +150,7 @@ impl<'a> TorrentImage<'a> {
 
     pub fn store_image(&self) -> Result<()> {
         let path = format!("webroot/timg/{}", self.torrent_id);
-        if let Err(_) = fs::metadata(&path) {
+        if fs::metadata(&path).is_err() {
             fs::create_dir(&path)?;
         }
         let path = format!("{}/{}", path, self.file_name);
@@ -260,7 +260,7 @@ impl UpdateTorrentMsg {
 
         // delete images on disk
         let path = format!("webroot/timg/{}", self.id);
-        if let Ok(_) = fs::metadata(&path) {
+        if fs::metadata(&path).is_ok() {
             fs::remove_dir_all(&path)?;
         }
 
@@ -573,9 +573,9 @@ impl Default for Visible {
 impl ToString for Visible {
     fn to_string(&self) -> String {
         match self {
-            &Visible::Visible => String::from("visible"),
-            &Visible::Invisible => String::from("dead"),
-            &Visible::All => String::from("all"),
+            Visible::Visible => String::from("visible"),
+            Visible::Invisible => String::from("dead"),
+            Visible::All => String::from("all"),
         }
     }
 }
@@ -673,7 +673,7 @@ impl LoadTorrentListMsg {
         if let Some(prop) =
             models::user::Property::find(&self.current_user_id, "torrents_per_page", db)
         {
-            if let Some(number) = prop.value.as_i64() {
+            if let Some(number) = prop.value().as_i64() {
                 return number;
             }
         }
@@ -742,7 +742,7 @@ impl Handler<DeleteTorrentMsg> for DbExecutor {
 
         // delete images on disk
         let path = format!("webroot/timg/{}", msg.id);
-        if let Ok(_) = fs::metadata(&path) {
+        if fs::metadata(&path).is_ok() {
             fs::remove_dir_all(&path)?;
         }
 

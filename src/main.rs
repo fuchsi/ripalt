@@ -99,16 +99,10 @@ use actix::prelude::*;
 use actix_web::error::{ErrorBadRequest, ErrorForbidden, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::middleware::session::{CookieSessionBackend, RequestSession, SessionStorage};
 use actix_web::middleware::{csrf, DefaultHeaders, ErrorHandlers, Logger};
-use actix_web::{fs::StaticFiles,
-                http::{header, Method, NormalizePath, StatusCode},
-                server::HttpServer,
-                App,
-                Either,
-                FutureResponse,
-                HttpRequest,
-                HttpResponse,
-                Query,
-                Responder};
+use actix_web::{
+    fs::StaticFiles, http::{header, Method, NormalizePath, StatusCode}, server::HttpServer, App, Either,
+    FutureResponse, HttpRequest, HttpResponse, Query, Responder,
+};
 //use actix_redis::RedisSessionBackend;
 use chrono::prelude::*;
 use diesel::prelude::*;

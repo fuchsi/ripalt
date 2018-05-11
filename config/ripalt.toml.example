@@ -25,8 +25,8 @@ url = "postgres://ripalt:ripalt@localhost/ripalt"
 default_group = "0eb8ac8f-01f4-4bf9-bb0d-e3ac0ecb15f9"
 # number of bytes in newly generated passcodes
 passcode_length = 16
-# default timezone, offset from UTC
-default_timezone = 2
+# default timezone, offset in seconds from UTC
+default_timezone = 7200
 # default torrents per page
 default_torrents_per_page = 100
 # delete original message when replying
@@ -38,6 +38,8 @@ default_save_message_in_sent = true
 # friends: only users in the friends list
 # team: only the team and system messages
 default_accept_messages = "all"
+# width for user avatar images thumbnails in pixels
+avatar_thumbnail_width = 200
 
 [email]
 # enable the email system
@@ -54,7 +56,7 @@ default_numwant = 50
 interval = 900
 
 [torrent]
-# width for torrent image thumbnails in pixels
+# width for torrent images thumbnails in pixels
 image_thumbnail_width = 200
 # remove dead torrents after X days
 remove_dead_torrents_after = 30

@@ -35,11 +35,11 @@ pub enum Permission {
 impl ToString for Permission {
     fn to_string(&self) -> String {
         match self {
-            &Permission::None => "none".to_string(),
-            &Permission::Read => "read".to_string(),
-            &Permission::Write => "write".to_string(),
-            &Permission::Create => "create".to_string(),
-            &Permission::Delete => "delete".to_string(),
+            Permission::None => "none".to_string(),
+            Permission::Read => "read".to_string(),
+            Permission::Write => "write".to_string(),
+            Permission::Create => "create".to_string(),
+            Permission::Delete => "delete".to_string(),
         }
     }
 }

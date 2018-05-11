@@ -210,6 +210,15 @@ table! {
 }
 
 table! {
+    user_profiles (id) {
+        id -> Uuid,
+        avatar -> Nullable<Varchar>,
+        flair -> Nullable<Varchar>,
+        about -> Nullable<Text>,
+    }
+}
+
+table! {
     user_properties (id) {
         id -> Uuid,
         user_id -> Uuid,
@@ -268,9 +277,10 @@ joinable!(torrents -> categories (category_id));
 joinable!(torrents -> users (user_id));
 joinable!(transfers -> torrents (torrent_id));
 joinable!(transfers -> users (user_id));
+joinable!(user_profiles -> users (id));
+joinable!(user_properties -> users (user_id));
 joinable!(user_transfer -> users (user_id));
 joinable!(user_transfer -> torrents (torrent_id));
-joinable!(user_properties -> users (user_id));
 joinable!(users -> groups (group_id));
 
 allow_tables_to_appear_in_same_query!(
@@ -289,7 +299,8 @@ allow_tables_to_appear_in_same_query!(
     torrent_nfos,
     torrents,
     transfers,
-    user_transfer,
+    user_profiles,
     user_properties,
+    user_transfer,
     users,
 );

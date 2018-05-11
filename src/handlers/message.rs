@@ -295,16 +295,10 @@ impl Handler<DeleteMessagesMsg> for DbExecutor {
         let mut deleted = Vec::with_capacity(msg.messages.len());
         let mut folders = HashMap::new();
 
-        for ref mid in msg.messages {
+        for mid in &msg.messages {
             if let Some(message) = models::Message::find(mid, &conn) {
-                if !folders.contains_key(&message.folder_id) {
-                    let from_db = match MessageFolder::find(&message.folder_id, &conn) {
-                        Some(f) => f,
-                        None => continue,
-                    };
-                    folders.insert(message.folder_id, from_db);
-                };
-                let folder = folders.get(&message.folder_id).unwrap();
+                let folder = folders.entry(message.folder_id)
+                    .or_insert_with(|| MessageFolder::find(&message.folder_id, &conn).unwrap());
 
                 if message.owner(folder) == msg.user_id {
                     message.delete(&conn)?;
@@ -348,16 +342,10 @@ impl Handler<MarkMessagesMsg> for DbExecutor {
         let mut marked = Vec::with_capacity(msg.messages.len());
         let mut folders = HashMap::new();
 
-        for ref mid in msg.messages {
+        for mid in &msg.messages {
             if let Some(mut message) = models::Message::find(mid, &conn) {
-                if !folders.contains_key(&message.folder_id) {
-                    let from_db = match MessageFolder::find(&message.folder_id, &conn) {
-                        Some(f) => f,
-                        None => continue,
-                    };
-                    folders.insert(message.folder_id, from_db);
-                };
-                let folder = folders.get(&message.folder_id).unwrap();
+                let folder = folders.entry(message.folder_id)
+                    .or_insert_with(|| MessageFolder::find(&message.folder_id, &conn).unwrap());
 
                 if message.owner(folder) == msg.user_id {
                     if msg.mark_as_read {
