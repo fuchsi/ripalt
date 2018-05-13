@@ -48,6 +48,7 @@ pub fn profile(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<H
                 ctx.insert("connections", &user.connections);
                 ctx.insert("timezone", &user.timezone);
                 ctx.insert("may_view_passcode", &user.may_view_passcode);
+                ctx.insert("profile", &user.profile);
                 Template::render_with_user(&cloned, "user/profile.html", &mut ctx)
             }
             Err(e) => {
@@ -88,6 +89,7 @@ pub fn view(req: HttpRequest<State>) -> Either<HttpResponse, FutureResponse<Http
                 ctx.insert("connections", &user.connections);
                 ctx.insert("timezone", &user.timezone);
                 ctx.insert("may_view_passcode", &user.may_view_passcode);
+                ctx.insert("profile", &user.profile);
                 Template::render_with_user(&cloned, "user/profile.html", &mut ctx)
             }
             Err(e) => {

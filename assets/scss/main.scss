@@ -228,3 +228,8 @@ pre.nfo {
 .message-body {
   background-color: lighten($dark, 10%);
 }
+
+.flair {
+  vertical-align: super;
+  font-size: $font-size-sm;
+}

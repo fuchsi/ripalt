@@ -356,6 +356,7 @@ impl Handler<LoadUserProfileMsg> for DbExecutor {
                 }
                 let uploads = UserUpload::fetch_for_user(&user.id, &db);
                 let timezone = util::user::user_timezone(&msg.1, &db);
+                let profile = user.profile(&db);
 
                 Ok(UserProfileMsg {
                     user,
@@ -366,6 +367,7 @@ impl Handler<LoadUserProfileMsg> for DbExecutor {
                     uploads,
                     timezone,
                     may_view_passcode,
+                    profile,
                 })
             }
             None => bail!("user not found"),

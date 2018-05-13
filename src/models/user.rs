@@ -407,7 +407,7 @@ pub struct UserStatsMsg {
     pub downloads: i64,
 }
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct UserProfileMsg {
     pub user: User,
     pub active_uploads: Vec<UserTransfer>,
@@ -417,6 +417,7 @@ pub struct UserProfileMsg {
     pub connections: Vec<UserConnection>,
     pub timezone: i32,
     pub may_view_passcode: bool,
+    pub profile: UserProfile,
 }
 
 #[derive(Debug, Serialize, Queryable, Identifiable)]

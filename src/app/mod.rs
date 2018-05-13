@@ -93,6 +93,7 @@ pub fn build(db: Addr<Syn, DbExecutor>, tpl: TemplateContainer, acl: Arc<RwLock<
         .middleware(IdentityService::new(AppIdentityPolicy::new()))
         .handler("/static", StaticFiles::new("webroot/static/"))
         .handler("/timg", StaticFiles::new("webroot/timg"))
+        .handler("/aimg", StaticFiles::new("webroot/aimg"))
         .resource("/", |r| {
             r.name("index");
             r.route().filter(require_user()).f(app::index::authenticated);
