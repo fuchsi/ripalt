@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     - `POST /api/v1/message/send` send a new message.
 - Message Frontend
 - FAQ / Rules and other _static_ content.
+- User Settings and Profile
 
 ### Changed
 - `Template::render()` now returns `HttpResponse` instead of `Template`

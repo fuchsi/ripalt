@@ -10,7 +10,7 @@ Nothing special yet. Plain old Torrent tracking.
 
 ## Requirements
 
-- Rust nightly (2018-04-29)
+- Rust nightly (2018-05-10)
 - PostgreSQL
 
 **Additional Build Requirements**
