@@ -23,8 +23,16 @@ use super::*;
 use identity::{ApiIdentityPolicy, IdentityService};
 
 pub mod chat;
+pub mod comment;
 pub mod message;
 pub mod user;
+
+#[derive(Serialize)]
+#[doc(hidden)]
+pub struct JsonErr {
+    pub error: String,
+}
+
 
 pub(crate) fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<State> {
     let settings = SETTINGS.read().unwrap();
@@ -75,6 +83,13 @@ pub(crate) fn build(db: Addr<Syn, DbExecutor>, acl: Arc<RwLock<Acl>>) -> App<Sta
             .resource("/send", |r| r.method(Method::POST).with2(message::send))
             .resource("/delete", |r| r.method(Method::POST).with2(message::delete))
             .resource("/mark_read", |r| r.method(Method::POST).with2(message::mark_read))
+        })
+        .scope("/comment", |scope| {
+            scope.route("/torrent", Method::GET, comment::torrent)
+                .route("/get", Method::GET, comment::comment)
+                .resource("/new", |r| r.method(Method::POST).with2(comment::new))
+                .resource("/edit", |r| r.method(Method::POST).with2(comment::edit))
+                .resource("/delete", |r| r.method(Method::POST).with2(comment::delete))
         })
         .default_resource(|r| r.method(Method::GET).h(NormalizePath::default()))
 }

@@ -25,12 +25,13 @@ use futures::Future;
 use std::fs;
 use std::io::{self, Read, Write};
 use std::path::Path;
+use std::convert::TryFrom;
 use tempfile::NamedTempFile;
 
 use handlers::torrent::*;
 use handlers::UserSubjectMsg;
 use models::acl::Subject;
-use models::{torrent::{TorrentFile, TorrentImage},
+use models::{torrent::{TorrentFile, TorrentImage, TorrentCommentResponse},
              Torrent,
              TorrentMsg};
 
@@ -328,7 +329,7 @@ fn process_upload(entries: &Entries) -> Result<NewTorrentMsg> {
     upload_builder.finish()
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Serialize)]
 struct ShowContext<'a> {
     torrent: ShowTorrent<'a>,
     torrent_user_name: &'a Option<String>,
@@ -345,6 +346,7 @@ struct ShowContext<'a> {
     may_delete: bool,
     timezone: i32,
     current_user: Option<User>,
+    comments: &'a Vec<TorrentCommentResponse>
 }
 
 impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
@@ -388,6 +390,7 @@ impl<'a> From<&'a TorrentMsg> for ShowContext<'a> {
             may_delete: false,
             timezone: tc.timezone,
             current_user: None,
+            comments: &tc.comments,
         }
     }
 }
@@ -500,10 +503,15 @@ pub fn torrent(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
     };
 
+    let subj = match UserSubjectMsg::try_from(&req) {
+        Ok(subj) => subj,
+        Err(e) => return Box::new(FutErr(ErrorInternalServerError(e.to_string())))
+    };
+
     req.clone()
         .state()
         .db()
-        .send(LoadTorrentMsg::new(&id, &user_id))
+        .send(LoadTorrentMsg::new(&id, subj))
         .from_err()
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
@@ -537,10 +545,15 @@ pub fn edit(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
     };
 
+    let subj = match UserSubjectMsg::try_from(&req) {
+        Ok(subj) => subj,
+        Err(e) => return Box::new(FutErr(ErrorInternalServerError(e.to_string())))
+    };
+
     req.clone()
         .state()
         .db()
-        .send(LoadTorrentMsg::new(&id, &user_id))
+        .send(LoadTorrentMsg::new(&id, subj))
         .from_err()
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
@@ -767,10 +780,15 @@ pub fn delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
         Err(e) => return Box::new(FutErr(ErrorNotFound(e))),
     };
 
+    let subj = match UserSubjectMsg::try_from(&req) {
+        Ok(subj) => subj,
+        Err(e) => return Box::new(FutErr(ErrorInternalServerError(e.to_string())))
+    };
+
     req.clone()
         .state()
         .db()
-        .send(LoadTorrentMsg::new(&id, &user_id))
+        .send(LoadTorrentMsg::new(&id, subj))
         .from_err()
         .and_then(move |result: Result<TorrentMsg>| match result {
             Ok(tc) => {
@@ -830,8 +848,8 @@ pub fn do_delete(mut req: HttpRequest<State>) -> FutureResponse<HttpResponse> {
     let acl = req.state().acl().clone();
     let fut_process = fut_prepare.and_then(move |form| {
         let DeleteForm { id, reason } = form;
-        let user = UserSubjectMsg::new(user_id, group_id, acl);
-        let msg = DeleteTorrentMsg { id, reason, user };
+        let subj = UserSubjectMsg::new(user_id, group_id, acl);
+        let msg = DeleteTorrentMsg::new(id, reason, subj);
         Ok(msg)
     });
     let cloned = req.clone();

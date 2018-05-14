@@ -46,11 +46,6 @@ pub struct MessageListMsg {
     pub messages: Vec<Uuid>,
 }
 
-#[derive(Serialize)]
-struct JsonErr {
-    pub error: String,
-}
-
 /// Fetch messages
 ///
 /// `GET /api/v1/message/messages`

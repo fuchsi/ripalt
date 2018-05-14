@@ -38,13 +38,13 @@ impl UserSubjectMsg {
     }
 }
 
-impl<'req> TryFrom<&'req mut HttpRequest<State>> for UserSubjectMsg {
+impl<'req> TryFrom<&'req HttpRequest<State>> for UserSubjectMsg {
     type Error = Error;
 
-    fn try_from(req: &mut HttpRequest<State>) -> Result<Self> {
-        let (uid, gid) = match session_creds(req) {
-            Some((u, g)) => (u, g),
-            None => bail!("session credentials not available"),
+    fn try_from(req: &HttpRequest<State>) -> Result<Self> {
+        let (uid, gid) = match req.credentials() {
+            Some((u, g)) => (*u, *g),
+            None => bail!("credentials not available"),
         };
         Ok(Self::new(uid, gid, req.state().acl().clone()))
     }

@@ -17,12 +17,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Message Frontend
 - FAQ / Rules and other _static_ content.
 - User Settings and Profile
+- Torrent Comment API
+    - `GET /api/v1/comment/torrent` get all comments for a torrent.
+    - `GET /api/v/comment/get` get a single comment.
+    - `POST /api/v1/comment/new` publish a new comment.
+    - `POST /api/v1/comment/edit` edit a comment.
+    - `POST /api/v1/comment/delete` delete a comment.
+- Torrent Comment Frontend
+
 
 ### Changed
 - `Template::render()` now returns `HttpResponse` instead of `Template`
 - The `format_date` Helper now appends 'UTC' if no specific timezone is provided.
 
-## [0.2.0]
+## [0.2.0] - 2018-04-30
 
 ### Added
 - Cleanup thread to remove orphaned peers.
@@ -57,7 +65,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Removed
 - bip_bencode in favour for serde_bencode.
 
-## [0.1.0]
+## [0.1.0] - 2018-04-20
 
 ### Added
 

@@ -3,12 +3,12 @@
     <div class="col-md-12 mt-4">
         {% if error %}
             <div class="alert alert-danger" role="alert">
-                {{error}}
+                {{ error }}
             </div>
         {% endif %}
         <div class="row">
             <div class="col-md-10">
-                <p class="lead">{{torrent.name}}</p>
+                <p class="lead">{{ torrent.name }}</p>
             </div>
         </div>
         <div class="row mt-auto">
@@ -17,7 +17,8 @@
                     <div class="card-header">
                         <ul class="nav nav-tabs card-header-tabs" id="torrent-details-tab" role="tablist">
                             <li class="nav-item">
-                                <a href="#torrent-details" class="nav-link active" id="details-tab" data-toggle="tab" role="tab"
+                                <a href="#torrent-details" class="nav-link active" id="details-tab" data-toggle="tab"
+                                   role="tab"
                                    aria-controls="torrent-details" aria-selected="true">Details</a>
                             </li>
                             <li class="nav-item">
@@ -33,60 +34,63 @@
                                    aria-controls="torrent-peers" aria-selected="false">Peers</a>
                             </li>
                             <li class="nav-item">
-                                <a href="#torrent-comments" class="nav-link" id="comments-tab" data-toggle="tab" role="tab"
+                                <a href="#torrent-comments" class="nav-link" id="comments-tab" data-toggle="tab"
+                                   role="tab"
                                    aria-controls="torrent-comments" aria-selected="false">Comments</a>
                             </li>
                         </ul>
                     </div>
                     <div class="card-body">
                         <div class="tab-content" id="torrent-details-content">
-                            <div class="tab-pane active" id="torrent-details" role="tabpanel" aria-labelledby="details-tab">
+                            <div class="tab-pane active" id="torrent-details" role="tabpanel"
+                                 aria-labelledby="details-tab">
                                 <div class="row border-bottom">
                                     <p class="col-sm-2">Name</p>
-                                    <p class="col-sm-10">{{torrent.name}}</p>
+                                    <p class="col-sm-10">{{ torrent.name }}</p>
                                     <p class="col-sm-2">Info-Hash</p>
-                                    <p class="col-sm-10">{{torrent.info_hash}}</p>
+                                    <p class="col-sm-10">{{ torrent.info_hash }}</p>
                                     <p class="col-sm-2">Download</p>
                                     <p class="col-sm-10">
-                                        <a href="/torrent/download/{{torrent.id}}">HTTPS</a>
+                                        <a href="/torrent/download/{{ torrent.id }}">HTTPS</a>
                                     </p>
                                 </div>
                                 <div class="row mt-2 border-bottom">
                                     <p class="col-sm-2">Category</p>
-                                    <p class="col-sm-10">{{category.name}}</p>
+                                    <p class="col-sm-10">{{ category.name }}</p>
                                     <p class="col-sm-2">Uploader</p>
                                     <p class="col-sm-10">
                                         {% if torrent.user_id %}
-                                            <a href="/user/{{torrent.user_id}}">{{torrent_user_name}}</a>
+                                            <a href="/user/{{ torrent.user_id }}">{{ torrent_user_name }}</a>
                                         {% else %}
                                             *deleted
                                         {% endif %}
                                     </p>
                                     <p class="col-sm-2">Added</p>
-                                    <p class="col-sm-10">{{torrent.created_at | format_date(timezone=timezone)}}</p>
+                                    <p class="col-sm-10">{{ torrent.created_at | format_date(timezone=timezone) }}</p>
                                     <p class="col-sm-2">Hits</p>
                                     <p class="col-sm-10">0{# torrent.hits #}</p>
                                     <p class="col-sm-2">Completed</p>
-                                    <p class="col-sm-10">{{torrent.completed}}</p>
+                                    <p class="col-sm-10">{{ torrent.completed }}</p>
                                 </div>
                                 <div class="row mt-2 border-bottom">
                                     <p class="col-sm-2">Files</p>
-                                    <p class="col-sm-10">{{num_files}}</p>
+                                    <p class="col-sm-10">{{ num_files }}</p>
                                     <p class="col-sm-2">Size</p>
-                                    <p class="col-sm-10">{{torrent.size | data_size}}</p>
+                                    <p class="col-sm-10">{{ torrent.size | data_size }}</p>
                                 </div>
                                 <div class="row mt-2">
                                     <div class="col-sm-2">Description</div>
-                                    <div class="col-sm-10">{{torrent.description | safe | markdown}}</div>
+                                    <div class="col-sm-10">{{ torrent.description | safe | markdown }}</div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="torrent-nfo" role="tabpanel" aria-labelledby="nfo-tab">
                                 {% if nfo %}
-                                <div class="btn-group btn-group-sm mt-2 mb-2" role="group" aria-label="...">
-                                    <a href="/torrent/nfo/{{torrent.id}}" type="button" class="btn btn-primary">Download NFO</a>
-                                    <button type="button" class="btn btn-secondary">Change View</button>
-                                </div>
-                                <pre class="nfo p-2">{{nfo}}</pre>
+                                    <div class="btn-group btn-group-sm mt-2 mb-2" role="group" aria-label="...">
+                                        <a href="/torrent/nfo/{{ torrent.id }}" type="button" class="btn btn-primary">Download
+                                            NFO</a>
+                                        <button type="button" class="btn btn-secondary">Change View</button>
+                                    </div>
+                                    <pre class="nfo p-2">{{ nfo }}</pre>
                                 {% endif %}
                             </div>
                             <div class="tab-pane fade" id="torrent-files" role="tabpanel" aria-labelledby="files-tab">
@@ -102,8 +106,8 @@
                                             <tbody>
                                             {% for file in files %}
                                                 <tr>
-                                                    <td>{{file.file_name}}</td>
-                                                    <td>{{file.size | data_size}}</td>
+                                                    <td>{{ file.file_name }}</td>
+                                                    <td>{{ file.size | data_size }}</td>
                                                 </tr>
                                             {% endfor %}
                                             </tbody>
@@ -128,21 +132,24 @@
                                     </thead>
                                     <tbody>
                                     {% if num_seeder %}
-                                    {% for peer in seeder %}
-                                        <tr>
-                                            <td scope="row"><a href="/user/{{peer.user_id}}">{{peer.user_name}}</a></td>
-                                            <td scope="row">{{peer.bytes_uploaded | data_size}}</td>
-                                            <td scope="row">{{peer.bytes_downloaded | data_size}}</td>
-                                            <td scope="row">{{peer.ratio}}</td>
-                                            <td scope="row">{{peer.created_at | format_date(timezone=timezone)}}</td>
-                                            <td scope="row">{{peer.updated_at | format_date(timezone=timezone)}}</td>
-                                            <td scope="row">{{peer.finished_at | format_date(timezone=timezone)}}</td>
-                                            <td scope="row">{{peer.user_agent}}</td>
-                                        </tr>
-                                    {% endfor %}
+                                        {% for peer in seeder %}
+                                            <tr>
+                                                <td scope="row"><a
+                                                            href="/user/{{ peer.user_id }}">{{ peer.user_name }}</a>
+                                                </td>
+                                                <td scope="row">{{ peer.bytes_uploaded | data_size }}</td>
+                                                <td scope="row">{{ peer.bytes_downloaded | data_size }}</td>
+                                                <td scope="row">{{ peer.ratio }}</td>
+                                                <td scope="row">{{ peer.created_at | format_date(timezone=timezone) }}</td>
+                                                <td scope="row">{{ peer.updated_at | format_date(timezone=timezone) }}</td>
+                                                <td scope="row">{{ peer.finished_at | format_date(timezone=timezone) }}</td>
+                                                <td scope="row">{{ peer.user_agent }}</td>
+                                            </tr>
+                                        {% endfor %}
                                     {% else %}
                                         <tr>
-                                            <td colspan="8" class="text-info text-center font-weight-bold">No Seeders</td>
+                                            <td colspan="8" class="text-info text-center font-weight-bold">No Seeders
+                                            </td>
                                         </tr>
                                     {% endif %}
                                     </tbody>
@@ -166,37 +173,97 @@
                                     {% if num_leecher %}
                                         {% for peer in leecher %}
                                             <tr>
-                                                <td scope="row"><a href="/user/{{peer.user_id}}">{{peer.user_name}}</a></td>
-                                                <td scope="row">{{peer.bytes_uploaded | data_size}}</td>
-                                                <td scope="row">{{peer.bytes_downloaded | data_size}}</td>
-                                                <td scope="row">{{peer.ratio}}</td>
-                                                <td scope="row">{{peer.created_at | format_date(timezone=timezone)}}</td>
-                                                <td scope="row">{{peer.updated_at | format_date(timezone=timezone)}}</td>
-                                                <td scope="row">{{peer.complete_ratio}}</td>
-                                                <td scope="row">{{peer.user_agent}}</td>
+                                                <td scope="row"><a
+                                                            href="/user/{{ peer.user_id }}">{{ peer.user_name }}</a>
+                                                </td>
+                                                <td scope="row">{{ peer.bytes_uploaded | data_size }}</td>
+                                                <td scope="row">{{ peer.bytes_downloaded | data_size }}</td>
+                                                <td scope="row">{{ peer.ratio }}</td>
+                                                <td scope="row">{{ peer.created_at | format_date(timezone=timezone) }}</td>
+                                                <td scope="row">{{ peer.updated_at | format_date(timezone=timezone) }}</td>
+                                                <td scope="row">{{ peer.complete_ratio }}</td>
+                                                <td scope="row">{{ peer.user_agent }}</td>
                                             </tr>
                                         {% endfor %}
                                     {% else %}
                                         <tr>
-                                            <td colspan="8" class="text-info text-center font-weight-bold">No Leechers</td>
+                                            <td colspan="8" class="text-info text-center font-weight-bold">No Leechers
+                                            </td>
                                         </tr>
                                     {% endif %}
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="tab-pane fade" id="torrent-comments" role="tabpanel" aria-labelledby="comments-tab">
-                                Comments
+                            <div class="tab-pane fade" id="torrent-comments" role="tabpanel"
+                                 aria-labelledby="comments-tab">
+                                <div id="comment-error" class="alert alert-danger d-none" role="alert"></div>
+                                <div id="comments">
+                                    {% for comment in comments %}
+                                        <div class="row mt-2" id="comment-{{ comment.id }}">
+                                            <div class="col-md-12">
+                                                <div class="card bg-dark">
+                                                    <div class="card-header">
+                                                        <a href="/user/{{ comment.user_id }}">{{ comment.user_name }}</a>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="comment-content">{{ comment.content | safe | markdown }}</div>
+                                                        {% if comment.may_edit or comment.may_delete %}
+                                                            <div class="btn-group btn-group-sm">
+                                                                {% if comment.may_edit %}
+                                                                    <button type="button"
+                                                                            class="btn btn-secondary btn-edit-comment"
+                                                                            data-id="{{ comment.id }}">Edit
+                                                                    </button>
+                                                                {% endif %}
+                                                                {% if comment.may_delete %}
+                                                                    <button type="button"
+                                                                            class="btn btn-danger btn-delete-comment"
+                                                                            data-id="{{ comment.id }}">Delete
+                                                                    </button>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="card-footer text-muted">
+                                                        {{ comment.created_at | format_date(timezone=timezone) }}
+                                                        {% if comment.updated_at != comment.created_at %}
+                                                            <em>Edited: {{ comment.updated_at | format_date(timezone=timezone) }}</em>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-10 offset-1">
+                                        <h5>New Comment</h5>
+                                        <form name="comment" id="comment_form" method="post">
+                                            <input type="hidden" name="torrent_id" value="{{ torrent.id }}">
+                                            <div class="form-group">
+                                                <textarea class="form-control" name="content" id="comment_content"
+                                                          rows="10"></textarea>
+                                                <small id="torrent_content-help-block" class="form-text text-muted">
+                                                    Markdown is supported
+                                                </small>
+                                            </div>
+                                            <div class="form-group">
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="btn-group btn-group-sm mt-2" role="group" aria-label="...">
-                            <a class="btn btn-primary" href="/torrent/download/{{torrent.id}}">Download</a>
+                            <a class="btn btn-primary" href="/torrent/download/{{ torrent.id }}">Download</a>
                             <button id="torrent-thank" type="button" class="btn btn-secondary">Thanks</button>
                             <button id="torrent-report" type="button" class="btn btn-warning">Report</button>
                             {% if may_edit %}
-                                <a class="btn btn-secondary" href="/torrent/edit/{{torrent.id}}">Edit</a>
+                                <a class="btn btn-secondary" href="/torrent/edit/{{ torrent.id }}">Edit</a>
                             {% endif %}
                             {% if may_delete %}
-                                <a class="btn btn-danger" href="/torrent/delete/{{torrent.id}}">Delete</a>
+                                <a class="btn btn-danger" href="/torrent/delete/{{ torrent.id }}">Delete</a>
                             {% endif %}
                         </div>
                     </div>
@@ -210,14 +277,16 @@
                     <div class="card-body">
                         {% for image in images %}
                             {% if loop.index is odd %}
-                                <div class="text-center{% if not loop.first%} mt-2{% endif %}">
-                                    <a href="/timg/{{torrent.id}}/{{image.file_name}}">
-                                        <img class="rounded" src="/timg/{{torrent.id}}/t{{image.file_name}}" alt="{{image.file_name}}">
-                                    </a>
+                            <div class="text-center{% if not loop.first %} mt-2{% endif %}">
+                                <a href="/timg/{{ torrent.id }}/{{ image.file_name }}">
+                                    <img class="rounded" src="/timg/{{ torrent.id }}/t{{ image.file_name }}"
+                                         alt="{{ image.file_name }}">
+                                </a>
                             {% else %}
-                                    <a href="/timg/{{torrent.id}}/{{image.file_name}}">
-                                        <img class="rounded ml-2" src="/timg/{{torrent.id}}/t{{image.file_name}}" alt="{{image.file_name}}">
-                                    </a>
+                                <a href="/timg/{{ torrent.id }}/{{ image.file_name }}">
+                                    <img class="rounded ml-2" src="/timg/{{ torrent.id }}/t{{ image.file_name }}"
+                                         alt="{{ image.file_name }}">
+                                </a>
                                 </div>
                             {% endif %}
                         {% endfor %}
@@ -225,7 +294,111 @@
                 </div>
             </div>
         </div>
-
     </div>
+    <script>
+        (() => {
+            'use strict';
+            window.addEventListener('load', () => {
+                if (window.location.hash !== '') {
+                    $(`#torrent-details-tab a[href='${window.location.hash}']`).tab('show');
+                }
+                $('#comment_form').on('submit', (ev) => {
+                    ev.preventDefault();
+                    let form = $('#comment_form');
+                    let form_data = new FormData(form[0]);
+                    let data = {
+                        'content': '',
+                        'torrent_id': '',
+                    };
+                    for (let [key, value] of form_data.entries()) {
+                        data[key] = value;
+                    }
+                    post_json('/api/v1/comment/new', data)
+                        .then((comment) => {
+                            if (comment.error !== undefined) {
+                                $('#comment-error').removeClass('d-none').text(comment.error);
+                            }
+                            if (window.location.hash !== '#torrent-comments') {
+                                window.location.hash = '#torrent-comments';
+                            }
+                            window.location.reload();
+                        })
+                        .catch(error => $('#comment-error').removeClass('d-none').text(error));
+                });
+                $('.btn-edit-comment').on('click', (ev) => {
+                    ev.preventDefault();
+                    let id = $(ev.currentTarget).attr('data-id');
+                    get_json(`/api/v1/comment/get?id=${id}`)
+                        .then((comment) => {
+                            if (comment.error !== undefined) {
+                                $('#comment-error').removeClass('d-none').text(comment.error);
+                            }
+
+                            let container = $(`#comment-${comment.id}`);
+                            $('.comment-content', container).hide();
+                            let form = $(`<form name="edit-comment" id="edit-comment-${comment.id}_form" method="post">`)
+                                .append(`<input type="hidden" name="id" value="${comment.id}">`)
+                                .append($('<div class="form-group">')
+                                    .append($('<textarea class="form-control" name="content" id="comment_content" rows="10"></textarea>').val(comment.content))
+                                    .append('<small id="torrent_content-help-block" class="form-text text-muted">Markdown is supported</small>')
+                                )
+                                .append($('<div class="form-group">')
+                                    .append($('<div class="btn-group">')
+                                        .append('<button type="submit" class="btn btn-primary">Save</button>')
+                                        .append($(`<button type="button" class="btn btn-secondary" data-id="${comment.id}">Cancel</button>`)
+                                            .on('click', (ev) => {
+                                                let id = $(ev.currentTarget).attr('data-id');
+                                                let container = $(`#comment-${id}`);
+                                                $('.comment-content', container).show();
+                                                $('form', container).remove();
+                                            })
+                                        )
+                                    )
+                                )
+                                .on('submit', (ev) => {
+                                    ev.preventDefault();
+                                    let form = $(ev.currentTarget);
+                                    let form_data = new FormData(form[0]);
+                                    let data = {
+                                        'content': '',
+                                        'id': '',
+                                    };
+                                    for (let [key, value] of form_data.entries()) {
+                                        data[key] = value;
+                                    }
+                                    post_json('/api/v1/comment/edit', data)
+                                        .then((comment) => {
+                                            if (comment.error !== undefined) {
+                                                $('#comment-error').removeClass('d-none').text(comment.error);
+                                            }
+                                            if (window.location.hash !== '#torrent-comments') {
+                                                window.location.hash = '#torrent-comments';
+                                            }
+                                            window.location.reload();
+                                        })
+                                        .catch(error => $('#comment-error').removeClass('d-none').text(error));
+                                });
+                            $('.comment-content', container).after(form);
+                        })
+                        .catch(error => $('#comment-error').removeClass('d-none').text(error));
+                });
+                $('.btn-delete-comment').on('click', (ev) => {
+                    ev.preventDefault();
+                    let id = $(ev.currentTarget).attr('data-id');
+                    post_json('/api/v1/comment/delete', {id: id})
+                        .then((comment) => {
+                            if (comment.error !== undefined) {
+                                $('#comment-error').removeClass('d-none').text(comment.error);
+                            }
+                            if (window.location.hash !== '#torrent-comments') {
+                                window.location.hash = '#torrent-comments';
+                            }
+                            window.location.reload();
+                        })
+                        .catch(error => $('#comment-error').removeClass('d-none').text(error));
+                });
+            });
+        })();
+    </script>
 {% endblock content %}
-{% block title %}Details for {{torrent.name}}{% endblock title %}
+{% block title %}Details for {{ torrent.name }}{% endblock title %}

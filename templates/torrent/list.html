@@ -44,6 +44,7 @@
                     <th scope="col">Added</th>
                     <th scope="col">Last Action</th>
                     <th scope="col">Last Seeder</th>
+                    <th scope="col">Comments</th>
                     <th scope="col">Files</th>
                     <th scope="col">Size</th>
                     <th scope="col">Completed</th>
@@ -60,6 +61,7 @@
                         <td scope="row">{{torrent.created_at | format_date(timezone=timezone)}}</td>
                         <td scope="row">{{torrent.last_action | format_date(timezone=timezone)}}</td>
                         <td scope="row">{{torrent.last_seeder | format_date(timezone=timezone)}}</td>
+                        <td scope="row">{{torrent.comments}}</td>
                         <td scope="row">{{torrent.files}}</td>
                         <td scope="row">{{torrent.size | data_size}}</td>
                         <td scope="row">{{torrent.completed}}</td>

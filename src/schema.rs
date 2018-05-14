@@ -123,6 +123,17 @@ table! {
 }
 
 table! {
+    torrent_comments (id) {
+        id -> Uuid,
+        user_id -> Uuid,
+        torrent_id -> Uuid,
+        content -> Text,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+table! {
     torrent_files (id) {
         id -> Uuid,
         torrent_id -> Uuid,
@@ -174,6 +185,7 @@ table! {
         last_action -> Nullable<Timestamptz>,
         last_seeder -> Nullable<Timestamptz>,
         created_at -> Timestamptz,
+        comments -> Int8,
     }
 }
 
@@ -272,6 +284,8 @@ joinable!(message_folders -> users (user_id));
 joinable!(messages -> message_folders (folder_id));
 joinable!(peers -> torrents (torrent_id));
 joinable!(peers -> users (user_id));
+joinable!(torrent_comments -> torrents (torrent_id));
+joinable!(torrent_comments -> users (user_id));
 joinable!(torrent_images -> torrents (torrent_id));
 joinable!(torrents -> categories (category_id));
 joinable!(torrents -> users (user_id));
@@ -293,6 +307,7 @@ allow_tables_to_appear_in_same_query!(
     messages,
     peers,
     static_content,
+    torrent_comments,
     torrent_files,
     torrent_images,
     torrent_meta_files,

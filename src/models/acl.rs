@@ -21,6 +21,7 @@
 use super::schema::{acl_group_rules, acl_user_rules};
 use super::*;
 use std::collections::HashMap;
+use models::torrent::TorrentComment;
 
 /// ACL permissions
 #[derive(DbEnum, Debug, PartialEq, PartialOrd, Clone, Copy)]
@@ -361,12 +362,16 @@ impl<'a> UserSubject<'a> {
     pub fn group_id(&self) -> &Uuid {
         &self.group_id
     }
+
+    pub fn is_allowed(&self, ns: &str, perm: &Permission) -> bool {
+        self.acl.is_allowed(self.user_id, self.group_id, ns, perm)
+    }
 }
 
 impl<'a> Subject<Torrent> for UserSubject<'a> {
     fn may(&self, obj: &Torrent, perm: &Permission) -> bool {
-        if let Some(uid) = obj.user_id {
-            if uid == *self.user_id() {
+        if let Some(uid) = obj.user_id() {
+            if uid == self.user_id() {
                 return true;
             }
         }
@@ -394,6 +399,16 @@ impl<'a> Subject<chat::ChatRoom> for UserSubject<'a> {
 impl<'a> Subject<static_content::Content> for UserSubject<'a> {
     fn may(&self, obj: &static_content::Content, perm: &Permission) -> bool {
         self.acl().is_allowed(self.user_id(), self.group_id(), &format!("content#{}", obj.id), perm)
+    }
+}
+
+impl<'a> Subject<TorrentComment> for UserSubject<'a> {
+    fn may(&self, obj: &TorrentComment, perm: &Permission) -> bool {
+        if obj.user_id() == self.user_id() {
+            return true;
+        }
+
+        self.acl().is_allowed(self.user_id(), self.group_id(), "torrent#comment", perm)
     }
 }
 

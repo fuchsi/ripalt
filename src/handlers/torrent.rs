@@ -19,6 +19,7 @@
 use super::*;
 use image::{self, DynamicImage, GenericImage};
 use models::acl::Subject;
+use models::torrent::{NewTorrentComment, TorrentComment, TorrentCommentResponse};
 use std::fs::{self, File};
 use std::io::BufReader;
 use std::path::Path;
@@ -468,14 +469,14 @@ pub struct NewFile {
 
 pub struct LoadTorrentMsg {
     id: Uuid,
-    user_id: Uuid,
+    subj: UserSubjectMsg,
 }
 
 impl LoadTorrentMsg {
-    pub fn new(id: &Uuid, user_id: &Uuid) -> LoadTorrentMsg {
+    pub fn new(id: &Uuid, subj: UserSubjectMsg) -> LoadTorrentMsg {
         LoadTorrentMsg {
             id: *id,
-            user_id: *user_id,
+            subj: subj,
         }
     }
 }
@@ -493,9 +494,10 @@ impl Handler<LoadTorrentMsg> for DbExecutor {
         _: &mut Self::Context,
     ) -> <Self as Handler<LoadTorrentMsg>>::Result {
         let conn = self.conn();
-        let torrent = models::torrent::TorrentMsg::find(&msg.id, &conn);
+        let subj = UserSubject::from(&msg.subj);
+        let torrent = models::torrent::TorrentMsg::find(&msg.id, &conn, &subj);
         torrent.map(|mut t| {
-            t.timezone = util::user::user_timezone(&msg.user_id, &conn);
+            t.timezone = util::user::user_timezone(subj.user_id(), &conn);
             t
         })
     }
@@ -715,9 +717,15 @@ impl Handler<LoadTorrentListMsg> for DbExecutor {
 }
 
 pub struct DeleteTorrentMsg {
-    pub id: Uuid,
-    pub reason: String,
-    pub user: UserSubjectMsg,
+    id: Uuid,
+    reason: String,
+    subj: UserSubjectMsg,
+}
+
+impl DeleteTorrentMsg {
+    pub fn new(id: Uuid, reason: String, subj: UserSubjectMsg) -> Self {
+        Self{id, reason, subj}
+    }
 }
 
 impl Message for DeleteTorrentMsg {
@@ -735,7 +743,7 @@ impl Handler<DeleteTorrentMsg> for DbExecutor {
         let conn = self.conn();
 
         let torrent = models::Torrent::find(&msg.id, &conn).ok_or_else(|| "torrent not found")?;
-        let subj = UserSubject::from(&msg.user);
+        let subj = UserSubject::from(&msg.subj);
         if !subj.may_delete(&torrent) {
             bail!("user is not allowed");
         }
@@ -747,5 +755,161 @@ impl Handler<DeleteTorrentMsg> for DbExecutor {
         }
 
         torrent.delete(&conn)
+    }
+}
+
+pub struct LoadCommentMsg {
+    id: Uuid,
+    subj: UserSubjectMsg,
+}
+
+impl LoadCommentMsg {
+    pub fn new(id: Uuid, subj: UserSubjectMsg) -> Self {
+        Self{id, subj}
+    }
+}
+
+impl Message for LoadCommentMsg {
+    type Result = Result<TorrentCommentResponse>;
+}
+
+impl Handler<LoadCommentMsg> for DbExecutor {
+    type Result = Result<TorrentCommentResponse>;
+
+    fn handle(&mut self, msg: LoadCommentMsg, _: &mut Self::Context) -> <Self as Handler<LoadCommentMsg>>::Result {
+        let conn = self.conn();
+        let comment = TorrentComment::find(&msg.id, &conn).ok_or_else(|| "comment not found")?;
+        let subj = UserSubject::from(&msg.subj);
+        if subj.may_read(&comment) {
+            Ok(TorrentCommentResponse::new(comment, &conn, &subj))
+        } else {
+            bail!("not allowed")
+        }
+    }
+}
+
+pub struct LoadCommentsMsg {
+    torrent_id: Uuid,
+    subj: UserSubjectMsg,
+}
+
+impl LoadCommentsMsg {
+    pub fn new(torrent_id: Uuid, subj: UserSubjectMsg) -> Self {
+        Self{torrent_id, subj}
+    }
+}
+
+impl Message for LoadCommentsMsg {
+    type Result = Result<Vec<TorrentCommentResponse>>;
+}
+
+impl Handler<LoadCommentsMsg> for DbExecutor {
+    type Result = Result<Vec<TorrentCommentResponse>>;
+
+    fn handle(&mut self, msg: LoadCommentsMsg, _: &mut Self::Context) -> <Self as Handler<LoadCommentsMsg>>::Result {
+        let conn = self.conn();
+        let torrent = models::Torrent::find(&msg.torrent_id, &conn).ok_or_else(|| "torrent not found")?;
+        let subj = UserSubject::from(&msg.subj);
+        if subj.is_allowed("torrent#comment", &Permission::Read) {
+            Ok(torrent.comments(&conn).into_iter().map(|c| TorrentCommentResponse::new(c, &conn, &subj)).collect())
+        } else {
+            bail!("not allowed")
+        }
+    }
+}
+
+pub struct NewCommentMsg {
+    torrent_id: Uuid,
+    content: String,
+    subj: UserSubjectMsg,
+}
+
+impl NewCommentMsg {
+    pub fn new(torrent_id: Uuid, content: String, subj: UserSubjectMsg) -> Self {
+        Self{torrent_id, content, subj}
+    }
+}
+
+impl Message for NewCommentMsg {
+    type Result = Result<TorrentCommentResponse>;
+}
+
+impl Handler<NewCommentMsg> for DbExecutor {
+    type Result = Result<TorrentCommentResponse>;
+
+    fn handle(&mut self, msg: NewCommentMsg, _: &mut Self::Context) -> <Self as Handler<NewCommentMsg>>::Result {
+        let conn = self.conn();
+        let _torrent = models::Torrent::find(&msg.torrent_id, &conn).ok_or_else(|| "torrent not found")?;
+        let subj = UserSubject::from(&msg.subj);
+        if !subj.is_allowed("torrent#new_comment", &Permission::Create) {
+            bail!("not allowed");
+        }
+
+        let comment = NewTorrentComment::new(subj.user_id(), &msg.torrent_id, &msg.content);
+        let comment = comment.create(&conn)?;
+        Ok(TorrentCommentResponse::new(comment, &conn, &subj))
+    }
+}
+
+pub struct DeleteCommentMsg {
+    id: Uuid,
+    subj: UserSubjectMsg,
+}
+
+impl DeleteCommentMsg {
+    pub fn new(id: Uuid, subj: UserSubjectMsg) -> Self {
+        Self{id, subj}
+    }
+}
+
+impl Message for DeleteCommentMsg {
+    type Result = Result<usize>;
+}
+
+impl Handler<DeleteCommentMsg> for DbExecutor {
+    type Result = Result<usize>;
+
+    fn handle(&mut self, msg: DeleteCommentMsg, _: &mut Self::Context) -> <Self as Handler<DeleteCommentMsg>>::Result {
+        let conn = self.conn();
+        let comment = TorrentComment::find(&msg.id, &conn).ok_or_else(|| "comment not found")?;
+        let subj = UserSubject::from(&msg.subj);
+        if subj.may_delete(&comment) {
+            comment.delete(&conn)
+        } else {
+            bail!("not allowed")
+        }
+    }
+}
+
+pub struct EditCommentMsg {
+    id: Uuid,
+    content: String,
+    subj: UserSubjectMsg,
+}
+
+impl EditCommentMsg {
+    pub fn new(id: Uuid, content: String, subj: UserSubjectMsg) -> Self {
+        Self { id, content, subj }
+    }
+}
+
+impl Message for EditCommentMsg {
+    type Result = Result<TorrentCommentResponse>;
+}
+
+impl Handler<EditCommentMsg> for DbExecutor {
+    type Result = Result<TorrentCommentResponse>;
+
+    fn handle(&mut self, msg: EditCommentMsg, _: &mut Self::Context) -> <Self as Handler<EditCommentMsg>>::Result {
+        let conn = self.conn();
+        let mut comment = TorrentComment::find(&msg.id, &conn).ok_or_else(|| "comment not found")?;
+        let subj = UserSubject::from(&msg.subj);
+        if subj.may_write(&comment) {
+            comment.set_content(msg.content);
+            comment.save(&conn)?;
+            Ok(TorrentCommentResponse::new(comment, &conn, &subj))
+        } else {
+            bail!("not allowed")
+        }
     }
 }
